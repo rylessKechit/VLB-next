@@ -176,9 +176,11 @@ export async function POST(request) {
     // Envoi des emails
     try {
       await transporter.sendMail(ownerMailOptions);
+      console.log(await transporter.sendMail(ownerMailOptions))
       console.log('Email de notification envoyé au propriétaire');
       
       await transporter.sendMail(customerMailOptions);
+      console.log(await transporter.sendMail(customerMailOptions))
       console.log('Email de confirmation envoyé au client');
     } catch (emailError) {
       console.error('Erreur lors de l\'envoi des emails:', emailError);

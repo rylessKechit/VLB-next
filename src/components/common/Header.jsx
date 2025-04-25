@@ -71,8 +71,8 @@ const Header = () => {
             <Image 
               src="/images/logo.webp" 
               alt="Taxi VLB Logo" 
-              width={150} 
-              height={55} 
+              width={75}
+              height={130}
               className={`transition-all duration-300 ${scrolled ? 'h-10' : 'h-14'}`}
             />
           </Link>
