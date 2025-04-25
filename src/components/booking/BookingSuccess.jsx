@@ -67,10 +67,6 @@ const BookingSuccess = ({ bookingData }) => {
           <div className="text-2xl font-mono font-bold bg-gray-100 inline-block px-4 py-2 rounded-md">
             {bookingData.id || 'En attente'}
           </div>
-          <div className="mt-4 mx-auto w-32 h-32 bg-white p-2 border border-gray-200 rounded-md">
-            <Image src={getQRCodeUrl(bookingData.id)} alt="QR Code de réservation" width={120} height={120} className="w-full h-auto" />
-            <span className="block text-xs text-gray-500 mt-2">Présentez ce code à votre chauffeur</span>
-          </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">

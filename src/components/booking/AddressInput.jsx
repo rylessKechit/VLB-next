@@ -50,8 +50,8 @@ const AddressInput = ({ id, value, onChange, onSelect, placeholder }) => {
       // Charger le script
       setIsLoading(true);
       const script = document.createElement('script');
-      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'YOUR_API_KEY'; // Remplacer par votre clé API
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initGoogleMapsAutocomplete`;
+      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initGoogleMapsAutocomplete&loading=async`;
       script.async = true;
       script.onerror = () => {
         if (isMounted) {
