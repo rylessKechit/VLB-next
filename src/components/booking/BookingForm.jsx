@@ -4,9 +4,8 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import AddressInput from './AddressInput';
 import DateTimePicker from './DateTimePicker';
-import PriceCalculator from './PriceCalculator';
-import BookingConfirmation from './BookingConfirmation';
 import BookingSuccess from './BookingSuccess';
+import RouteMap from './RouteMap';
 
 const BookingForm = () => {
   // États pour les étapes du formulaire
@@ -136,47 +135,30 @@ const BookingForm = () => {
     setIsCalculating(true);
     
     try {
-      // Simuler un appel API (à remplacer par un vrai appel API)
-      const response = await new Promise(resolve => {
-        setTimeout(() => {
-          resolve({
-            data: {
-              success: true,
-              data: {
-                estimate: {
-                  exactPrice: Math.round((50 + Math.random() * 100) * 100) / 100,
-                  minPrice: Math.round((45 + Math.random() * 90) * 100) / 100,
-                  maxPrice: Math.round((55 + Math.random() * 110) * 100) / 100,
-                  currency: 'EUR',
-                  breakdown: {
-                    baseFare: 5.0,
-                    distanceCharge: Math.round((20 + Math.random() * 40) * 100) / 100,
-                    timeCharge: Math.round((10 + Math.random() * 20) * 100) / 100,
-                    luggageCharge: data.luggage > 0 ? data.luggage * 2.0 : 0,
-                    nightRate: false,
-                    weekendRate: false,
-                    roundTripDiscount: data.roundTrip,
-                  },
-                  distanceInfo: {
-                    value: Math.round(10000 + Math.random() * 30000),
-                    text: `${Math.round(10 + Math.random() * 30)} km`,
-                  },
-                  durationInfo: {
-                    value: Math.round(1200 + Math.random() * 3600),
-                    text: `${Math.round(20 + Math.random() * 60)} mins`,
-                  }
-                }
-              }
-            }
-          });
-        }, 1500);
+      // Appel à votre API backend réelle
+      const response = await fetch('/api/price/estimate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          pickupPlaceId: data.pickupAddressPlaceId,
+          dropoffPlaceId: data.dropoffAddressPlaceId,
+          pickupDateTime: `${data.pickupDate}T${data.pickupTime}`,
+          passengers: data.passengers,
+          luggage: data.luggage,
+          roundTrip: data.roundTrip,
+          returnDateTime: data.roundTrip ? `${data.returnDate}T${data.returnTime}` : null
+        }),
       });
+
+      const result = await response.json();
       
-      if (response.data && response.data.success) {
-        setPriceEstimate(response.data.data.estimate);
-        setCurrentStep(2); // Passer directement à l'étape des informations client
+      if (result.success) {
+        setPriceEstimate(result.data.estimate);
+        setCurrentStep(2); // Passer à l'étape suivante
       } else {
-        setError(response.data?.error || "Erreur lors du calcul du prix.");
+        setError(result.error || "Erreur lors du calcul du prix.");
       }
     } catch (err) {
       console.error('Erreur lors du calcul du prix:', err);
@@ -190,24 +172,54 @@ const BookingForm = () => {
     calculatePrice(data);
   };
   
-  const onFinalSubmit = (data) => {
-    // Simuler une réservation réussie pour la démo
-    const bookingData = {
-      ...data,
-      id: 'BK' + Math.floor(Math.random() * 10000),
-      createdAt: new Date().toISOString(),
-      status: 'confirmed',
-      vehicleType: 'sedan',
-      price: {
-        amount: priceEstimate.exactPrice,
-        currency: 'EUR'
-      },
-      pickupDateTime: `${data.pickupDate}T${data.pickupTime}`,
-      returnDateTime: data.roundTrip ? `${data.returnDate}T${data.returnTime}` : null
-    };
-    
-    setBookingResult(bookingData);
-    setBookingSuccess(true);
+  const onFinalSubmit = async (data) => {
+    try {
+      // Préparer les données dans le format attendu par l'API
+      const bookingData = {
+        pickupAddress: data.pickupAddress,
+        dropoffAddress: data.dropoffAddress,
+        pickupDate: data.pickupDate,
+        pickupTime: data.pickupTime,
+        passengers: data.passengers,
+        luggage: data.luggage,
+        roundTrip: data.roundTrip,
+        returnDate: data.roundTrip ? data.returnDate : null,
+        returnTime: data.roundTrip ? data.returnTime : null,
+        flightNumber: data.flightNumber || null,
+        trainNumber: data.trainNumber || null,
+        specialRequests: data.specialRequests || '',
+        customerInfo: {
+          name: data.customerName,
+          email: data.customerEmail,
+          phone: data.customerPhone
+        },
+        price: {
+          amount: priceEstimate.exactPrice,
+          currency: 'EUR'
+        }
+      };
+  
+      // Appeler l'API
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bookingData),
+      });
+  
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        setBookingResult(result.data);
+        setBookingSuccess(true);
+      } else {
+        setError(result.error || "Une erreur est survenue lors de la réservation.");
+      }
+    } catch (err) {
+      console.error('Erreur lors de la création de la réservation:', err);
+      setError("Une erreur est survenue lors de la réservation. Veuillez réessayer.");
+    }
   };
   
   const goBack = () => {
@@ -561,6 +573,20 @@ const BookingForm = () => {
             {priceEstimate && (
               <div className="bg-gray-50 rounded-lg p-6 mb-6">
                 <h4 className="font-semibold text-lg mb-4">Résumé de votre réservation</h4>
+
+                <div className="mb-6">
+                  <h5 className="font-medium mb-3">Itinéraire</h5>
+                  <RouteMap 
+                    pickupAddress={formValues.pickupAddress}
+                    dropoffAddress={formValues.dropoffAddress}
+                    pickupPlaceId={formValues.pickupAddressPlaceId}
+                    dropoffPlaceId={formValues.dropoffAddressPlaceId}
+                    polyline={priceEstimate.route?.polyline}
+                  />
+                  <p className="text-xs text-gray-500 mt-2">
+                    Itinéraire approximatif. Le chauffeur pourra prendre un chemin différent selon les conditions de circulation.
+                  </p>
+                </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
                   <div>

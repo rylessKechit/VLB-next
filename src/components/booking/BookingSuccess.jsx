@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import RouteMap from './RouteMap';
 
 const BookingSuccess = ({ bookingData }) => {
   const [showPrintVersion, setShowPrintVersion] = useState(false);
@@ -122,6 +122,17 @@ const BookingSuccess = ({ bookingData }) => {
                   </span>
                 </div>
               )}
+
+              <div className="mt-6 mb-6">
+                <h3 className="text-lg font-semibold mb-4">Itinéraire prévu</h3>
+                <RouteMap 
+                  pickupAddress={bookingData.pickupAddress}
+                  dropoffAddress={bookingData.dropoffAddress}
+                  pickupPlaceId={bookingData.pickupAddressPlaceId}
+                  dropoffPlaceId={bookingData.dropoffAddressPlaceId}
+                  polyline={bookingData.polyline} // Si vous avez un polyline encodé depuis votre API
+                />
+              </div>
               
               {bookingData.roundTrip && (
                 <div>

@@ -6,9 +6,26 @@ import BookingForm from '@/components/booking/BookingForm';
 
 // Optimisations SEO
 export const metadata = {
-  title: 'Taxi VLB - Service de taxi de qualité à Verrières-le-Buisson',
-  description: 'Taxi VLB vous propose un service de transport de qualité à Verrières-le-Buisson. Transferts aéroport, gares, et longue distance. Réservation 24h/24, 7j/7.',
-  keywords: 'taxi Verrières-le-Buisson, transfert aéroport, transport gare, chauffeur privé',
+  title: 'Taxi VLB | Service de taxi à Verrières-le-Buisson et Essonne (91)',
+  description: 'Réservez votre taxi à Verrières-le-Buisson et en Essonne. Transferts aéroports Orly/CDG, gares, longue distance, 24h/24 et 7j/7. Tarifs compétitifs et service de qualité.',
+  keywords: 'taxi Verrières-le-Buisson, taxi Essonne, taxi 91, transfert aéroport CDG, transfert Orly, taxi gare, taxi longue distance, réservation taxi',
+  alternates: {
+    canonical: 'https://www.taxivlb.com'
+  },
+  openGraph: {
+    type: 'website',
+    url: 'https://www.taxivlb.com',
+    title: 'Taxi VLB | Service de taxi à Verrières-le-Buisson et Essonne (91)',
+    description: 'Réservez votre taxi à Verrières-le-Buisson et en Essonne. Transferts aéroports, gares, longue distance, 24h/24 et 7j/7.',
+    images: [
+      {
+        url: '/images/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Taxi VLB - Service de taxi à Verrières-le-Buisson',
+      },
+    ],
+  },
 };
 
 export default function Home() {
@@ -17,50 +34,53 @@ export default function Home() {
     {
       name: 'Martin Dupont',
       role: 'Cadre commercial',
-      text: 'Service de qualité pour mes déplacements professionnels. Le chauffeur était ponctuel, le véhicule propre et confortable. Je recommande ce service de taxi fiable.',
+      text: 'Service de taxi de qualité pour mes déplacements professionnels à Verrières-le-Buisson. Le chauffeur était ponctuel, le véhicule propre et confortable. Je recommande ce service de taxi fiable à tous les voyageurs en Essonne.',
     },
     {
       name: 'Émilie Laurent',
       role: 'Voyageuse régulière',
-      text: 'Un service de taxi pratique ! J\'utilise régulièrement cette compagnie pour mes trajets vers CDG et je suis toujours satisfaite. Le chauffeur suit mon vol et m\'attend à l\'arrivée.',
+      text: 'Un service de taxi pratique à Verrières-le-Buisson ! J\'utilise régulièrement cette compagnie pour mes trajets vers l\'aéroport CDG et je suis toujours satisfaite. Le chauffeur suit mon vol et m\'attend à l\'arrivée.',
     },
     {
       name: 'Sophie Bertrand',
       role: 'Organisatrice d\'événements',
-      text: 'J\'ai utilisé ce service pour le transport de nos invités. Le professionnalisme du chauffeur et le confort du véhicule ont été appréciés de tous. Service fiable !',
+      text: 'J\'ai utilisé ce service de taxi pour le transport de nos invités à Verrières-le-Buisson. Le professionnalisme du chauffeur et le confort du véhicule ont été appréciés de tous. Service fiable dans toute l\'Essonne !',
     },
   ];
 
   return (
     <div className="home-page">
-      {/* Hero Section */}
+      {/* Hero Section - adapté pour le header fixe */}
       <section 
         className="relative flex items-center justify-center min-h-screen bg-cover bg-center text-white text-center overflow-hidden"
-        style={{ backgroundImage: 'url(/images/header-image.webp)' }}
+        style={{ 
+          backgroundImage: 'url(/images/header-image.webp)',
+          minHeight: 'calc(100vh - 0px)'
+        }}
       >
         <div className="absolute inset-0 bg-black bg-opacity-60"></div>
         
-        <div className="container relative z-10 px-4 max-w-5xl">
+        <div className="container relative z-10 px-4 max-w-5xl mx-auto">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 animate-slide-in-left">
-            <span className="text-primary">TAXI VLB</span>
+            <span className="text-primary">TAXI VLB</span> <span className="text-2xl md:text-3xl block mt-2">VERRIÈRES-LE-BUISSON</span>
           </h1>
           <p className="text-xl md:text-2xl font-light mb-6 animate-fade-in">
-            Service de transport de qualité pour tous vos trajets
+            Service de taxi de qualité dans l'Essonne (91)
           </p>
           <p className="text-lg max-w-3xl mx-auto mb-8 animate-slide-in-right">
-            Taxi professionnel à votre service pour vos déplacements quotidiens, transferts aéroport, 
-            gare et voyages d'affaires. Disponible 24h/24, 7j/7.
+            Taxi professionnel à votre service pour vos déplacements quotidiens, transferts aéroports (Orly, CDG), 
+            gares parisiennes et voyages longue distance. Disponible 24h/24, 7j/7 à Verrières-le-Buisson et environs.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8 animate-fade-in">
             <Link href="#fleet" 
               className="btn btn-primary text-center"
-              aria-label="Découvrir notre flotte"
+              aria-label="Découvrir notre flotte de taxis à Verrières-le-Buisson"
             >
               Découvrir notre flotte
             </Link>
             <Link href="#booking" 
               className="btn btn-secondary text-center"
-              aria-label="Réserver maintenant"
+              aria-label="Réserver un taxi à Verrières-le-Buisson"
             >
               Réserver maintenant
             </Link>
@@ -70,7 +90,7 @@ export default function Home() {
         <Link 
           href="#services" 
           className="absolute bottom-12 left-1/2 transform -translate-x-1/2 w-12 h-12 flex items-center justify-center rounded-full border-2 border-white border-opacity-50 text-white hover:bg-white hover:bg-opacity-10 hover:border-white transition-all duration-300 animate-bounce"
-          aria-label="Défiler vers les services"
+          aria-label="Découvrir nos services de taxi à Verrières-le-Buisson"
         >
           <FontAwesomeIcon icon={faChevronDown} />
         </Link>
@@ -81,10 +101,10 @@ export default function Home() {
         <div className="container">
           <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold uppercase">
-              SERVICES DE TRANSPORT À VERRIÈRES-LE-BUISSON
+              SERVICES DE TAXI À VERRIÈRES-LE-BUISSON (91)
             </h2>
             <p className="text-text-light text-lg mt-4 max-w-3xl mx-auto">
-              Des services adaptés à tous vos besoins de déplacement
+              Des services de taxi adaptés à tous vos besoins de déplacement dans l'Essonne
             </p>
           </div>
           
@@ -95,7 +115,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold mb-4">TRANSFERT AÉROPORT</h3>
               <p className="text-text-light mb-6">
-                Service de taxi aéroport vers CDG, Orly et Beauvais. Suivi des vols, aide aux bagages et attente en cas de retard incluse dans nos prestations.
+                Service de taxi aéroport vers CDG, Orly et Beauvais depuis Verrières-le-Buisson. Suivi des vols, aide aux bagages et attente en cas de retard incluse.
               </p>
               <Link href="/services/aeroport-gare" className="inline-flex items-center text-primary font-semibold hover:text-primary-dark transition-colors duration-300">
                 Découvrir
@@ -111,7 +131,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold mb-4">VOYAGES LONGUE DISTANCE</h3>
               <p className="text-text-light mb-6">
-                Confort assuré pour vos trajets entre villes, voyages d'affaires ou touristiques. Tarifs compétitifs pour toutes distances.
+                Confort assuré pour vos trajets entre villes depuis Verrières-le-Buisson. Tarifs compétitifs pour les longues distances avec un service de taxi professionnel.
               </p>
               <Link href="/services/longue-distance" className="inline-flex items-center text-primary font-semibold hover:text-primary-dark transition-colors duration-300">
                 Découvrir
@@ -127,7 +147,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold mb-4">TRANSPORT GARE</h3>
               <p className="text-text-light mb-6">
-                Service de taxi vers les gares parisiennes (Gare du Nord, Gare de Lyon, Gare Montparnasse). Ponctualité et confort garantis pour vos voyages en train.
+                Service de taxi depuis Verrières-le-Buisson vers les gares parisiennes (Gare du Nord, Gare de Lyon, Gare Montparnasse). Ponctualité et confort garantis.
               </p>
               <Link href="/services/aeroport-gare" className="inline-flex items-center text-primary font-semibold hover:text-primary-dark transition-colors duration-300">
                 Découvrir
@@ -145,10 +165,10 @@ export default function Home() {
         <div className="container">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold uppercase">
-              NOTRE FLOTTE DE VÉHICULES
+              NOTRE FLOTTE DE TAXIS À VERRIÈRES-LE-BUISSON
             </h2>
             <p className="text-text-light text-lg mt-4 max-w-3xl mx-auto">
-              Des véhicules spacieux et confortables pour tous vos trajets
+              Des véhicules spacieux et confortables pour tous vos trajets en Essonne
             </p>
           </div>
           
@@ -156,7 +176,7 @@ export default function Home() {
             <div className="w-full md:w-1/2">
               <Image 
                 src="/images/mercedes-v-class.webp" 
-                alt="Mercedes Classe V Taxi" 
+                alt="Mercedes Classe V Taxi Verrières-le-Buisson" 
                 width={600} 
                 height={400} 
                 className="rounded-lg shadow-custom-light w-full h-auto object-cover"
@@ -216,7 +236,7 @@ export default function Home() {
               </div>
               <Link href="#booking" 
                 className="btn btn-primary"
-                aria-label="Réserver maintenant"
+                aria-label="Réserver un taxi à Verrières-le-Buisson"
               >
                 Réserver maintenant
               </Link>
@@ -232,16 +252,16 @@ export default function Home() {
             <div className="w-full md:w-1/2">
               <div className="text-left mb-6">
                 <h2 className="text-3xl md:text-4xl font-bold uppercase">
-                  L'EXPÉRIENCE TAXI VLB
+                  L'EXPÉRIENCE TAXI VLB À VERRIÈRES-LE-BUISSON
                 </h2>
                 <div className="w-20 h-1 bg-primary my-4"></div>
                 <p className="text-xl text-text-light">
-                  Un service de transport fiable et confortable pour tous
+                  Un service de taxi fiable et confortable en Essonne
                 </p>
               </div>
               <p className="text-text-light mb-6">
                 Chaque trajet avec notre service de taxi à Verrières-le-Buisson est une expérience agréable et sécurisée, 
-                pensée pour vous offrir le meilleur rapport qualité-prix.
+                pensée pour vous offrir le meilleur rapport qualité-prix dans toute l'Essonne.
               </p>
               <ul className="space-y-4 mb-8">
                 <li className="flex items-start">
@@ -250,7 +270,7 @@ export default function Home() {
                   </div>
                   <div>
                     <h4 className="font-semibold mb-1">Chauffeur professionnel</h4>
-                    <p className="text-text-light text-sm">Des chauffeurs expérimentés, courtois et connaissant parfaitement la région</p>
+                    <p className="text-text-light text-sm">Des chauffeurs expérimentés, courtois et connaissant parfaitement Verrières-le-Buisson et sa région</p>
                   </div>
                 </li>
                 <li className="flex items-start">
@@ -268,7 +288,7 @@ export default function Home() {
                   </div>
                   <div>
                     <h4 className="font-semibold mb-1">Connectivité</h4>
-                    <p className="text-text-light text-sm">Connexion WiFi gratuite pour rester connecté</p>
+                    <p className="text-text-light text-sm">Connexion WiFi gratuite pour rester connecté durant votre trajet</p>
                   </div>
                 </li>
                 <li className="flex items-start">
@@ -277,19 +297,19 @@ export default function Home() {
                   </div>
                   <div>
                     <h4 className="font-semibold mb-1">Ponctualité</h4>
-                    <p className="text-text-light text-sm">Ponctualité et fiabilité assurées pour tous vos déplacements</p>
+                    <p className="text-text-light text-sm">Ponctualité et fiabilité assurées pour tous vos déplacements à Verrières-le-Buisson</p>
                   </div>
                 </li>
               </ul>
               <Link href="/services" className="btn btn-primary">
-                Découvrir nos services
+                Découvrir nos services de taxi
               </Link>
             </div>
             
             <div className="w-full md:w-1/2">
               <Image 
                 src="/images/vip-experience.webp" 
-                alt="Expérience taxi à Verrières-le-Buisson" 
+                alt="Expérience taxi premium à Verrières-le-Buisson" 
                 width={600} 
                 height={400} 
                 className="rounded-lg shadow-custom w-full h-auto object-cover"
@@ -304,10 +324,10 @@ export default function Home() {
         <div className="container">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold uppercase">
-              AVIS CLIENTS SUR NOTRE SERVICE DE TAXI
+              AVIS CLIENTS SUR NOTRE SERVICE DE TAXI À VERRIÈRES-LE-BUISSON
             </h2>
             <p className="text-text-light text-lg mt-4 max-w-3xl mx-auto">
-              Ce que disent nos clients sur notre service à Verrières-le-Buisson
+              Ce que disent nos clients sur notre service de taxi en Essonne
             </p>
           </div>
           
@@ -338,7 +358,7 @@ export default function Home() {
               RÉSERVATION DE TAXI À VERRIÈRES-LE-BUISSON
             </h2>
             <p className="text-text-light text-lg mt-4 max-w-3xl mx-auto">
-              Un service simple et rapide pour réserver votre course
+              Un service simple et rapide pour réserver votre taxi en Essonne
             </p>
           </div>
           
@@ -356,7 +376,7 @@ export default function Home() {
               ILS NOUS FONT CONFIANCE
             </h2>
             <p className="text-text-light text-lg mt-4 max-w-3xl mx-auto">
-              Des partenaires satisfaits de nos services de transport
+              Des partenaires satisfaits de nos services de taxi à Verrières-le-Buisson
             </p>
           </div>
           
@@ -365,7 +385,7 @@ export default function Home() {
               <div key={index} className="grayscale hover:grayscale-0 opacity-70 hover:opacity-100 transition-all duration-300">
                 <Image 
                   src={`/images/logo-${partner}.webp`} 
-                  alt={`Logo ${partner}`} 
+                  alt={`Logo ${partner} - Partenaire Taxi VLB à Verrières-le-Buisson`} 
                   width={120} 
                   height={80} 
                   className="max-h-16 w-auto"
@@ -384,7 +404,7 @@ export default function Home() {
               ZONES DE SERVICE - TAXI VLB
             </h2>
             <p className="text-text-light text-lg mt-4 max-w-3xl mx-auto">
-              Nous desservons Verrières-le-Buisson et ses environs
+              Nous desservons Verrières-le-Buisson et ses environs en Essonne
             </p>
           </div>
           
@@ -392,7 +412,7 @@ export default function Home() {
             <div className="bg-white rounded-lg shadow-custom p-6 transition-all duration-300 hover:shadow-custom-dark">
               <h3 className="text-xl font-bold mb-4 pb-3 border-b border-gray-200">Verrières-le-Buisson et proximité</h3>
               <p className="text-text-light mb-4">
-                Notre service de taxi couvre principalement Verrières-le-Buisson et les villes environnantes, notamment :
+                Notre service de taxi couvre principalement Verrières-le-Buisson et les villes environnantes de l'Essonne, notamment :
               </p>
               <div className="grid grid-cols-2 gap-2">
                 <div>
@@ -432,7 +452,7 @@ export default function Home() {
             <div className="bg-white rounded-lg shadow-custom p-6 transition-all duration-300 hover:shadow-custom-dark">
               <h3 className="text-xl font-bold mb-4 pb-3 border-b border-gray-200">Service longue distance</h3>
               <p className="text-text-light mb-4">
-                Nous proposons également des trajets longue distance vers les principales villes françaises :
+                Nous proposons également des trajets longue distance depuis Verrières-le-Buisson vers les principales villes françaises :
               </p>
               <div className="grid grid-cols-2 gap-2">
                 <div>
@@ -462,7 +482,7 @@ export default function Home() {
         <div className="container">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold uppercase">
-              QUESTIONS FRÉQUENTES
+              QUESTIONS FRÉQUENTES SUR NOTRE SERVICE DE TAXI
             </h2>
             <p className="text-text-light text-lg mt-4 max-w-3xl mx-auto">
               Tout ce que vous devez savoir sur notre service de taxi à Verrières-le-Buisson
@@ -476,7 +496,7 @@ export default function Home() {
                 answer: "Vous pouvez réserver notre service de taxi via notre formulaire en ligne, par téléphone au +33 6 00 00 00 00 ou par email. Nous recommandons de réserver à l'avance pour garantir la disponibilité."
               },
               {
-                question: "Quel est le prix d'une course de taxi ?",
+                question: "Quel est le prix d'une course de taxi à Verrières-le-Buisson ?",
                 answer: "Nos tarifs sont compétitifs et dépendent de plusieurs facteurs : distance, horaire et services additionnels. Utilisez notre calculateur en ligne pour obtenir un devis gratuit pour votre trajet."
               },
               {
@@ -503,7 +523,7 @@ export default function Home() {
         <div className="container">
           <div className="text-center max-w-2xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-bold mb-4">Réservez votre taxi à Verrières-le-Buisson</h2>
-            <p className="text-text-light mb-8">Contactez-nous dès maintenant pour réserver votre trajet.</p>
+            <p className="text-text-light mb-8">Contactez-nous dès maintenant pour réserver votre trajet en Essonne (91).</p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link href="/contact" className="btn btn-primary">
                 Nous contacter

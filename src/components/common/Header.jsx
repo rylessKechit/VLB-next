@@ -1,3 +1,4 @@
+// src/components/common/Header.jsx
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -11,33 +12,17 @@ import Navbar from './Navbar';
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [visible, setVisible] = useState(true);
-  const [prevScrollPos, setPrevScrollPos] = useState(0);
   const pathname = usePathname();
 
-  // Gestionnaire de défilement avec hide/show header
+  // Gestionnaire de défilement simplifié
   useEffect(() => {
     const handleScroll = () => {
-      const currentScrollPos = window.pageYOffset;
-      
-      // Détermine si l'utilisateur a défilé vers le haut ou vers le bas
-      const isScrollingDown = currentScrollPos > prevScrollPos;
-      
-      // Visibility logic - hide header when scrolling down, show when scrolling up
-      if (currentScrollPos > 100) {
-        setVisible(!isScrollingDown);
-        setScrolled(true);
-      } else {
-        setVisible(true);
-        setScrolled(currentScrollPos > 30);
-      }
-      
-      setPrevScrollPos(currentScrollPos);
+      setScrolled(window.pageYOffset > 30);
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [prevScrollPos]);
+  }, []);
 
   // Fermer le menu mobile lors du changement de page
   useEffect(() => {
@@ -51,7 +36,6 @@ const Header = () => {
   const toggleMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
     
-    // Empêcher le défilement du body quand le menu est ouvert
     if (!mobileMenuOpen) {
       document.body.classList.add('overflow-hidden');
     } else {
@@ -61,19 +45,17 @@ const Header = () => {
 
   return (
     <header 
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-        scrolled ? 'h-header-scrolled shadow-custom bg-dark' : 'h-header bg-dark shadow-custom-light'
-      } ${visible ? 'translate-y-0' : '-translate-y-full'}`}
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-dark`}
     >
-      <div className="container mx-auto px-4 h-full flex justify-between items-center">
+      <div className="container mx-auto px-4 h-20 flex justify-between items-center">
         <div className="flex items-center">
           <Link href="/" className="block">
             <Image 
               src="/images/logo.webp" 
               alt="Taxi VLB Logo" 
               width={75}
-              height={130}
-              className={`transition-all duration-300 ${scrolled ? 'h-10' : 'h-14'}`}
+              height={30}
+              className="transition-all duration-300"
             />
           </Link>
         </div>
@@ -98,7 +80,7 @@ const Header = () => {
           </div>
           
           <button 
-            className={`flex flex-col justify-between md:hidden w-6 h-5 bg-transparent border-none cursor-pointer z-50`}
+            className="flex flex-col justify-between md:hidden w-6 h-5 bg-transparent border-none cursor-pointer z-50"
             onClick={toggleMenu}
             aria-label="Menu principal"
             aria-expanded={mobileMenuOpen}
@@ -110,7 +92,10 @@ const Header = () => {
         </div>
       </div>
       
-      <Navbar mobileMenuOpen={mobileMenuOpen} />
+      {/* La navbar avec bordure optionnelle */}
+      <div className={`${scrolled ? 'border-t border-gray-700 border-opacity-30' : ''}`}>
+        <Navbar mobileMenuOpen={mobileMenuOpen} />
+      </div>
     </header>
   );
 };
