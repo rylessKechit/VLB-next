@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 
-const AddressInput = ({ id, value, onChange, onSelect, placeholder }) => {
+const AddressInput = ({ id, value, onChange, onSelect, placeholder, label }) => {
   const inputRef = useRef(null);
   const autocompleteRef = useRef(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -102,11 +102,18 @@ const AddressInput = ({ id, value, onChange, onSelect, placeholder }) => {
     }
   }, [isLoaded, id, onChange, onSelect]);
   
+  // Obtenir le texte de l'étiquette à partir du placeholder si aucun n'est fourni
+  const labelText = label || placeholder;
+  const describedById = `${id}-help`;
+  
   return (
     <div className={`relative ${isLoading ? 'loading' : ''}`}>
+      <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">
+        {labelText} {labelText.includes('*') ? '' : <span className="text-red-500">*</span>}
+      </label>
       <div className="relative">
         <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
             <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
           </svg>
         </span>
@@ -118,15 +125,21 @@ const AddressInput = ({ id, value, onChange, onSelect, placeholder }) => {
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+          aria-describedby={describedById}
+          required
         />
         {isLoading && (
           <span className="absolute inset-y-0 right-0 flex items-center pr-3">
-            <svg className="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg className="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
+            <span className="sr-only">Chargement...</span>
           </span>
         )}
+      </div>
+      <div id={describedById} className="mt-1 text-xs text-gray-500">
+        Saisissez une adresse et sélectionnez une suggestion dans la liste
       </div>
     </div>
   );
