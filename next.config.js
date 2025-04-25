@@ -2,11 +2,13 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['maps.googleapis.com'],
-  },
-  experimental: {
-    serverActions: true,
-  },
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'maps.googleapis.com',
+      },
+    ],
+  }
 };
 
 module.exports = nextConfig;
