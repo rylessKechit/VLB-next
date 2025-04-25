@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Prioritize important pages
+Sitemap: https://www.taxivlb.com/sitemap.xml
+
+# Optimize crawl rate
+Crawl-delay: 5

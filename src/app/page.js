@@ -4,6 +4,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faPlaneDeparture, faRoute, faTrain, faCheck, faUserTie, faWater, faWifi, faClock, faQuoteLeft } from '@fortawesome/free-solid-svg-icons';
 import BookingForm from '@/components/booking/BookingForm';
 
+export const metadata = {
+  title: 'Taxi Verrières-le-Buisson (91) | Réservation Taxi 24/7 | Taxi VLB',
+  description: 'Service de taxi à Verrières-le-Buisson (91) pour tous vos déplacements. Transferts aéroport Orly/CDG, gares parisiennes et longue distance. Réservation en ligne ou par téléphone.',
+  keywords: 'taxi Verrières le Buisson, réservation taxi 91, taxi aéroport Verrières, taxi gare Verrières, taxi Essonne, transport Verrières-le-Buisson',
+  alternates: {
+    canonical: 'https://www.taxivlb.com',
+  },
+};
+
 export default function Home() {
   // Testimonials statiques
   const testimonials = [

@@ -2,9 +2,7 @@
 
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPhone, faEnvelope, faMapMarkerAlt, faClock, faWhatsapp } from '@fortawesome/free-solid-svg-icons';
-import Head from 'next/head';
-import Link from 'next/link';
+import { faPhone, faEnvelope, faMapMarkerAlt, faClock } from '@fortawesome/free-solid-svg-icons';
 import RouteMap from '@/components/booking/RouteMap';
 
 export default function ContactPage() {
