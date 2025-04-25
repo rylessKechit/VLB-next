@@ -1,4 +1,3 @@
-// src/components/booking/RouteMap.jsx
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
@@ -279,6 +278,9 @@ const RouteMap = ({ pickupAddress, dropoffAddress, pickupPlaceId, dropoffPlaceId
         className="w-full h-full"
         style={{ display: mapLoaded ? 'block' : 'none' }}
       ></div>
+      <div className="absolute bottom-2 left-2 bg-white bg-opacity-80 px-2 py-1 rounded-md text-xs">
+        <p className="text-gray-600">Itinéraire approximatif</p>
+      </div>
     </div>
   );
 };

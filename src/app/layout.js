@@ -6,12 +6,6 @@ import Footer from '@/components/common/Footer';
 // Configurer les fonts
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata = {
-  title: 'Taxi VLB - Service de taxi de qualité à Verrières-le-Buisson',
-  description: 'Taxi VLB vous propose un service de transport de qualité à Verrières-le-Buisson. Transferts aéroport, gares, et longue distance. Réservation 24h/24, 7j/7.',
-  keywords: 'taxi Verrières-le-Buisson, transfert aéroport, transport gare, chauffeur privé',
-};
-
 export default function RootLayout({ children }) {
   return (
     <html lang="fr">

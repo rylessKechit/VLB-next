@@ -2,18 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-main {
-  padding-top: 0;
-}
-
-.content-page {
-  padding-top: 8rem;
-}
-
-.nav-dropdown {
-  @apply transition-all duration-300 overflow-hidden;
-}
-
 @layer base {
   html {
     @apply scroll-smooth;
@@ -91,14 +79,6 @@ main {
 }
 
 @layer utilities {
-  .pt-header {
-    padding-top: 8rem; /* Environ 128px, hauteur combinée du header + navbar */
-  }
-
-  .hero-section {
-    margin-top: 8rem; /* Décale les hero sections sous le header */
-  }
-
   .animate-fade-in {
     animation: fadeIn 0.8s ease forwards;
   }
@@ -113,6 +93,22 @@ main {
   
   .animate-slide-in-up {
     animation: slideInUp 0.8s ease forwards;
+  }
+
+  /* Classe utilitaire pour les sections hero */
+  .hero-section {
+    margin-top: 8rem; /* Décale les hero sections sous le header */
+  }
+  
+  /* Classe spécifique pour les pages de contenu */
+  .content-page {
+    padding-top: 8rem; /* Pour tenir compte de la hauteur du header + navbar */
+  }
+
+  /* Animation du gradient */
+  .animate-gradient {
+    background-size: 200% 100%;
+    animation: gradient 3s ease infinite;
   }
   
   @keyframes fadeIn {
@@ -151,5 +147,55 @@ main {
       transform: translateY(0);
       opacity: 1;
     }
+  }
+
+  @keyframes gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+}
+
+/* Styles pour la navbar */
+.nav-dropdown {
+  @apply transition-all duration-300 overflow-hidden;
+}
+
+/* Ajustements pour les menus déroulants en hover */
+@media (min-width: 768px) {
+  .group:hover .group-hover\:block,
+  .group:hover .group-hover\:opacity-100,
+  .group:hover .group-hover\:visible,
+  .group:hover .group-hover\:translate-y-0 {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+    pointer-events: auto !important;
+  }
+}
+
+/* Styles d'impression pour les confirmations de réservation */
+@media print {
+  header, footer, nav, .btn, button {
+    display: none !important;
+  }
+  
+  .print-version {
+    padding: 20px;
+    max-width: 100%;
+    margin: 0;
+    box-shadow: none;
+  }
+  
+  body {
+    background-color: white;
+    color: black;
   }
 }

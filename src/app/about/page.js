@@ -3,30 +3,6 @@ import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTaxi, faCheck, faClock, faCheckDouble, faFileInvoice, faSprayCan, faHandshake, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
 
-// Optimisations SEO
-export const metadata = {
-  title: 'À propos de Taxi VLB | Service de taxi à Verrières-le-Buisson (91)',
-  description: 'Découvrez l\'histoire et les valeurs de Taxi VLB, service de taxi de qualité à Verrières-le-Buisson dans l\'Essonne (91). Une entreprise locale engagée à offrir un service fiable et personnalisé depuis 2009.',
-  keywords: 'taxi Verrières-le-Buisson, taxi Essonne, taxi 91, chauffeur professionnel, histoire taxi VLB, valeurs entreprise, service taxi Essonne',
-  alternates: {
-    canonical: 'https://www.taxivlb.com/about'
-  },
-  openGraph: {
-    type: 'website',
-    url: 'https://www.taxivlb.com/about',
-    title: 'À propos de Taxi VLB | Service de taxi à Verrières-le-Buisson',
-    description: 'Découvrez l\'histoire et les valeurs de Taxi VLB, service de taxi de qualité à Verrières-le-Buisson et en Essonne depuis 2009.',
-    images: [
-      {
-        url: '/images/about-hero.webp',
-        width: 1200,
-        height: 630,
-        alt: 'Histoire et valeurs de Taxi VLB Verrières-le-Buisson',
-      },
-    ],
-  },
-};
-
 export default function AboutPage() {
   // Valeurs de l'entreprise
   const companyValues = [
