@@ -1,0 +1,26 @@
+# robots.txt for www.taxivlb.com
+# Mise à jour: 2025-04-20
+
+User-agent: *
+Allow: /
+
+# Empêcher l'indexation des dossiers administratifs
+Disallow: /admin/
+Disallow: /.next/
+Disallow: /_next/
+
+# Sitemap
+Sitemap: https://www.taxivlb.com/sitemap.xml
+
+# Instructions spécifiques pour Google
+User-agent: Googlebot
+Allow: /
+User-agent: Googlebot-Image
+Allow: /
+
+# Instructions spécifiques pour Bing
+User-agent: Bingbot
+Allow: /
+
+# Taux d'exploration
+Crawl-delay: 10
