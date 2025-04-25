@@ -1,16 +1,9 @@
+'use client';
+
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import { useState } from 'react';
-
-export const metadata = {
-  title: 'FAQ - Taxi à Verrières-le-Buisson | Questions fréquentes | Taxi VLB',
-  description: 'Réponses à toutes vos questions sur notre service de taxi à Verrières-le-Buisson. Tarifs, réservation, transferts aéroport, et autres informations utiles.',
-  keywords: 'taxi Verrières-le-Buisson FAQ, questions taxi 91, tarifs taxi Verrières, réservation taxi Essonne',
-  alternates: {
-    canonical: 'https://www.taxivlb.com/faq',
-  },
-};
 
 const FAQItem = ({ question, answer }) => {
   const [isOpen, setIsOpen] = useState(false);
