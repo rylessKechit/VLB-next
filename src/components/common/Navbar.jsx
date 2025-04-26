@@ -10,6 +10,31 @@ const Navbar = ({ mobileMenuOpen }) => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const dropdownRefs = useRef([]);
   const pathname = usePathname();
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Détecter si l'appareil est mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // Vérifier au chargement initial
+    checkMobile();
+    
+    // Mettre à jour lors du redimensionnement
+    window.addEventListener('resize', checkMobile);
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, []);
+
+  // Réinitialiser le dropdown lorsque le menu mobile est fermé
+  useEffect(() => {
+    if (!mobileMenuOpen) {
+      setOpenDropdown(null);
+    }
+  }, [mobileMenuOpen]);
 
   // Ajouter les références pour chaque dropdown
   useEffect(() => {
@@ -45,18 +70,22 @@ const Navbar = ({ mobileMenuOpen }) => {
     return pathname.startsWith(path);
   };
 
-  // Gestionnaire de souris pour les menus déroulants
+  // Gestionnaire de souris pour les menus déroulants (desktop uniquement)
   const handleMouseEnter = (index) => {
-    setOpenDropdown(index);
+    if (!isMobile) {
+      setOpenDropdown(index);
+    }
   };
 
   const handleMouseLeave = (index) => {
-    // Utiliser un délai pour éviter que le menu ne se ferme immédiatement
-    setTimeout(() => {
-      if (openDropdown === index) {
-        setOpenDropdown(null);
-      }
-    }, 150);
+    if (!isMobile) {
+      // Utiliser un délai pour éviter que le menu ne se ferme immédiatement
+      setTimeout(() => {
+        if (openDropdown === index) {
+          setOpenDropdown(null);
+        }
+      }, 150);
+    }
   };
 
   // Gestionnaire de clavier pour l'accessibilité
@@ -109,7 +138,7 @@ const Navbar = ({ mobileMenuOpen }) => {
                     <div 
                       id={`dropdown-menu-${dropdownIndex}`}
                       className={`${
-                        openDropdown === dropdownIndex || mobileMenuOpen ? 'block' : 'hidden'
+                        openDropdown === dropdownIndex ? 'block' : 'hidden'
                       } md:absolute md:top-full md:left-0 w-full md:w-64 bg-white shadow-lg rounded-b-md z-40`}
                       role="menu"
                       aria-label={`Sous-menu ${link.label}`}
@@ -125,6 +154,7 @@ const Navbar = ({ mobileMenuOpen }) => {
                           }`}
                           role="menuitem"
                           tabIndex={openDropdown === dropdownIndex ? 0 : -1}
+                          onClick={() => setOpenDropdown(null)} // Fermer le dropdown après le clic
                         >
                           {item.label}
                         </Link>

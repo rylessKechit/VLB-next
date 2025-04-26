@@ -26,8 +26,7 @@ export default function HeroSection() {
     <section 
       className="relative flex items-center justify-center min-h-screen bg-cover bg-center text-white text-center overflow-hidden"
       style={{ 
-        minHeight: 'calc(100vh - 0px)',
-        background: "linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7))" 
+        minHeight: 'calc(100vh - 0px)'
       }}
     >
       {/* Image d'arrière-plan chargée de manière optimisée */}
@@ -43,9 +42,11 @@ export default function HeroSection() {
           placeholder="blur"
           blurDataURL="data:image/webp;base64,UklGRoQAAABXRUJQVlA4IDgAAACQAQCdASoIAAMAAkA4JZQCdLoB+AAAPuhVgD67E1NpKfGLgX/yP+vvgnhNfBKo+hhSfCkMAAAA"
         />
+        {/* Overlay semi-transparent pour assurer la lisibilité du texte */}
+        <div className="absolute inset-0 bg-black bg-opacity-60 z-10"></div>
       </div>
 
-      <div className="container relative z-10 px-4 max-w-5xl mx-auto">
+      <div className="container relative z-20 px-4 max-w-5xl mx-auto">
         <h1 className={`text-4xl md:text-5xl lg:text-6xl font-bold mb-4 ${animationsEnabled ? 'animate-slide-in-left' : ''}`}>
           <span className="text-primary">TAXI VLB</span> <span className="text-2xl md:text-3xl block mt-2">VERRIÈRES-LE-BUISSON</span>
         </h1>
@@ -83,7 +84,7 @@ export default function HeroSection() {
       
       <Link 
         href="#services" 
-        className={`absolute bottom-12 left-1/2 transform -translate-x-1/2 w-12 h-12 flex items-center justify-center rounded-full border-2 border-white border-opacity-50 text-white hover:bg-white hover:bg-opacity-10 hover:border-white transition-all duration-300 ${isLoaded ? 'animate-bounce' : ''}`}
+        className={`absolute bottom-12 left-1/2 transform -translate-x-1/2 w-12 h-12 flex items-center justify-center rounded-full border-2 border-white border-opacity-50 text-white hover:bg-white hover:bg-opacity-10 hover:border-white transition-all duration-300 z-20 ${isLoaded ? 'animate-bounce' : ''}`}
         aria-label="Découvrir nos services de taxi à Verrières-le-Buisson"
       >
         <FontAwesomeIcon icon={faChevronDown} />
