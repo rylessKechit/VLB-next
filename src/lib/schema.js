@@ -7,7 +7,7 @@ export const taxiService = {
     "@context": "https://schema.org",
     "@type": "TaxiService",
     "name": "Taxi VLB - Service de taxi à Verrières-le-Buisson",
-    "image": "https://www.taxivlb.com/images/logo.webp",
+    "image": "https://vlb-next.vercel.app/images/logo.webp",
     "url": "https://www.taxivlb.com",
     "telephone": "+33600000000",
     "address": {
@@ -54,7 +54,7 @@ export const taxiService = {
       "@type": "ReserveAction",
       "target": {
         "@type": "EntryPoint",
-        "urlTemplate": "https://www.taxivlb.com/#booking",
+        "urlTemplate": "https://vlb-next.vercel.app/#booking",
         "inLanguage": "fr",
         "actionPlatform": [
           "http://schema.org/DesktopWebPlatform",

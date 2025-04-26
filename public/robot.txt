@@ -10,7 +10,7 @@ Disallow: /.next/
 Disallow: /_next/
 
 # Sitemap
-Sitemap: https://www.taxivlb.com/sitemap.xml
+Sitemap: https://vlb-next.vercel.app/sitemap.xml
 
 # Instructions spécifiques pour Google
 User-agent: Googlebot

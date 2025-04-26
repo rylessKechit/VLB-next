@@ -117,7 +117,7 @@ export async function POST(request) {
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee;">
               <div style="text-align: center; margin-bottom: 20px;">
-                <img src="https://www.taxivlb.com/images/logo.webp" alt="Taxi VLB" style="max-width: 150px; height: auto;" />
+                <img src="https://vlb-next.vercel.app/images/logo.webp" alt="Taxi VLB" style="max-width: 150px; height: auto;" />
               </div>
               
               <h1 style="color: #d4af37; text-align: center;">Confirmation de réservation</h1>

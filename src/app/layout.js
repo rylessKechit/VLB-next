@@ -31,7 +31,7 @@ export const metadata = {
     type: 'website',
     images: [
       {
-        url: 'https://www.taxivlb.com/images/og-image.jpg', 
+        url: 'https://vlb-next.vercel.app/images/og-image.jpg', 
         width: 1200,
         height: 630,
         alt: 'Taxi VLB à Verrières-le-Buisson',
@@ -56,7 +56,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'Taxi à Verrières-le-Buisson (91) | Taxi VLB',
     description: 'Service de taxi professionnel à Verrières-le-Buisson disponible 24h/24 et 7j/7.',
-    images: ['https://www.taxivlb.com/images/twitter-card.jpg'],
+    images: ['https://vlb-next.vercel.app/images/twitter-card.jpg'],
   },
   viewport: 'width=device-width, initial-scale=1, maximum-scale=5',
   themeColor: '#d4af37',
@@ -135,7 +135,7 @@ export default function RootLayout({ children }) {
               "@context": "https://schema.org",
               "@type": "TaxiService",
               "name": "Taxi VLB - Service de taxi à Verrières-le-Buisson",
-              "image": "https://www.taxivlb.com/images/logo.webp",
+              "image": "https://vlb-next.vercel.app/images/logo.webp",
               "url": "https://www.taxivlb.com",
               "telephone": "+33600000000",
               "address": {
@@ -166,7 +166,7 @@ export default function RootLayout({ children }) {
                 "@type": "ReserveAction",
                 "target": {
                   "@type": "EntryPoint",
-                  "urlTemplate": "https://www.taxivlb.com/#booking",
+                  "urlTemplate": "https://vlb-next.vercel.app/#booking",
                   "actionPlatform": [
                     "http://schema.org/DesktopWebPlatform",
                     "http://schema.org/MobileWebPlatform"
