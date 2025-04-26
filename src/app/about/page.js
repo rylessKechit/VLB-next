@@ -160,28 +160,28 @@ export default function AboutPage() {
                   <li className="flex items-start">
                     <div className="mr-4 w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">01</div>
                     <div>
-                      <h4 className="font-semibold mb-1">Service client</h4>
+                      <h3 className="font-semibold mb-1">Service client</h3>
                       <p className="text-gray-600">Nous sommes à l'écoute des besoins de nos clients de Verrières-le-Buisson pour offrir le service le plus adapté.</p>
                     </div>
                   </li>
                   <li className="flex items-start">
                     <div className="mr-4 w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">02</div>
                     <div>
-                      <h4 className="font-semibold mb-1">Simplicité</h4>
+                      <h3 className="font-semibold mb-1">Simplicité</h3>
                       <p className="text-gray-600">Réservation facile de votre taxi à Verrières-le-Buisson par téléphone, en ligne ou par email pour votre confort.</p>
                     </div>
                   </li>
                   <li className="flex items-start">
                     <div className="mr-4 w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">03</div>
                     <div>
-                      <h4 className="font-semibold mb-1">Qualité constante</h4>
+                      <h3 className="font-semibold mb-1">Qualité constante</h3>
                       <p className="text-gray-600">Nous maintenons un niveau de service élevé sur chaque course de taxi en Essonne.</p>
                     </div>
                   </li>
                   <li className="flex items-start">
                     <div className="mr-4 w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">04</div>
                     <div>
-                      <h4 className="font-semibold mb-1">Amélioration continue</h4>
+                      <h3 className="font-semibold mb-1">Amélioration continue</h3>
                       <p className="text-gray-600">Nous écoutons vos retours pour améliorer constamment notre service de taxi à Verrières-le-Buisson.</p>
                     </div>
                   </li>
@@ -260,7 +260,7 @@ export default function AboutPage() {
       {/* CTA Banner */}
       <div className="py-12 bg-dark text-white">
         <div className="container mx-auto px-4 text-center">
-          <h3 className="text-2xl font-bold mb-4">Besoin d'un taxi fiable à Verrières-le-Buisson ?</h3>
+          <h2 className="text-2xl font-bold mb-4">Besoin d'un taxi fiable à Verrières-le-Buisson ?</h2>
           <p className="text-lg mb-8 max-w-3xl mx-auto">
             Contactez-nous pour votre prochain trajet en Essonne
           </p>

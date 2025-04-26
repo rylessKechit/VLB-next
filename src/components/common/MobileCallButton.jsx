@@ -35,7 +35,7 @@ const MobileCallButton = () => {
             <button 
               onClick={() => setIsExpanded(false)}
               className="text-gray-500 hover:text-gray-700"
-              aria-label="Fermer"
+              aria-label="Fermer le menu d'options"
             >
               <FontAwesomeIcon icon={faTimes} />
             </button>
@@ -45,6 +45,7 @@ const MobileCallButton = () => {
             <Link 
               href="tel:+33600000000" 
               className="bg-primary hover:bg-primary-dark text-white py-3 px-4 rounded-md font-medium transition-colors duration-300 w-full flex items-center justify-center"
+              aria-label="Appeler maintenant pour réserver un taxi"
             >
               <FontAwesomeIcon icon={faPhone} className="mr-2" />
               Appeler maintenant
@@ -53,6 +54,7 @@ const MobileCallButton = () => {
             <Link 
               href="/#booking" 
               className="bg-secondary hover:bg-secondary-dark text-white py-3 px-4 rounded-md font-medium transition-colors duration-300 w-full flex items-center justify-center"
+              aria-label="Réserver un taxi en ligne"
             >
               <FontAwesomeIcon icon={faCalendarAlt} className="mr-2" />
               Réserver
@@ -63,7 +65,8 @@ const MobileCallButton = () => {
         <button 
           onClick={() => setIsExpanded(true)}
           className="w-14 h-14 bg-primary hover:bg-primary-dark text-white rounded-full shadow-lg flex items-center justify-center transition-colors duration-300"
-          aria-label="Options de contact"
+          aria-label="Afficher les options de contact pour réserver un taxi"
+          aria-expanded={isExpanded}
         >
           <FontAwesomeIcon icon={faPhone} size="lg" className="animate-pulse" />
         </button>

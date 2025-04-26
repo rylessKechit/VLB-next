@@ -7,7 +7,7 @@ const RouteMap = ({ pickupAddress, dropoffAddress, pickupPlaceId, dropoffPlaceId
   const [mapLoaded, setMapLoaded] = useState(false);
   const [map, setMap] = useState(null);
   
-  // Charger le script Google Maps
+  // Charger le script Google Maps avec les bibliothèques minimales nécessaires
   useEffect(() => {
     const loadGoogleMapsScript = () => {
       if (window.google && window.google.maps) {
@@ -25,13 +25,23 @@ const RouteMap = ({ pickupAddress, dropoffAddress, pickupPlaceId, dropoffPlaceId
       
       const script = document.createElement('script');
       const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap&libraries=places,geometry&v=weekly`;
+      // Charger uniquement les bibliothèques nécessaires
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap&libraries=places,geometry&v=weekly&loading=async`;
       script.async = true;
+      script.defer = true;
       
       document.head.appendChild(script);
     };
     
     loadGoogleMapsScript();
+    
+    // Nettoyage lors du démontage
+    return () => {
+      // Supprimer les écouteurs d'événements si la carte a été créée
+      if (map) {
+        window.google?.maps?.event.clearInstanceListeners(map);
+      }
+    };
   }, []);
   
   // Initialiser la carte quand le script est chargé
@@ -73,7 +83,7 @@ const RouteMap = ({ pickupAddress, dropoffAddress, pickupPlaceId, dropoffPlaceId
         }
       ];
       
-      // Créer une nouvelle carte
+      // Créer une nouvelle carte avec options minimales
       const mapInstance = new window.google.maps.Map(mapRef.current, {
         zoom: 12,
         center: { lat: 48.7465, lng: 2.2539 }, // Coordonnées centrales de Verrières-le-Buisson
@@ -82,7 +92,7 @@ const RouteMap = ({ pickupAddress, dropoffAddress, pickupPlaceId, dropoffPlaceId
         streetViewControl: false,
         zoomControl: true,
         styles: mapStyles,
-        disableDefaultUI: false,
+        disableDefaultUI: true,
         scrollwheel: false,
         zoomControlOptions: {
           position: window.google.maps.ControlPosition.RIGHT_BOTTOM
@@ -115,7 +125,7 @@ const RouteMap = ({ pickupAddress, dropoffAddress, pickupPlaceId, dropoffPlaceId
             });
           });
           
-          // Calculer et afficher l'itinéraire
+          // Calculer et afficher l'itinéraire avec options minimales
           const directionsService = new window.google.maps.DirectionsService();
           const directionsRenderer = new window.google.maps.DirectionsRenderer({
             map: mapInstance,
@@ -131,7 +141,12 @@ const RouteMap = ({ pickupAddress, dropoffAddress, pickupPlaceId, dropoffPlaceId
             directionsService.route({
               origin: pickupResults.geometry.location,
               destination: dropoffResults.geometry.location,
-              travelMode: window.google.maps.TravelMode.DRIVING
+              travelMode: window.google.maps.TravelMode.DRIVING,
+              optimizeWaypoints: false,
+              provideRouteAlternatives: false,
+              avoidFerries: true,
+              avoidHighways: false,
+              avoidTolls: false,
             }, (response, status) => {
               if (status === 'OK') resolve(response);
               else reject(status);
@@ -236,7 +251,7 @@ const RouteMap = ({ pickupAddress, dropoffAddress, pickupPlaceId, dropoffPlaceId
       }
     }
     
-    // Utiliser le service Directions si nous n'avons pas de polyline
+    // Utiliser le service Directions avec options minimales
     const directionsService = new window.google.maps.DirectionsService();
     const directionsRenderer = new window.google.maps.DirectionsRenderer({
       map: mapInstance,
@@ -251,7 +266,12 @@ const RouteMap = ({ pickupAddress, dropoffAddress, pickupPlaceId, dropoffPlaceId
     directionsService.route({
       origin: { placeId: originPlaceId },
       destination: { placeId: destinationPlaceId },
-      travelMode: window.google.maps.TravelMode.DRIVING
+      travelMode: window.google.maps.TravelMode.DRIVING,
+      optimizeWaypoints: false,
+      provideRouteAlternatives: false,
+      avoidFerries: true,
+      avoidHighways: false,
+      avoidTolls: false,
     }, (response, status) => {
       if (status === 'OK') {
         directionsRenderer.setDirections(response);
@@ -277,6 +297,8 @@ const RouteMap = ({ pickupAddress, dropoffAddress, pickupPlaceId, dropoffPlaceId
         ref={mapRef} 
         className="w-full h-full"
         style={{ display: mapLoaded ? 'block' : 'none' }}
+        aria-label="Carte montrant l'itinéraire du trajet"
+        role="application"
       ></div>
       <div className="absolute bottom-2 left-2 bg-white bg-opacity-80 px-2 py-1 rounded-md text-xs">
         <p className="text-gray-600">Itinéraire approximatif</p>

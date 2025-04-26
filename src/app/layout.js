@@ -71,15 +71,20 @@ export default function RootLayout({ children }) {
   return (
     <html lang="fr" className={inter.className}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        {/* Préconnexion aux domaines externes pour accélérer le chargement */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
         
-        {/* Préconnexion au serveur d'images pour accélérer le chargement */}
-        <link rel="preconnect" href="https://vlb-next.vercel.app" />
-        
-        {/* Préchargement de certaines ressources critiques */}
+        {/* Préchargement des ressources critiques */}
         <link rel="preload" href="/images/logo.webp" as="image" type="image/webp" />
+        
+        {/* Chargement des polices avec defer pour éviter le blocage du rendu */}
+        <link 
+          href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" 
+          rel="stylesheet"
+          media="print"
+          onLoad="this.media='all'"
+        />
         
         {/* Pour les appareils Apple */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -130,6 +135,7 @@ export default function RootLayout({ children }) {
         <Script
           id="schema-script"
           type="application/ld+json"
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",

@@ -56,6 +56,8 @@ const Header = () => {
               width={75}
               height={30}
               className="transition-all duration-300"
+              priority={true}
+              loading="eager"
             />
           </Link>
         </div>

@@ -422,25 +422,20 @@ const BookingForm = () => {
                     onClick={() => formValues.passengers > 1 && handleInputChange('passengers', formValues.passengers - 1)}
                     aria-label="Diminuer le nombre de passagers"
                     aria-controls="passengers-display"
+                    disabled={formValues.passengers <= 1}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                       <path fillRule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
                     </svg>
                   </button>
-                  <span 
-                    id="passengers-display" 
-                    className="flex-1 text-center py-2" 
-                    aria-live="polite" 
-                    role="status"
-                  >
-                    {formValues.passengers}
-                  </span>
+                  <span id="passengers-display" className="flex-1 text-center py-2" aria-live="polite">{formValues.passengers}</span>
                   <button 
                     type="button" 
                     className="w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors"
                     onClick={() => formValues.passengers < 7 && handleInputChange('passengers', formValues.passengers + 1)}
                     aria-label="Augmenter le nombre de passagers"
                     aria-controls="passengers-display"
+                    disabled={formValues.passengers >= 7}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                       <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
@@ -464,6 +459,7 @@ const BookingForm = () => {
                     onClick={() => formValues.luggage > 0 && handleInputChange('luggage', formValues.luggage - 1)}
                     aria-label="Diminuer le nombre de bagages"
                     aria-controls="luggage-display"
+                    disabled={formValues.luggage <= 0}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                       <path fillRule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
@@ -483,6 +479,7 @@ const BookingForm = () => {
                     onClick={() => formValues.luggage < 7 && handleInputChange('luggage', formValues.luggage + 1)}
                     aria-label="Augmenter le nombre de bagages"
                     aria-controls="luggage-display"
+                    disabled={formValues.luggage >= 7}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                       <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
