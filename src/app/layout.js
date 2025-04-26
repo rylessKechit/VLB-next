@@ -4,6 +4,7 @@ import Header from '@/components/common/Header';
 import Footer from '@/components/common/Footer';
 import MobileCallButton from '@/components/common/MobileCallButton';
 import Breadcrumb from '@/components/common/Breadcrumb';
+import FontLoader from '@/components/common/FontLoader';
 import { baseMetadata } from '@/lib/metadata';
 import Script from 'next/script';
 
@@ -75,19 +76,30 @@ export default function RootLayout({ children }) {
         <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         
-        {/* Préchargement des ressources critiques */}
-        <link rel="preload" href="/images/logo.webp" as="image" type="image/webp" />
-        
-        {/* Chargement des polices avec defer pour éviter le blocage du rendu */}
-        <link 
-          href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" 
+        {/* Chargement des polices de manière non-bloquante avec stratégie preload */}
+        <link
+          rel="preload"
+          href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap"
+          as="style"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap"
           rel="stylesheet"
-          media="print"
-          onLoad="this.media='all'"
+        />
+        
+        {/* Préchargement des ressources critiques */}
+        <link 
+          rel="preload" 
+          href="/images/logo.webp" 
+          as="image" 
+          type="image/webp"
+          fetchpriority="high"
+          imagesrcset="/images/logo.webp"
+          imageSrcSet="75px"
         />
         
         {/* Pour les appareils Apple */}
-        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <link rel="apple-touch-icon" href="/icons/apple-icon-180x180.png" />
         
@@ -95,6 +107,8 @@ export default function RootLayout({ children }) {
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body className={inter.className}>
+        <FontLoader />
+
         <Header />
         
         {/* Fil d'Ariane pour le SEO et la navigation */}
@@ -206,6 +220,21 @@ export default function RootLayout({ children }) {
                 document.documentElement.classList.toggle('is-desktop', !isMobileNow);
               });
             })();
+          `}
+        </Script>
+        
+        {/* Script pour optimiser le chargement des polices */}
+        <Script
+          id="font-loading-optimization"
+          strategy="afterInteractive"
+        >
+          {`
+            // Détection de chargement des polices terminé
+            if (document.fonts) {
+              document.fonts.ready.then(function() {
+                document.documentElement.classList.add('fonts-loaded');
+              });
+            }
           `}
         </Script>
       </body>

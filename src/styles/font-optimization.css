@@ -1,0 +1,51 @@
+/* Font optimization styles */
+
+/* Appliquer une police de substitution avant que la police personnalisée ne soit chargée */
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  
+  /* Appliquer les polices personnalisées une fois chargées */
+  .fonts-loaded body {
+    font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  
+  .fonts-loaded h1, 
+  .fonts-loaded h2, 
+  .fonts-loaded h3, 
+  .fonts-loaded h4, 
+  .fonts-loaded h5, 
+  .fonts-loaded h6 {
+    font-family: 'Playfair Display', serif;
+  }
+  
+  /* Éviter le texte invisible pendant le chargement des polices (FOIT) */
+  html {
+    font-display: swap;
+  }
+  
+  /* Optimiser la taille des caractères pour diverses langues */
+  :lang(fr) {
+    word-spacing: normal;
+  }
+  
+  /* Éviter les problèmes de rendu avec les polices variables */
+  @supports (font-variation-settings: normal) {
+    html {
+      font-feature-settings: normal;
+      font-variation-settings: normal;
+    }
+  }
+  
+  /* Animation de transition subtile quand les polices sont chargées */
+  body {
+    transition: opacity 0.2s ease-in;
+  }
+  
+  html:not(.fonts-loaded) body {
+    opacity: 0.98;
+  }
+  
+  .fonts-loaded body {
+    opacity: 1;
+  }

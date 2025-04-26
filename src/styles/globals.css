@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Importer les styles d'optimisation des polices */
+@import './font-optimization.css';
+
 @layer base {
   html {
     @apply scroll-smooth;
