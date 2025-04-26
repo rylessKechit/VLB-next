@@ -5,6 +5,9 @@
 /* Importer les styles d'optimisation des polices */
 @import './font-optimization.css';
 
+/* Importer les styles de chargement */
+@import './loading-spinner.css';
+
 @layer base {
   html {
     @apply scroll-smooth;

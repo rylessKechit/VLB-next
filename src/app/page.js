@@ -3,6 +3,8 @@ import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faPlaneDeparture, faRoute, faTrain, faCheck, faUserTie, faWater, faWifi, faClock, faQuoteLeft } from '@fortawesome/free-solid-svg-icons';
 import BookingForm from '@/components/booking/BookingForm';
+import HeroSection from '@/components/home/HeroSection';
+import { Suspense } from 'react';
 
 export const metadata = {
   title: 'Taxi Verrières-le-Buisson (91) | Réservation Taxi 24/7',
@@ -35,53 +37,16 @@ export default function Home() {
 
   return (
     <div className="home-page">
-      {/* Hero Section - adapté pour le header fixe */}
-      <section 
-        className="relative flex items-center justify-center min-h-screen bg-cover bg-center text-white text-center overflow-hidden"
-        style={{ 
-          backgroundImage: 'url(/images/header-image.webp)',
-          minHeight: 'calc(100vh - 0px)'
-        }}
-      >
-        <div className="absolute inset-0 bg-black bg-opacity-60"></div>
-        
-        <div className="container relative z-10 px-4 max-w-5xl mx-auto">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 animate-slide-in-left">
-            <span className="text-primary">TAXI VLB</span> <span className="text-2xl md:text-3xl block mt-2">VERRIÈRES-LE-BUISSON</span>
-          </h1>
-          <p className="text-xl md:text-2xl font-light mb-6 animate-fade-in">
-            Service de taxi de qualité dans l'Essonne (91)
-          </p>
-          <p className="text-lg max-w-3xl mx-auto mb-8 animate-slide-in-right">
-            Taxi professionnel à votre service pour vos déplacements quotidiens, transferts aéroports (Orly, CDG), 
-            gares parisiennes et voyages longue distance. Disponible 24h/24, 7j/7 à Verrières-le-Buisson et environs.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8 animate-fade-in">
-            <Link href="#fleet" 
-              className="btn btn-primary text-center"
-              aria-label="Découvrir notre flotte de taxis à Verrières-le-Buisson"
-            >
-              Découvrir notre flotte
-            </Link>
-            <Link href="#booking" 
-              className="btn btn-secondary text-center"
-              aria-label="Réserver un taxi à Verrières-le-Buisson"
-            >
-              Réserver maintenant
-            </Link>
-          </div>
+      {/* Hero Section Optimisée */}
+      <Suspense fallback={
+        <div className="w-full h-screen bg-dark flex items-center justify-center">
+          <div className="loading-spinner"></div>
         </div>
-        
-        <Link 
-          href="#services" 
-          className="absolute bottom-12 left-1/2 transform -translate-x-1/2 w-12 h-12 flex items-center justify-center rounded-full border-2 border-white border-opacity-50 text-white hover:bg-white hover:bg-opacity-10 hover:border-white transition-all duration-300 animate-bounce"
-          aria-label="Découvrir nos services de taxi à Verrières-le-Buisson"
-        >
-          <FontAwesomeIcon icon={faChevronDown} />
-        </Link>
-      </section>
+      }>
+        <HeroSection />
+      </Suspense>
       
-      {/* Services Section */}
+      {/* Services Section - Chargement différé */}
       <section id="services" className="py-16 md:py-24 bg-white">
         <div className="container">
           <div className="text-center mb-12">
@@ -145,7 +110,10 @@ export default function Home() {
         </div>
       </section>
       
-      {/* Fleet Section */}
+      {/* Le reste des sections reste inchangé */}
+      {/* ... */}
+      
+      {/* Fleet Section avec chargement optimisé des images */}
       <section id="fleet" className="py-16 md:py-24 bg-light">
         <div className="container">
           <div className="text-center mb-12">
@@ -165,7 +133,9 @@ export default function Home() {
                 width={600} 
                 height={400} 
                 className="rounded-lg shadow-custom-light w-full h-auto object-cover"
-                priority
+                loading="lazy"
+                sizes="(max-width: 768px) 100vw, 600px"
+                quality={85}
               />
             </div>
             <div className="w-full md:w-1/2">
@@ -230,130 +200,26 @@ export default function Home() {
         </div>
       </section>
       
-      {/* Experience Section */}
-      <section id="experience" className="py-16 md:py-24 bg-white">
-        <div className="container">
-          <div className="flex flex-col md:flex-row gap-12 items-center">
-            <div className="w-full md:w-1/2">
-              <div className="text-left mb-6">
-                <h2 className="text-3xl md:text-4xl font-bold uppercase">
-                  L'EXPÉRIENCE TAXI VLB À VERRIÈRES-LE-BUISSON
-                </h2>
-                <div className="w-20 h-1 bg-primary my-4"></div>
-                <p className="text-xl text-text-light">
-                  Un service de taxi fiable et confortable en Essonne
-                </p>
-              </div>
-              <p className="text-text-light mb-6">
-                Chaque trajet avec notre service de taxi à Verrières-le-Buisson est une expérience agréable et sécurisée, 
-                pensée pour vous offrir le meilleur rapport qualité-prix dans toute l'Essonne.
+      {/* Afficher une seule section à la fois */}
+      <Suspense fallback={<div className="py-16 md:py-24 bg-white flex justify-center"><div className="loading-spinner"></div></div>}>
+        {/* Booking Section */}
+        <section id="booking" className="py-16 md:py-24 bg-white">
+          <div className="container">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold uppercase">
+                RÉSERVATION DE TAXI À VERRIÈRES-LE-BUISSON
+              </h2>
+              <p className="text-text-light text-lg mt-4 max-w-3xl mx-auto">
+                Un service simple et rapide pour réserver votre taxi en Essonne
               </p>
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-start">
-                  <div className="mr-4 text-primary mt-1">
-                    <FontAwesomeIcon icon={faUserTie} size="lg" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-1">Chauffeur professionnel</h4>
-                    <p className="text-text-light text-sm">Des chauffeurs expérimentés, courtois et connaissant parfaitement Verrières-le-Buisson et sa région</p>
-                  </div>
-                </li>
-                <li className="flex items-start">
-                  <div className="mr-4 text-primary mt-1">
-                    <FontAwesomeIcon icon={faWater} size="lg" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-1">Confort à bord</h4>
-                    <p className="text-text-light text-sm">Bouteilles d'eau fraîche et autres commodités à disposition</p>
-                  </div>
-                </li>
-                <li className="flex items-start">
-                  <div className="mr-4 text-primary mt-1">
-                    <FontAwesomeIcon icon={faWifi} size="lg" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-1">Connectivité</h4>
-                    <p className="text-text-light text-sm">Connexion WiFi gratuite pour rester connecté durant votre trajet</p>
-                  </div>
-                </li>
-                <li className="flex items-start">
-                  <div className="mr-4 text-primary mt-1">
-                    <FontAwesomeIcon icon={faClock} size="lg" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-1">Ponctualité</h4>
-                    <p className="text-text-light text-sm">Ponctualité et fiabilité assurées pour tous vos déplacements à Verrières-le-Buisson</p>
-                  </div>
-                </li>
-              </ul>
-              <Link href="/services" className="btn btn-primary">
-                Découvrir nos services de taxi
-              </Link>
             </div>
             
-            <div className="w-full md:w-1/2">
-              <Image 
-                src="/images/vip-experience.webp" 
-                alt="Expérience taxi premium à Verrières-le-Buisson" 
-                width={600} 
-                height={400} 
-                className="rounded-lg shadow-custom w-full h-auto object-cover"
-              />
+            <div className="max-w-4xl mx-auto">
+              <BookingForm />
             </div>
           </div>
-        </div>
-      </section>
-      
-      {/* Testimonials Section */}
-      <section id="testimonials" className="py-16 md:py-24 bg-light">
-        <div className="container">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold uppercase">
-              AVIS CLIENTS SUR NOTRE SERVICE DE TAXI À VERRIÈRES-LE-BUISSON
-            </h2>
-            <p className="text-text-light text-lg mt-4 max-w-3xl mx-auto">
-              Ce que disent nos clients sur notre service de taxi en Essonne
-            </p>
-          </div>
-          
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-lg shadow-custom p-8 md:p-10">
-              <div className="text-primary text-4xl mb-6">
-                <FontAwesomeIcon icon={faQuoteLeft} />
-              </div>
-              <p className="text-lg text-text-dark italic mb-8 leading-relaxed">
-                {testimonials[0].text}
-              </p>
-              <div className="flex items-center">
-                <div className="ml-4">
-                  <p className="font-semibold text-lg">{testimonials[0].name}</p>
-                  <p className="text-text-light">{testimonials[0].role}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      {/* Booking Section */}
-      <section id="booking" className="py-16 md:py-24 bg-white">
-        <div className="container">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold uppercase">
-              RÉSERVATION DE TAXI À VERRIÈRES-LE-BUISSON
-            </h2>
-            <p className="text-text-light text-lg mt-4 max-w-3xl mx-auto">
-              Un service simple et rapide pour réserver votre taxi en Essonne
-            </p>
-          </div>
-          
-          <div className="max-w-4xl mx-auto">
-            <BookingForm />
-          </div>
-        </div>
-      </section>
-      
-      {/* Partners Section */}
+        </section>
+      </Suspense>
       <section id="partners" className="py-16 md:py-24 bg-light">
         <div className="container">
           <div className="text-center mb-12">

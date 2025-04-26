@@ -93,9 +93,8 @@ export default function RootLayout({ children }) {
           href="/images/logo.webp" 
           as="image" 
           type="image/webp"
-          fetchpriority="high"
-          imagesrcset="/images/logo.webp"
-          imageSrcSet="75px"
+          fetchPriority="high"
+          imageSrcSet="/images/logo.webp"
         />
         
         {/* Pour les appareils Apple */}
