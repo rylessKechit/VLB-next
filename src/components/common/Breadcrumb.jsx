@@ -71,13 +71,13 @@ const Breadcrumb = () => {
         "@type": "ListItem",
         "position": 1,
         "name": "Accueil",
-        "item": "https://www.taxivlb.com"
+        "item": "https://vlb-next.vercel.app"
       },
       ...breadcrumbItems.map((item, index) => ({
         "@type": "ListItem",
         "position": index + 2,
         "name": item.label,
-        "item": `https://www.taxivlb.com${item.url}`
+        "item": `https://vlb-next.vercel.app${item.url}`
       }))
     ]
   };

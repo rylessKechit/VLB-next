@@ -8,7 +8,7 @@ export const taxiService = {
     "@type": "TaxiService",
     "name": "Taxi VLB - Service de taxi à Verrières-le-Buisson",
     "image": "https://vlb-next.vercel.app/images/logo.webp",
-    "url": "https://www.taxivlb.com",
+    "url": "https://vlb-next.vercel.app",
     "telephone": "+33600000000",
     "address": {
       "@type": "PostalAddress",

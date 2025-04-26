@@ -157,7 +157,7 @@ export async function POST(request) {
                 <p>Merci de votre confiance,</p>
                 <p><strong>L'équipe Taxi VLB</strong></p>
                 <div style="margin-top: 15px;">
-                  <a href="https://www.taxivlb.com" style="color: #d4af37; text-decoration: none;">www.taxivlb.com</a> | 
+                  <a href="https://vlb-next.vercel.app" style="color: #d4af37; text-decoration: none;">www.taxivlb.com</a> | 
                   <a href="tel:+33600000000" style="color: #d4af37; text-decoration: none;">+33 6 00 00 00 00</a> | 
                   <a href="mailto:contact@taxivlb.com" style="color: #d4af37; text-decoration: none;">contact@taxivlb.com</a>
                 </div>

@@ -5,9 +5,9 @@
 
 // Métadonnées de base pour l'ensemble du site
 export const baseMetadata = {
-    metadataBase: new URL('https://www.taxivlb.com'),
+    metadataBase: new URL('https://vlb-next.vercel.app'),
     alternates: {
-      canonical: 'https://www.taxivlb.com',
+      canonical: 'https://vlb-next.vercel.app',
     },
     robots: {
       index: true,
@@ -34,7 +34,7 @@ export const baseMetadata = {
     openGraph: {
       title: 'Taxi à Verrières-le-Buisson (91) | Service 24/7 | Taxi VLB',
       description: 'Service de taxi professionnel à Verrières-le-Buisson. Réservez votre taxi pour l\'aéroport, la gare ou vos déplacements longue distance.',
-      url: 'https://www.taxivlb.com',
+      url: 'https://vlb-next.vercel.app',
       siteName: 'Taxi VLB',
       locale: 'fr_FR',
       type: 'website',

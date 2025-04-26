@@ -20,12 +20,12 @@ export const metadata = {
   description: 'Service de taxi à Verrières-le-Buisson (91) disponible 24h/24 et 7j/7. Transferts aéroport, gare et longue distance. Réservation simple et rapide. Tél: +33 6 00 00 00 00',
   keywords: 'taxi Verrières-le-Buisson, taxi VLB, taxi 91, taxi Essonne, taxi aéroport Verrières-le-Buisson, taxi gare Verrières-le-Buisson, réservation taxi Verrières-le-Buisson',
   alternates: {
-    canonical: 'https://www.taxivlb.com',
+    canonical: 'https://vlb-next.vercel.app',
   },
   openGraph: {
     title: 'Taxi à Verrières-le-Buisson (91) | Service 24/7 | Taxi VLB',
     description: 'Service de taxi professionnel à Verrières-le-Buisson. Réservez votre taxi pour l\'aéroport, la gare ou vos déplacements longue distance.',
-    url: 'https://www.taxivlb.com',
+    url: 'https://vlb-next.vercel.app',
     siteName: 'Taxi VLB',
     locale: 'fr_FR',
     type: 'website',
@@ -76,7 +76,7 @@ export default function RootLayout({ children }) {
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
         
         {/* Préconnexion au serveur d'images pour accélérer le chargement */}
-        <link rel="preconnect" href="https://www.taxivlb.com" />
+        <link rel="preconnect" href="https://vlb-next.vercel.app" />
         
         {/* Préchargement de certaines ressources critiques */}
         <link rel="preload" href="/images/logo.webp" as="image" type="image/webp" />
@@ -136,7 +136,7 @@ export default function RootLayout({ children }) {
               "@type": "TaxiService",
               "name": "Taxi VLB - Service de taxi à Verrières-le-Buisson",
               "image": "https://vlb-next.vercel.app/images/logo.webp",
-              "url": "https://www.taxivlb.com",
+              "url": "https://vlb-next.vercel.app",
               "telephone": "+33600000000",
               "address": {
                 "@type": "PostalAddress",
