@@ -1,3 +1,4 @@
+import '../styles/critical.css'; // Charger d'abord les styles critiques
 import '../styles/globals.css';
 import { Inter } from 'next/font/google';
 import Header from '@/components/common/Header';
@@ -5,6 +6,7 @@ import Footer from '@/components/common/Footer';
 import MobileCallButton from '@/components/common/MobileCallButton';
 import Breadcrumb from '@/components/common/Breadcrumb';
 import FontLoader from '@/components/common/FontLoader';
+import CriticalCssLoader from '@/components/common/CriticalCssLoader';
 import { baseMetadata } from '@/lib/metadata';
 import Script from 'next/script';
 
@@ -74,25 +76,13 @@ export default function RootLayout({ children }) {
         <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         
-        {/* Chargement des polices de manière non-bloquante avec stratégie preload */}
+        {/* Chargement différé des polices (déplacé dans CriticalCssLoader) */}
         <link
           rel="preload"
-          href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap"
-          as="style"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-        
-        {/* Préchargement des ressources critiques */}
-        <link 
-          rel="preload" 
           href="/images/logo.webp" 
           as="image" 
           type="image/webp"
           fetchPriority="high"
-          imageSrcSet="/images/logo.webp"
         />
         
         {/* Pour les appareils Apple */}
@@ -105,6 +95,7 @@ export default function RootLayout({ children }) {
       </head>
       <body className={inter.className}>
         <FontLoader />
+        <CriticalCssLoader />
 
         <Header />
         
@@ -120,27 +111,7 @@ export default function RootLayout({ children }) {
         {/* Bouton d'appel mobile */}
         <MobileCallButton />
         
-        {/* Scripts analytiques avec chargement différé et respect RGPD */}
-        <Script
-          id="gtag-script"
-          strategy="lazyOnload"
-          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
-        />
-        <Script
-          id="gtag-config"
-          strategy="lazyOnload"
-        >
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}', {
-              page_path: window.location.pathname,
-              'anonymize_ip': true,
-              'cookie_flags': 'SameSite=None;Secure'
-            });
-          `}
-        </Script>
+        {/* Scripts analytiques gérés par CriticalCssLoader pour chargement différé */}
         
         {/* Script pour le rich snippet LocalBusiness */}
         <Script
@@ -194,7 +165,7 @@ export default function RootLayout({ children }) {
           }}
         />
         
-        {/* Script pour détecter le type d'appareil (mobile/desktop) */}
+        {/* Script pour détecter le type d'appareil (mobile/desktop) - version simplifiée */}
         <Script
           id="device-detection"
           strategy="afterInteractive"
@@ -210,30 +181,13 @@ export default function RootLayout({ children }) {
                 document.documentElement.classList.add('is-touch');
               }
               
-              // Observer la taille de l'écran pour les changements dynamiques
-              window.addEventListener('resize', function() {
-                const isMobileNow = window.innerWidth <= 768;
-                document.documentElement.classList.toggle('is-mobile', isMobileNow);
-                document.documentElement.classList.toggle('is-desktop', !isMobileNow);
-              });
+              // Pas de listener resize pour éviter les recalculs constants
+              // L'état initial est suffisant pour les optimisations principales
             })();
           `}
         </Script>
         
-        {/* Script pour optimiser le chargement des polices */}
-        <Script
-          id="font-loading-optimization"
-          strategy="afterInteractive"
-        >
-          {`
-            // Détection de chargement des polices terminé
-            if (document.fonts) {
-              document.fonts.ready.then(function() {
-                document.documentElement.classList.add('fonts-loaded');
-              });
-            }
-          `}
-        </Script>
+        {/* Script pour optimiser le chargement des polices - déplacé dans CriticalCssLoader */}
       </body>
     </html>
   );

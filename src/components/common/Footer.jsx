@@ -12,7 +12,17 @@ const Footer = () => {
         <div className="flex flex-wrap justify-between pb-10 border-b border-gray-700 border-opacity-30">
           <div className="w-full md:w-auto mb-8 md:mb-0">
             <Link href="/" className="block mb-6">
-              <Image src="/images/logo.webp" alt="Taxi VLB Logo" width={150} height={60} />
+              <Image 
+                src="/images/logo.webp" 
+                alt="Taxi VLB Logo" 
+                width={150} 
+                height={60} 
+                loading="eager"
+                quality={80}
+                className="h-auto w-auto"
+                sizes="(max-width: 768px) 150px, 150px"
+                priority={true}
+              />
             </Link>
             <p className="max-w-md text-gray-300">
               Service de taxi de qualité à Verrières-le-Buisson. 

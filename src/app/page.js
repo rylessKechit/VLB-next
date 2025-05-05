@@ -133,9 +133,11 @@ export default function Home() {
                 width={600} 
                 height={400} 
                 className="rounded-lg shadow-custom-light w-full h-auto object-cover"
-                loading="lazy"
                 sizes="(max-width: 768px) 100vw, 600px"
-                quality={85}
+                quality={75}
+                loading="lazy"
+                placeholder="blur"
+                blurDataURL="data:image/webp;base64,UklGRlIAAABXRUJQVlA4WAoAAAAQAAAACQAABQAAQUxQSCQAAAABF0AmbQM29g9QvSJyPCKCA9QDRdgkKDsPYQdpB2HYIbgAtWwA"
               />
             </div>
             <div className="w-full md:w-1/2">

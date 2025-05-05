@@ -14,12 +14,14 @@ export default function HeroSection() {
     // Marquer le composant comme chargé
     setIsLoaded(true);
 
-    // Activer les animations après un court délai
-    const timer = setTimeout(() => {
-      setAnimationsEnabled(true);
-    }, 100);
-
-    return () => clearTimeout(timer);
+    // Activer les animations après un court délai (seulement sur desktop)
+    const isMobile = window.innerWidth < 768;
+    if (!isMobile) {
+      const timer = setTimeout(() => {
+        setAnimationsEnabled(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   return (
@@ -36,7 +38,7 @@ export default function HeroSection() {
           alt="Taxi Verrières-le-Buisson" 
           fill
           priority
-          quality={85}
+          quality={75} // Réduit de 85 à 75 pour optimiser la taille
           sizes="100vw"
           style={{ objectFit: 'cover', objectPosition: 'center' }}
           placeholder="blur"
@@ -55,13 +57,8 @@ export default function HeroSection() {
           Service de taxi de qualité dans l'Essonne (91)
         </p>
         
-        <p 
-          className={`text-lg max-w-3xl mx-auto mb-8 ${animationsEnabled ? 'animate-slide-in-right' : ''}`}
-          style={{ 
-            contentVisibility: "auto", 
-            containIntrinsicSize: "0 40px" 
-          }}
-        >
+        {/* Principal LCP - optimisé sans animation sur mobile */}
+        <p className="text-lg max-w-3xl mx-auto mb-8">
           Taxi professionnel à votre service pour vos déplacements quotidiens, transferts aéroports (Orly, CDG), 
           gares parisiennes et voyages longue distance. Disponible 24h/24, 7j/7 à Verrières-le-Buisson et environs.
         </p>
