@@ -21,18 +21,18 @@ export const metadata = {
   description: 'Service de taxi à Verrières-le-Buisson (91) disponible 24h/24 et 7j/7. Transferts aéroport, gare et longue distance. Réservation simple et rapide. Tél: +33 6 00 00 00 00',
   keywords: 'taxi Verrières-le-Buisson, taxi VLB, taxi 91, taxi Essonne, taxi aéroport Verrières-le-Buisson, taxi gare Verrières-le-Buisson, réservation taxi Verrières-le-Buisson',
   alternates: {
-    canonical: 'https://vlb-next.vercel.app',
+    canonical: 'https://www.taxi-verrieres-le-buisson.com',
   },
   openGraph: {
     title: 'Taxi à Verrières-le-Buisson (91) | Service 24/7 | Taxi VLB',
     description: 'Service de taxi professionnel à Verrières-le-Buisson. Réservez votre taxi pour l\'aéroport, la gare ou vos déplacements longue distance.',
-    url: 'https://vlb-next.vercel.app',
+    url: 'https://www.taxi-verrieres-le-buisson.com',
     siteName: 'Taxi VLB',
     locale: 'fr_FR',
     type: 'website',
     images: [
       {
-        url: 'https://vlb-next.vercel.app/images/og-image.jpg', 
+        url: 'https://www.taxi-verrieres-le-buisson.com/images/og-image.jpg', 
         width: 1200,
         height: 630,
         alt: 'Taxi VLB à Verrières-le-Buisson',
@@ -57,7 +57,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'Taxi à Verrières-le-Buisson (91) | Taxi VLB',
     description: 'Service de taxi professionnel à Verrières-le-Buisson disponible 24h/24 et 7j/7.',
-    images: ['https://vlb-next.vercel.app/images/twitter-card.jpg'],
+    images: ['https://www.taxi-verrieres-le-buisson.com/images/twitter-card.jpg'],
   },
   formatDetection: {
     telephone: true,
@@ -152,8 +152,8 @@ export default function RootLayout({ children }) {
               "@context": "https://schema.org",
               "@type": "TaxiService",
               "name": "Taxi VLB - Service de taxi à Verrières-le-Buisson",
-              "image": "https://vlb-next.vercel.app/images/logo.webp",
-              "url": "https://vlb-next.vercel.app",
+              "image": "https://www.taxi-verrieres-le-buisson.com/images/logo.webp",
+              "url": "https://www.taxi-verrieres-le-buisson.com",
               "telephone": "+33600000000",
               "address": {
                 "@type": "PostalAddress",
@@ -183,7 +183,7 @@ export default function RootLayout({ children }) {
                 "@type": "ReserveAction",
                 "target": {
                   "@type": "EntryPoint",
-                  "urlTemplate": "https://vlb-next.vercel.app/#booking",
+                  "urlTemplate": "https://www.taxi-verrieres-le-buisson.com/#booking",
                   "actionPlatform": [
                     "http://schema.org/DesktopWebPlatform",
                     "http://schema.org/MobileWebPlatform"

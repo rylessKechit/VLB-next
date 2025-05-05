@@ -117,7 +117,7 @@ export async function POST(request) {
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee;">
               <div style="text-align: center; margin-bottom: 20px;">
-                <img src="https://vlb-next.vercel.app/images/logo.webp" alt="Taxi VLB" style="max-width: 150px; height: auto;" />
+                <img src="https://www.taxi-verrieres-le-buisson.com/images/logo.webp" alt="Taxi VLB" style="max-width: 150px; height: auto;" />
               </div>
               
               <h1 style="color: #d4af37; text-align: center;">Confirmation de réservation</h1>
@@ -157,7 +157,7 @@ export async function POST(request) {
                 <p>Merci de votre confiance,</p>
                 <p><strong>L'équipe Taxi VLB</strong></p>
                 <div style="margin-top: 15px;">
-                  <a href="https://vlb-next.vercel.app" style="color: #d4af37; text-decoration: none;">www.taxivlb.com</a> | 
+                  <a href="https://www.taxi-verrieres-le-buisson.com" style="color: #d4af37; text-decoration: none;">www.taxivlb.com</a> | 
                   <a href="tel:+33600000000" style="color: #d4af37; text-decoration: none;">+33 6 00 00 00 00</a> | 
                   <a href="mailto:contact@taxivlb.com" style="color: #d4af37; text-decoration: none;">contact@taxivlb.com</a>
                 </div>

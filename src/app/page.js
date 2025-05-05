@@ -11,7 +11,7 @@ export const metadata = {
   description: 'Taxi à Verrières-le-Buisson pour tous vos déplacements. Transferts aéroport Orly/CDG, gares et longue distance. Réservation en ligne ou par téléphone.',
   keywords: 'taxi Verrières le Buisson, réservation taxi 91, taxi aéroport Verrières, taxi gare Verrières, taxi Essonne, transport Verrières-le-Buisson',
   alternates: {
-    canonical: 'https://vlb-next.vercel.app',
+    canonical: 'https://www.taxi-verrieres-le-buisson.com',
   },
 };
 

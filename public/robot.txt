@@ -10,7 +10,7 @@ Disallow: /.next/
 Disallow: /_next/
 
 # Sitemap
-Sitemap: https://vlb-next.vercel.app/sitemap.xml
+Sitemap: https://www.taxi-verrieres-le-buisson.com/sitemap.xml
 
 # Instructions spécifiques pour Google
 User-agent: Googlebot

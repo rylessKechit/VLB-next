@@ -9,7 +9,7 @@
 
     <!-- Page d'accueil -->
     <url>
-        <loc>https://vlb-next.vercel.app/</loc>
+        <loc>https://www.taxi-verrieres-le-buisson.com/</loc>
         <lastmod>2025-04-20T10:00:00+00:00</lastmod>
         <priority>1.0</priority>
         <changefreq>weekly</changefreq>
@@ -18,45 +18,45 @@
 
     <!-- Pages de services -->
     <url>
-        <loc>https://vlb-next.vercel.app/services/aeroport-gare</loc>
+        <loc>https://www.taxi-verrieres-le-buisson.com/services/aeroport-gare</loc>
         <lastmod>2025-04-20T10:00:00+00:00</lastmod>
         <priority>0.9</priority>
         <changefreq>monthly</changefreq>
         <mobile:mobile/>
         <image:image>
-            <image:loc>https://vlb-next.vercel.app/images/airport-transfer-hero.webp</image:loc>
+            <image:loc>https://www.taxi-verrieres-le-buisson.com/images/airport-transfer-hero.webp</image:loc>
             <image:title>Transfert aéroport et gare en taxi depuis Verrières-le-Buisson</image:title>
         </image:image>
     </url>
 
     <url>
-        <loc>https://vlb-next.vercel.app/services/longue-distance</loc>
+        <loc>https://www.taxi-verrieres-le-buisson.com/services/longue-distance</loc>
         <lastmod>2025-04-20T10:00:00+00:00</lastmod>
         <priority>0.9</priority>
         <changefreq>monthly</changefreq>
         <mobile:mobile/>
         <image:image>
-            <image:loc>https://vlb-next.vercel.app/images/long-distance-highway.webp</image:loc>
+            <image:loc>https://www.taxi-verrieres-le-buisson.com/images/long-distance-highway.webp</image:loc>
             <image:title>Taxi longue distance depuis Verrières-le-Buisson</image:title>
         </image:image>
     </url>
 
     <!-- À propos -->
     <url>
-        <loc>https://vlb-next.vercel.app/about</loc>
+        <loc>https://www.taxi-verrieres-le-buisson.com/about</loc>
         <lastmod>2025-04-20T10:00:00+00:00</lastmod>
         <priority>0.8</priority>
         <changefreq>monthly</changefreq>
         <mobile:mobile/>
         <image:image>
-            <image:loc>https://vlb-next.vercel.app/images/about-hero.webp</image:loc>
+            <image:loc>https://www.taxi-verrieres-le-buisson.com/images/about-hero.webp</image:loc>
             <image:title>À propos de Taxi VLB à Verrières-le-Buisson</image:title>
         </image:image>
     </url>
 
     <!-- Contact -->
     <url>
-        <loc>https://vlb-next.vercel.app/contact</loc>
+        <loc>https://www.taxi-verrieres-le-buisson.com/contact</loc>
         <lastmod>2025-04-20T10:00:00+00:00</lastmod>
         <priority>0.9</priority>
         <changefreq>monthly</changefreq>
@@ -65,7 +65,7 @@
 
     <!-- FAQ -->
     <url>
-        <loc>https://vlb-next.vercel.app/faq</loc>
+        <loc>https://www.taxi-verrieres-le-buisson.com/faq</loc>
         <lastmod>2025-04-20T10:00:00+00:00</lastmod>
         <priority>0.8</priority>
         <changefreq>monthly</changefreq>
@@ -74,7 +74,7 @@
 
     <!-- Pages légales -->
     <url>
-        <loc>https://vlb-next.vercel.app/mentions-legales</loc>
+        <loc>https://www.taxi-verrieres-le-buisson.com/mentions-legales</loc>
         <lastmod>2025-04-20T10:00:00+00:00</lastmod>
         <priority>0.4</priority>
         <changefreq>yearly</changefreq>
@@ -82,7 +82,7 @@
     </url>
 
     <url>
-        <loc>https://vlb-next.vercel.app/politique-confidentialite</loc>
+        <loc>https://www.taxi-verrieres-le-buisson.com/politique-confidentialite</loc>
         <lastmod>2025-04-20T10:00:00+00:00</lastmod>
         <priority>0.4</priority>
         <changefreq>yearly</changefreq>

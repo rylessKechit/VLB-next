@@ -71,13 +71,13 @@ const Breadcrumb = () => {
         "@type": "ListItem",
         "position": 1,
         "name": "Accueil",
-        "item": "https://vlb-next.vercel.app"
+        "item": "https://www.taxi-verrieres-le-buisson.com"
       },
       ...breadcrumbItems.map((item, index) => ({
         "@type": "ListItem",
         "position": index + 2,
         "name": item.label,
-        "item": `https://vlb-next.vercel.app${item.url}`
+        "item": `https://www.taxi-verrieres-le-buisson.com${item.url}`
       }))
     ]
   };
