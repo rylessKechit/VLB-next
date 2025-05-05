@@ -85,17 +85,8 @@ module.exports = {
       },
     },
   },
-  plugins: [
-    // Ajout d'un plugin pour purger les styles inutilisés
-    require('@fullhuman/postcss-purgecss')({
-      content: [
-        './src/app/**/*.{js,jsx,ts,tsx}',
-        './src/components/**/*.{js,jsx,ts,tsx}',
-      ],
-      defaultExtractor: content => content.match(/[\w-/:]+(?<!:)/g) || [],
-      safelist: ['html', 'body']
-    }),
-  ],
+  // Suppression du plugin problématique
+  plugins: [],
   future: {
     hoverOnlyWhenSupported: true,
   },
