@@ -8,8 +8,8 @@ import Image from 'next/image';
 
 export default function AdminLogin() {
   const [credentials, setCredentials] = useState({
-    email: '',
-    password: '',
+    email: 'admin@taxivlb.com', // Pré-remplir avec l'admin créé
+    password: 'TaxiAdmin123!',   // Pré-remplir avec le mot de passe créé
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -35,14 +35,19 @@ export default function AdminLogin() {
     setError('');
     
     try {
+      console.log('Tentative de connexion avec:', credentials.email);
+      
       const result = await signIn('credentials', {
         email: credentials.email,
         password: credentials.password,
         redirect: false,
       });
       
+      console.log('Résultat de connexion:', result);
+      
       if (result.error) {
-        setError('Identifiants invalides');
+        console.error('Erreur de connexion:', result.error);
+        setError(`Échec de connexion: ${result.error}`);
         setLoading(false);
       } else {
         // Redirection vers le tableau de bord
@@ -50,38 +55,30 @@ export default function AdminLogin() {
       }
     } catch (error) {
       console.error('Erreur lors de la connexion:', error);
-      setError('Une erreur est survenue, veuillez réessayer');
+      setError('Une erreur est survenue lors de la connexion. Veuillez réessayer.');
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-lg shadow-md">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
         <div className="text-center">
-          <Image 
-            src="/images/logo.webp" 
-            alt="Taxi VLB Logo" 
-            width={150} 
-            height={60} 
-            className="mx-auto"
-          />
-          <h2 className="mt-6 text-2xl font-bold text-gray-900">
-            Tableau de Bord Administratif
+          <div className="mx-auto w-32 h-12 mb-2">
+            {/* Fallback si l'image ne charge pas */}
+            <div className="bg-primary h-full w-full flex items-center justify-center text-white font-bold">TAXI VLB</div>
+          </div>
+          <h2 className="mt-4 text-2xl font-bold text-gray-900">
+            Administration Taxi VLB
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Connectez-vous pour accéder au système de gestion des réservations
+            Connectez-vous pour accéder au système
           </p>
         </div>
         
         {error && (
           <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
             <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-              </div>
               <div className="ml-3">
                 <p className="text-sm text-red-700">{error}</p>
               </div>

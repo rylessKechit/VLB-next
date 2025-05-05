@@ -1,4 +1,3 @@
-// src/lib/mongodb.js
 import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -7,10 +6,7 @@ if (!MONGODB_URI) {
   throw new Error('Veuillez définir la variable d\'environnement MONGODB_URI');
 }
 
-/**
- * Variable globale pour maintenir la connexion à la base de données
- * entre les hot-reloads en développement
- */
+// Variable globale pour maintenir la connexion
 let cached = global.mongoose;
 
 if (!cached) {
@@ -27,13 +23,24 @@ async function dbConnect() {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      return mongoose;
-    });
+    cached.promise = mongoose.connect(MONGODB_URI, opts)
+      .then((mongoose) => {
+        console.log("MongoDB connecté avec succès");
+        return mongoose;
+      })
+      .catch(err => {
+        console.error("Erreur de connexion MongoDB:", err);
+        throw err;
+      });
   }
 
-  cached.conn = await cached.promise;
-  return cached.conn;
+  try {
+    cached.conn = await cached.promise;
+    return cached.conn;
+  } catch (error) {
+    console.error("Échec de connexion à MongoDB:", error);
+    throw error;
+  }
 }
 
 export default dbConnect;

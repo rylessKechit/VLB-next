@@ -18,7 +18,7 @@ export async function seedDatabase() {
       const defaultAdmin = new User({
         name: 'Administrateur',
         email: 'admin@taxivlb.com',
-        password: process.env.DEFAULT_ADMIN_PASSWORD || 'TaxiAdmin123!',
+        password: process.env.DEFAULT_ADMIN_PASSWORD || 'motdepasse123',
         role: 'admin',
         phone: '+33600000000',
         status: 'active'
@@ -27,7 +27,7 @@ export async function seedDatabase() {
       await defaultAdmin.save();
       console.log('Compte administrateur créé avec succès!');
       console.log(`Email: ${defaultAdmin.email}`);
-      console.log(`Mot de passe: ${process.env.DEFAULT_ADMIN_PASSWORD || 'TaxiAdmin123!'}`);
+      console.log(`Mot de passe: ${process.env.DEFAULT_ADMIN_PASSWORD || 'motdepasse123'}`);
       console.log('IMPORTANT: Veuillez modifier ce mot de passe après votre première connexion!');
     }
     
@@ -41,7 +41,7 @@ export async function seedDatabase() {
       const demoDriver = new User({
         name: 'Pierre Guttin',
         email: 'chauffeur@taxivlb.com',
-        password: process.env.DEFAULT_DRIVER_PASSWORD || 'TaxiDriver123!',
+        password: process.env.DEFAULT_DRIVER_PASSWORD || 'motdepasse123!',
         role: 'driver',
         phone: '+33611111111',
         status: 'active',
