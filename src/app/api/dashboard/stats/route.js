@@ -1,0 +1,124 @@
+import { NextResponse } from 'next/server';
+import dbConnect from '@/lib/mongodb';
+import Booking from '@/models/Booking';
+import User from '@/models/User';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+
+export async function GET(request) {
+  try {
+    // Vérifier si l'utilisateur est authentifié
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    }
+    
+    await dbConnect();
+    
+    // Récupérer les statistiques des réservations
+    const totalBookings = await Booking.countDocuments();
+    const pendingBookings = await Booking.countDocuments({ status: 'pending' });
+    const confirmedBookings = await Booking.countDocuments({ status: 'confirmed' });
+    const cancelledBookings = await Booking.countDocuments({ status: 'cancelled' });
+    
+    // Réservations du jour
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    const todayBookings = await Booking.countDocuments({
+      pickupDateTime: { $gte: startOfDay, $lte: endOfDay }
+    });
+    
+    let totalUsers = 0;
+    let totalDrivers = 0;
+    let totalRevenue = 0;
+    
+    // Si l'utilisateur est un administrateur, récupérer d'autres statistiques
+    if (session.user.role === 'admin') {
+      // Statistiques des utilisateurs
+      totalUsers = await User.countDocuments();
+      totalDrivers = await User.countDocuments({ role: 'driver', status: 'active' });
+      
+      // Calculer le revenu total (somme des prix des réservations confirmées)
+      const revenueAggregation = await Booking.aggregate([
+        { $match: { status: { $in: ['confirmed', 'completed'] } } },
+        { $group: { _id: null, total: { $sum: '$price.amount' } } }
+      ]);
+      
+      totalRevenue = revenueAggregation.length > 0 ? revenueAggregation[0].total : 0;
+    }
+    
+    // Pour les chauffeurs, filtrer les réservations qui leur sont assignées
+    if (session.user.role === 'driver') {
+      const driverStats = await getDriverStats(session.user.id);
+      
+      return NextResponse.json({
+        success: true,
+        data: {
+          totalBookings: driverStats.totalBookings,
+          pendingBookings: driverStats.pendingBookings,
+          confirmedBookings: driverStats.confirmedBookings,
+          cancelledBookings: driverStats.cancelledBookings,
+          todayBookings: driverStats.todayBookings,
+          totalUsers: 0,
+          totalDrivers: 0,
+          totalRevenue: 0
+        }
+      });
+    }
+    
+    return NextResponse.json({
+      success: true,
+      data: {
+        totalBookings,
+        pendingBookings,
+        confirmedBookings,
+        cancelledBookings,
+        todayBookings,
+        totalUsers,
+        totalDrivers,
+        totalRevenue
+      }
+    });
+    
+  } catch (error) {
+    console.error('Erreur lors de la récupération des statistiques:', error);
+    
+    return NextResponse.json(
+      { error: 'Une erreur est survenue lors de la récupération des statistiques.' },
+      { status: 500 }
+    );
+  }
+}
+
+// Fonction auxiliaire pour récupérer les statistiques d'un chauffeur spécifique
+async function getDriverStats(driverId) {
+  // Convertir la chaîne en ObjectId pour la recherche
+  const totalBookings = await Booking.countDocuments({ assignedDriver: driverId });
+  const pendingBookings = await Booking.countDocuments({ assignedDriver: driverId, status: 'pending' });
+  const confirmedBookings = await Booking.countDocuments({ assignedDriver: driverId, status: 'confirmed' });
+  const cancelledBookings = await Booking.countDocuments({ assignedDriver: driverId, status: 'cancelled' });
+  
+  // Réservations du jour pour ce chauffeur
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+  
+  const endOfDay = new Date();
+  endOfDay.setHours(23, 59, 59, 999);
+  
+  const todayBookings = await Booking.countDocuments({
+    assignedDriver: driverId,
+    pickupDateTime: { $gte: startOfDay, $lte: endOfDay }
+  });
+  
+  return {
+    totalBookings,
+    pendingBookings,
+    confirmedBookings,
+    cancelledBookings,
+    todayBookings
+  };
+}

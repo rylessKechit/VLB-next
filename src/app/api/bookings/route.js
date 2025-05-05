@@ -1,11 +1,17 @@
 // src/app/api/bookings/route.js
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import dbConnect from '@/lib/mongodb';
+import Booking from '@/models/Booking';
 
 export async function POST(request) {
   try {
+    // Connecter à la base de données
+    await dbConnect();
+    
+    // Récupérer les données de la requête
     const data = await request.json();
-    console.log('Données reçues dans l\'API:', data); // Pour le debug
+    console.log('Données reçues dans l\'API:', data);
     
     // Extraire les données
     const {
@@ -22,10 +28,12 @@ export async function POST(request) {
       trainNumber,
       specialRequests,
       customerInfo,
-      price
+      price,
+      pickupAddressPlaceId,
+      dropoffAddressPlaceId
     } = data;
 
-    // Validation plus précise
+    // Validation des données
     if (!pickupAddress) {
       return NextResponse.json({ error: 'Adresse de départ manquante' }, { status: 400 });
     }
@@ -44,9 +52,38 @@ export async function POST(request) {
 
     // Générer un ID de réservation
     const bookingId = 'BK' + Math.floor(Math.random() * 10000);
-    const pickupDateTime = `${pickupDate}T${pickupTime}`;
+    const pickupDateTime = new Date(`${pickupDate}T${pickupTime}`);
+    let returnDateTime = null;
+    
+    if (roundTrip && returnDate && returnTime) {
+      returnDateTime = new Date(`${returnDate}T${returnTime}`);
+    }
 
-    // Créer une instance du transporteur d'email
+    // Créer un nouvel objet de réservation pour MongoDB
+    const newBooking = new Booking({
+      bookingId,
+      status: 'pending',
+      pickupAddress,
+      dropoffAddress,
+      pickupDateTime,
+      passengers,
+      luggage,
+      roundTrip,
+      returnDateTime,
+      flightNumber,
+      trainNumber,
+      specialRequests,
+      price,
+      customerInfo,
+      pickupAddressPlaceId,
+      dropoffAddressPlaceId
+    });
+
+    // Sauvegarder dans la base de données
+    await newBooking.save();
+    console.log('Réservation enregistrée avec l\'ID:', bookingId);
+
+    // Configuration de Nodemailer
     let transporter;
     
     try {
@@ -68,7 +105,7 @@ export async function POST(request) {
       // Continuez même en cas d'erreur d'email
     }
 
-    // Préparer les emails
+    // Envoi des emails
     if (transporter) {
       try {
         // Email pour le propriétaire du service
@@ -96,8 +133,8 @@ export async function POST(request) {
             
             ${roundTrip ? `
             <p><strong>Aller-retour:</strong> Oui</p>
-            <p><strong>Date de retour:</strong> ${new Date(`${returnDate}T${returnTime}`).toLocaleDateString('fr-FR')}</p>
-            <p><strong>Heure de retour:</strong> ${new Date(`${returnDate}T${returnTime}`).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
+            <p><strong>Date de retour:</strong> ${new Date(returnDateTime).toLocaleDateString('fr-FR')}</p>
+            <p><strong>Heure de retour:</strong> ${new Date(returnDateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
             ` : '<p><strong>Aller-retour:</strong> Non</p>'}
             
             <p><strong>Prix:</strong> ${price.amount} ${price.currency}</p>
@@ -106,6 +143,8 @@ export async function POST(request) {
             <h3 style="color: #2a5a9e;">Demandes spéciales:</h3>
             <p>${specialRequests}</p>
             ` : ''}
+            
+            <p>Veuillez vous connecter au <a href="${process.env.NEXTAUTH_URL || 'https://www.taxi-verrieres-le-buisson.com'}/admin/dashboard">tableau de bord</a> pour gérer cette réservation.</p>
           `,
         };
         
@@ -140,8 +179,8 @@ export async function POST(request) {
                 
                 ${roundTrip ? `
                 <p><strong>Aller-retour:</strong> Oui</p>
-                <p><strong>Date de retour:</strong> ${new Date(`${returnDate}T${returnTime}`).toLocaleDateString('fr-FR')}</p>
-                <p><strong>Heure de retour:</strong> ${new Date(`${returnDate}T${returnTime}`).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
+                <p><strong>Date de retour:</strong> ${new Date(returnDateTime).toLocaleDateString('fr-FR')}</p>
+                <p><strong>Heure de retour:</strong> ${new Date(returnDateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
                 ` : ''}
                 
                 <p><strong>Prix estimé:</strong> ${price.amount} ${price.currency}</p>
@@ -182,14 +221,14 @@ export async function POST(request) {
     const bookingResult = {
       id: bookingId,
       createdAt: new Date().toISOString(),
-      status: 'confirmed',
+      status: 'pending',
       pickupAddress,
       dropoffAddress,
-      pickupDateTime,
+      pickupDateTime: pickupDateTime.toISOString(),
       passengers,
       luggage,
       roundTrip,
-      returnDateTime: roundTrip ? `${returnDate}T${returnTime}` : null,
+      returnDateTime: returnDateTime ? returnDateTime.toISOString() : null,
       flightNumber,
       trainNumber,
       specialRequests,
@@ -212,6 +251,66 @@ export async function POST(request) {
     
     return NextResponse.json(
       { error: 'Une erreur est survenue lors de la création de la réservation.' },
+      { status: 500 }
+    );
+  }
+}
+
+// Récupérer toutes les réservations - utilisé par le tableau de bord admin
+export async function GET(request) {
+  try {
+    await dbConnect();
+    
+    // Récupérer les paramètres de requête
+    const { searchParams } = new URL(request.url);
+    const status = searchParams.get('status');
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const skip = parseInt(searchParams.get('skip') || '0');
+    
+    // Construire le filtre de recherche
+    const query = {};
+    
+    if (status) {
+      query.status = status;
+    }
+    
+    if (startDate && endDate) {
+      query.pickupDateTime = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      };
+    } else if (startDate) {
+      query.pickupDateTime = { $gte: new Date(startDate) };
+    } else if (endDate) {
+      query.pickupDateTime = { $lte: new Date(endDate) };
+    }
+    
+    // Récupérer les réservations
+    const bookings = await Booking.find(query)
+      .sort({ pickupDateTime: 1 })
+      .skip(skip)
+      .limit(limit);
+    
+    // Compter le nombre total de réservations correspondant au filtre
+    const total = await Booking.countDocuments(query);
+    
+    return NextResponse.json({
+      success: true,
+      data: bookings,
+      meta: {
+        total,
+        limit,
+        skip
+      }
+    });
+    
+  } catch (error) {
+    console.error('Erreur lors de la récupération des réservations:', error);
+    
+    return NextResponse.json(
+      { error: 'Une erreur est survenue lors de la récupération des réservations.' },
       { status: 500 }
     );
   }
