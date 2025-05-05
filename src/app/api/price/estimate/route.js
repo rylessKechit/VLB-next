@@ -137,7 +137,7 @@ export async function POST(request) {
 // Fonction pour obtenir la distance et le temps de trajet via l'API Google Maps
 async function getDistanceMatrix(originPlaceId, destinationPlaceId) {
   try {
-    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
     
     // Vérifiez si la clé API est définie
     if (!apiKey) {
@@ -176,7 +176,7 @@ async function getDistanceMatrix(originPlaceId, destinationPlaceId) {
 // Fonction pour obtenir le polyline (facultatif)
 async function getRoutePolyline(originPlaceId, destinationPlaceId) {
   try {
-    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
     const url = `https://maps.googleapis.com/maps/api/directions/json?origin=place_id:${originPlaceId}&destination=place_id:${destinationPlaceId}&mode=driving&key=${apiKey}`;
     
     const response = await axios.get(url);

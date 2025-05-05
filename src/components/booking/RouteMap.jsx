@@ -24,7 +24,7 @@ const RouteMap = ({ pickupAddress, dropoffAddress, pickupPlaceId, dropoffPlaceId
       };
       
       const script = document.createElement('script');
-      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+      const apiKey = process.env.NEXT_PUBLIC_NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
       // Charger uniquement les bibliothèques nécessaires
       script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap&libraries=places,geometry&v=weekly&loading=async`;
       script.async = true;

@@ -59,8 +59,6 @@ export const metadata = {
     description: 'Service de taxi professionnel à Verrières-le-Buisson disponible 24h/24 et 7j/7.',
     images: ['https://vlb-next.vercel.app/images/twitter-card.jpg'],
   },
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=5',
-  themeColor: '#d4af37',
   formatDetection: {
     telephone: true,
     email: true,
