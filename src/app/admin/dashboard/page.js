@@ -5,7 +5,8 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faCalendarCheck, 
+  faCalendarCheck,
+  faCalendarAlt,
   faUsers, 
   faExclamationTriangle, 
   faCheckCircle,
@@ -305,6 +306,19 @@ export default function Dashboard() {
             <div>
               <p className="font-medium">Nouvelle réservation</p>
               <p className="text-sm text-gray-600">Créer manuellement</p>
+            </div>
+          </Link>
+          
+          <Link 
+            href="/admin/planning" 
+            className="flex items-center p-4 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors duration-300"
+          >
+            <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white mr-3">
+              <FontAwesomeIcon icon={faCalendarAlt} className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="font-medium">Planning</p>
+              <p className="text-sm text-gray-600">Vue calendrier</p>
             </div>
           </Link>
           

@@ -1,4 +1,4 @@
-// src/models/Booking.js
+// src/models/Booking.js - Mise à jour du modèle sans assignation de chauffeur
 import mongoose from 'mongoose';
 
 const BookingSchema = new mongoose.Schema({
@@ -9,7 +9,7 @@ const BookingSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'completed', 'cancelled'],
+    enum: ['pending', 'confirmed', 'in_progress', 'completed', 'cancelled'],
     default: 'pending',
   },
   pickupAddress: {
@@ -80,10 +80,7 @@ const BookingSchema = new mongoose.Schema({
   dropoffAddressPlaceId: String,
   notes: String,
   adminNotes: String,
-  assignedDriver: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-  },
+  // Suppression du champ assignedDriver
   createdAt: {
     type: Date,
     default: Date.now,
@@ -92,11 +89,28 @@ const BookingSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  startedAt: {
+    type: Date,
+  },
+  completedAt: {
+    type: Date,
+  },
 });
 
 // Middleware pre-save pour mettre à jour le champ updatedAt
 BookingSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
+  
+  // Si le statut change vers "in_progress", mettre à jour startedAt
+  if (this.isModified('status') && this.status === 'in_progress' && !this.startedAt) {
+    this.startedAt = Date.now();
+  }
+  
+  // Si le statut change vers "completed", mettre à jour completedAt
+  if (this.isModified('status') && this.status === 'completed' && !this.completedAt) {
+    this.completedAt = Date.now();
+  }
+  
   next();
 });
 

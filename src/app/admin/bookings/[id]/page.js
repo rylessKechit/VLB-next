@@ -44,7 +44,15 @@ export default function BookingDetailPage() {
     const fetchBookingDetails = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/bookings/${id}`);
+        
+        // Vérifier que l'ID est défini
+        if (!id) {
+          setError('ID de réservation manquant');
+          setLoading(false);
+          return;
+        }
+        
+        const response = await fetch(`/api/bookings/${encodeURIComponent(id)}`);
         
         if (!response.ok) {
           throw new Error('Erreur lors de la récupération des détails de la réservation');
@@ -100,7 +108,32 @@ export default function BookingDetailPage() {
     try {
       setActionLoading(true);
       
-      const response = await fetch(`/api/bookings/${id}`, {
+      // Vérifier que l'ID est défini
+      if (!id) {
+        alert('ID de réservation manquant');
+        setActionLoading(false);
+        return;
+      }
+      
+      // Confirmation pour certains changements de statut
+      if (newStatus === 'in_progress') {
+        if (!confirm('Êtes-vous sûr de vouloir démarrer cette course ?')) {
+          setActionLoading(false);
+          return;
+        }
+      } else if (newStatus === 'completed') {
+        if (!confirm('Êtes-vous sûr de marquer cette course comme terminée ?')) {
+          setActionLoading(false);
+          return;
+        }
+      } else if (newStatus === 'cancelled') {
+        if (!confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')) {
+          setActionLoading(false);
+          return;
+        }
+      }
+      
+      const response = await fetch(`/api/bookings/${encodeURIComponent(id)}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -114,6 +147,29 @@ export default function BookingDetailPage() {
       
       const data = await response.json();
       setBooking(data.data);
+      
+      // Message de confirmation
+      let message = '';
+      switch(newStatus) {
+        case 'confirmed':
+          message = 'La réservation a été confirmée avec succès.';
+          break;
+        case 'in_progress':
+          message = 'La course a été démarrée avec succès.';
+          break;
+        case 'completed':
+          message = 'La course a été marquée comme terminée.';
+          break;
+        case 'cancelled':
+          message = 'La réservation a été annulée.';
+          break;
+        default:
+          message = 'Le statut a été mis à jour avec succès.';
+      }
+      
+      // Afficher une notification
+      alert(message);
+      
       setActionLoading(false);
     } catch (error) {
       console.error('Erreur:', error);
@@ -317,31 +373,6 @@ export default function BookingDetailPage() {
                   <p className="text-lg font-bold text-primary">{formatPrice(booking.price)}</p>
                 </div>
               </div>
-              
-              {session?.user?.role === 'admin' && !booking.assignedDriver && booking.status === 'confirmed' && (
-                <div className="mt-6">
-                  <button
-                    onClick={() => {/* Afficher un modal pour assigner un chauffeur */}}
-                    className="w-full px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors duration-300"
-                  >
-                    Assigner un chauffeur
-                  </button>
-                </div>
-              )}
-              
-              {booking.assignedDriver && (
-                <div className="flex items-center">
-                  <div className="w-10 h-10 rounded-full bg-green-100 text-green-500 flex items-center justify-center mr-3">
-                    <FontAwesomeIcon icon={faUser} className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Chauffeur assigné</p>
-                    <p className="text-sm font-medium">
-                      {booking.assignedDriver.name || 'Chauffeur'}
-                    </p>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -462,13 +493,21 @@ export default function BookingDetailPage() {
                 </div>
               </div>
               
-              <div className="flex items-start">
+              <div className="flex items-start mb-4">
                 <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center mr-3 mt-1">
                   <FontAwesomeIcon icon={faPhone} className="h-5 w-5" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <p className="text-sm text-gray-500">Téléphone</p>
-                  <p className="text-base font-medium">{booking.customerInfo?.phone}</p>
+                  <div className="flex items-center">
+                    <a 
+                      href={`tel:${booking.customerInfo?.phone}`}
+                      className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors duration-300 inline-flex items-center text-sm"
+                    >
+                      <FontAwesomeIcon icon={faPhone} className="mr-2" />
+                      {booking.customerInfo?.phone}
+                    </a>
+                  </div>
                 </div>
               </div>
               
@@ -573,21 +612,6 @@ export default function BookingDetailPage() {
                     <p className="text-sm font-medium">
                       Statut modifié: <BookingStatusBadge status={booking.status} />
                     </p>
-                    <p className="text-xs text-gray-500">{formatDateTime(booking.updatedAt)}</p>
-                  </div>
-                </div>
-              )}
-              
-              {booking.assignedDriver && (
-                <div className="flex items-start">
-                  <div className="relative">
-                    <div className="w-10 h-10 rounded-full bg-green-100 text-green-500 flex items-center justify-center mr-3 z-10">
-                      <FontAwesomeIcon icon={faUser} className="h-5 w-5" />
-                    </div>
-                    <div className="absolute top-10 bottom-0 left-5 w-0.5 bg-gray-200 -z-10"></div>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Chauffeur assigné: {booking.assignedDriver.name}</p>
                     <p className="text-xs text-gray-500">{formatDateTime(booking.updatedAt)}</p>
                   </div>
                 </div>

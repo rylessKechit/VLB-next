@@ -1,9 +1,9 @@
-// src/app/api/bookings/[id]/route.js
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Booking from '@/models/Booking';
-import { getServerSession } from 'next-auth/next';
+import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import mongoose from 'mongoose';
 import nodemailer from 'nodemailer';
 
 // Récupérer une réservation spécifique
@@ -13,19 +13,29 @@ export async function GET(request, { params }) {
     
     const { id } = params;
     
-    // Vérifiez si l'utilisateur est authentifié (pour l'admin dashboard)
+    // Vérifiez si l'id est défini
+    if (!id) {
+      return NextResponse.json({ error: 'ID de réservation manquant' }, { status: 400 });
+    }
+    
+    // Vérifiez si l'utilisateur est authentifié
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
     
-    // Chercher par bookingId ou par _id MongoDB
-    const booking = await Booking.findOne({
-      $or: [
-        { bookingId: id },
-        { _id: id }
-      ]
-    }).populate('assignedDriver', 'name email phone');
+    // Chercher par bookingId ou par _id MongoDB si c'est un ObjectId valide
+    let query;
+    
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      // Si c'est un ObjectId valide, chercher par _id
+      query = { $or: [{ _id: id }, { bookingId: id }] };
+    } else {
+      // Sinon, chercher uniquement par bookingId
+      query = { bookingId: id };
+    }
+    
+    const booking = await Booking.findOne(query);
     
     if (!booking) {
       return NextResponse.json({ error: 'Réservation non trouvée' }, { status: 404 });

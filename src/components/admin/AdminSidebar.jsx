@@ -12,7 +12,8 @@ import {
   faUserCog, 
   faCog, 
   faSignOutAlt, 
-  faTimes 
+  faTimes,
+  faCalendarAlt
 } from '@fortawesome/free-solid-svg-icons';
 
 const AdminSidebar = ({ sidebarOpen, closeSidebar }) => {
@@ -25,6 +26,7 @@ const AdminSidebar = ({ sidebarOpen, closeSidebar }) => {
   // Navigation Items
   const navItems = [
     { name: 'Tableau de bord', href: '/admin/dashboard', icon: faTachometerAlt, roles: ['admin', 'driver'] },
+    { name: 'Planning', href: '/admin/planning', icon: faCalendarAlt, roles: ['admin', 'driver'] },
     { name: 'Réservations', href: '/admin/bookings', icon: faCalendarCheck, roles: ['admin', 'driver'] },
     { name: 'Utilisateurs', href: '/admin/users', icon: faUsers, roles: ['admin'] },
     { name: 'Mon profil', href: '/admin/profile', icon: faUserCog, roles: ['admin', 'driver'] },

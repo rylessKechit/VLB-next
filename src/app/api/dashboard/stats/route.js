@@ -19,6 +19,8 @@ export async function GET(request) {
     const totalBookings = await Booking.countDocuments();
     const pendingBookings = await Booking.countDocuments({ status: 'pending' });
     const confirmedBookings = await Booking.countDocuments({ status: 'confirmed' });
+    const inProgressBookings = await Booking.countDocuments({ status: 'in_progress' });
+    const completedBookings = await Booking.countDocuments({ status: 'completed' });
     const cancelledBookings = await Booking.countDocuments({ status: 'cancelled' });
     
     // Réservations du jour
@@ -33,41 +35,20 @@ export async function GET(request) {
     });
     
     let totalUsers = 0;
-    let totalDrivers = 0;
     let totalRevenue = 0;
     
-    // Si l'utilisateur est un administrateur, récupérer d'autres statistiques
+    // Statistiques supplémentaires pour les administrateurs
     if (session.user.role === 'admin') {
-      // Statistiques des utilisateurs
+      // Compter le nombre d'utilisateurs administrateurs
       totalUsers = await User.countDocuments();
-      totalDrivers = await User.countDocuments({ role: 'driver', status: 'active' });
       
-      // Calculer le revenu total (somme des prix des réservations confirmées)
+      // Calculer le revenu total (somme des prix des réservations confirmées, en cours et terminées)
       const revenueAggregation = await Booking.aggregate([
-        { $match: { status: { $in: ['confirmed', 'completed'] } } },
+        { $match: { status: { $in: ['confirmed', 'in_progress', 'completed'] } } },
         { $group: { _id: null, total: { $sum: '$price.amount' } } }
       ]);
       
       totalRevenue = revenueAggregation.length > 0 ? revenueAggregation[0].total : 0;
-    }
-    
-    // Pour les chauffeurs, filtrer les réservations qui leur sont assignées
-    if (session.user.role === 'driver') {
-      const driverStats = await getDriverStats(session.user.id);
-      
-      return NextResponse.json({
-        success: true,
-        data: {
-          totalBookings: driverStats.totalBookings,
-          pendingBookings: driverStats.pendingBookings,
-          confirmedBookings: driverStats.confirmedBookings,
-          cancelledBookings: driverStats.cancelledBookings,
-          todayBookings: driverStats.todayBookings,
-          totalUsers: 0,
-          totalDrivers: 0,
-          totalRevenue: 0
-        }
-      });
     }
     
     return NextResponse.json({
@@ -76,10 +57,11 @@ export async function GET(request) {
         totalBookings,
         pendingBookings,
         confirmedBookings,
+        inProgressBookings,
+        completedBookings,
         cancelledBookings,
         todayBookings,
         totalUsers,
-        totalDrivers,
         totalRevenue
       }
     });
