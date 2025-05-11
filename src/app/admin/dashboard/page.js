@@ -27,7 +27,6 @@ export default function Dashboard() {
     cancelledBookings: 0,
     todayBookings: 0,
     totalUsers: 0,
-    totalDrivers: 0,
     totalRevenue: 0
   });
   const [upcomingBookings, setUpcomingBookings] = useState([]);
@@ -120,11 +119,6 @@ export default function Dashboard() {
     }
   ];
   
-  // Réduire le nombre de statistiques pour les chauffeurs
-  const driverStatsItems = statsItems.filter(item => 
-    !item.title.includes('Utilisateurs')
-  );
-  
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -141,7 +135,7 @@ export default function Dashboard() {
       
       {/* Statistiques */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {(session?.user?.role === 'admin' ? statsItems : driverStatsItems).map((item, index) => (
+        {statsItems.map((item, index) => (
           <DashboardStats 
             key={index}
             title={item.title}
@@ -221,45 +215,6 @@ export default function Dashboard() {
       {/* Section réservée aux administrateurs */}
       {session?.user?.role === 'admin' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Statistiques des utilisateurs */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">Utilisateurs</h3>
-              <Link 
-                href="/admin/users" 
-                className="text-sm text-primary hover:text-primary-dark"
-              >
-                Gérer les utilisateurs
-              </Link>
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-blue-50 rounded-lg p-4">
-                <div className="flex items-center">
-                  <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white mr-3">
-                    <FontAwesomeIcon icon={faUsers} className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Total utilisateurs</p>
-                    <p className="text-xl font-semibold">{stats.totalUsers}</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-green-50 rounded-lg p-4">
-                <div className="flex items-center">
-                  <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white mr-3">
-                    <FontAwesomeIcon icon={faUsers} className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Chauffeurs actifs</p>
-                    <p className="text-xl font-semibold">{stats.totalDrivers}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
           {/* Statistiques des revenus */}
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between mb-4">
@@ -290,80 +245,6 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-      
-      {/* Section des actions rapides */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Actions rapides</h3>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Link 
-            href="/admin/bookings/new" 
-            className="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors duration-300"
-          >
-            <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white mr-3">
-              <FontAwesomeIcon icon={faCalendarCheck} className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="font-medium">Nouvelle réservation</p>
-              <p className="text-sm text-gray-600">Créer manuellement</p>
-            </div>
-          </Link>
-          
-          <Link 
-            href="/admin/planning" 
-            className="flex items-center p-4 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors duration-300"
-          >
-            <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white mr-3">
-              <FontAwesomeIcon icon={faCalendarAlt} className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="font-medium">Planning</p>
-              <p className="text-sm text-gray-600">Vue calendrier</p>
-            </div>
-          </Link>
-          
-          {session?.user?.role === 'admin' && (
-            <Link 
-              href="/admin/users/new" 
-              className="flex items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors duration-300"
-            >
-              <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white mr-3">
-                <FontAwesomeIcon icon={faUsers} className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="font-medium">Nouvel utilisateur</p>
-                <p className="text-sm text-gray-600">Ajouter chauffeur/admin</p>
-              </div>
-            </Link>
-          )}
-          
-          <Link 
-            href="/admin/bookings" 
-            className="flex items-center p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors duration-300"
-          >
-            <div className="w-10 h-10 rounded-full bg-yellow-500 flex items-center justify-center text-white mr-3">
-              <FontAwesomeIcon icon={faEye} className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="font-medium">Voir réservations</p>
-              <p className="text-sm text-gray-600">Gérer les demandes</p>
-            </div>
-          </Link>
-          
-          <Link 
-            href="/admin/profile" 
-            className="flex items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors duration-300"
-          >
-            <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center text-white mr-3">
-              <FontAwesomeIcon icon={faEdit} className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="font-medium">Mon profil</p>
-              <p className="text-sm text-gray-600">Modifier informations</p>
-            </div>
-          </Link>
-        </div>
-      </div>
     </div>
   );
 }

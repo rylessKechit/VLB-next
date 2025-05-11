@@ -22,55 +22,6 @@ const BookingCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState('week'); // 'day', 'week', 'month'
   
-  // Récupérer les réservations pour la période actuelle
-  useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        setLoading(true);
-        
-        // Construire l'URL avec les paramètres de requête
-        let url = `/api/bookings?skip=${(currentPage - 1) * bookingsPerPage}&limit=${bookingsPerPage}`;
-        
-        if (statusFilter) {
-          url += `&status=${statusFilter}`;
-        }
-        
-        // Ajouter la recherche si elle existe
-        if (searchTerm) {
-          url += `&search=${encodeURIComponent(searchTerm)}`;
-        }
-        
-        console.log("Requête URL:", url);
-        
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error("Erreur serveur:", errorData);
-          throw new Error(`Erreur lors de la récupération des réservations: ${errorData.error || response.statusText}`);
-        }
-        
-        const data = await response.json();
-        console.log("Données reçues:", data);
-        
-        if (!data.success) {
-          throw new Error(data.error || "Erreur inconnue");
-        }
-        
-        setBookings(data.data);
-        setTotalBookings(data.meta.total);
-        setTotalPages(Math.ceil(data.meta.total / bookingsPerPage));
-        setLoading(false);
-      } catch (error) {
-        console.error('Erreur:', error);
-        setError(error.message);
-        setLoading(false);
-      }
-    };
-    
-    fetchBookings();
-  }, [currentDate, view]);
-  
   // Navigation dans le calendrier
   const navigatePrevious = () => {
     const newDate = new Date(currentDate);
@@ -218,8 +169,10 @@ const BookingCalendar = () => {
         return 'bg-yellow-100 border-yellow-400 text-yellow-800';
       case 'confirmed':
         return 'bg-green-100 border-green-400 text-green-800';
-      case 'completed':
+      case 'in_progress':
         return 'bg-blue-100 border-blue-400 text-blue-800';
+      case 'completed':
+        return 'bg-indigo-100 border-indigo-400 text-indigo-800';
       case 'cancelled':
         return 'bg-red-100 border-red-400 text-red-800';
       default:
@@ -239,6 +192,71 @@ const BookingCalendar = () => {
     return address.substring(0, maxLength) + '...';
   };
   
+  // Récupérer les réservations pour la période actuelle
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        setLoading(true);
+        
+        // Calculer les dates de début et de fin en fonction de la vue actuelle
+        let startDate, endDate;
+        
+        if (view === 'day') {
+          // Vue jour: uniquement la journée actuelle
+          startDate = new Date(currentDate);
+          startDate.setHours(0, 0, 0, 0);
+          
+          endDate = new Date(currentDate);
+          endDate.setHours(23, 59, 59, 999);
+        } else if (view === 'week') {
+          // Vue semaine: du lundi au dimanche
+          const day = currentDate.getDay(); // 0 = dimanche, 1 = lundi, ...
+          startDate = new Date(currentDate);
+          startDate.setDate(currentDate.getDate() - (day === 0 ? 6 : day - 1));
+          startDate.setHours(0, 0, 0, 0);
+          
+          endDate = new Date(startDate);
+          endDate.setDate(startDate.getDate() + 6);
+          endDate.setHours(23, 59, 59, 999);
+        } else {
+          // Vue mois: tout le mois
+          startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+          endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+          endDate.setHours(23, 59, 59, 999);
+        }
+        
+        // Construire l'URL avec les paramètres de requête
+        const url = `/api/bookings?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&limit=100`;
+        
+        console.log("Requête URL pour le calendrier:", url);
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Erreur serveur:", errorData);
+          throw new Error(`Erreur lors de la récupération des réservations: ${errorData.error || response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log("Données reçues:", data);
+        
+        if (!data.success) {
+          throw new Error(data.error || "Erreur inconnue");
+        }
+        
+        setBookings(data.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Erreur:', error);
+        setError(error.message);
+        setLoading(false);
+      }
+    };
+    
+    fetchBookings();
+  }, [currentDate, view]);
+
   // Rendu du calendrier jour
   const renderDayView = () => {
     // Grouper les réservations par heure
@@ -280,7 +298,7 @@ const BookingCalendar = () => {
                       {hourBookings.map(booking => (
                         <Link
                           key={booking._id || booking.bookingId}
-                          href={`/admin/bookings/${booking._id || booking.bookingId}`}
+                          href={`/admin/bookings/${getBookingIdForUrl(booking)}`}
                           className={`block p-2 rounded border-l-4 ${getStatusColor(booking.status)} hover:shadow-md transition-shadow duration-200`}
                         >
                           <div className="flex justify-between items-start">
@@ -356,7 +374,7 @@ const BookingCalendar = () => {
                     dayBookings.map(booking => (
                       <Link
                         key={booking._id || booking.bookingId}
-                        href={`/admin/bookings/${booking._id || booking.bookingId}`}
+                        href={`/admin/bookings/${getBookingIdForUrl(booking)}`}
                         className={`block p-2 rounded border-l-4 ${getStatusColor(booking.status)} hover:shadow-md transition-shadow duration-200 text-sm`}
                       >
                         <div className="font-medium">{formatTime(booking.pickupDateTime)}</div>
@@ -418,7 +436,7 @@ const BookingCalendar = () => {
                       {dayBookings.slice(0, 3).map((booking, bookingIndex) => (
                         <Link
                           key={`${booking._id || booking.bookingId}-${bookingIndex}`}
-                          href={`/admin/bookings/${booking._id || booking.bookingId}`}
+                          href={`/admin/bookings/${getBookingIdForUrl(booking)}`}
                           className={`block p-1 rounded-sm text-xs ${getStatusColor(booking.status)} hover:shadow-sm transition-shadow duration-200`}
                         >
                           <div className="font-medium truncate">{formatTime(booking.pickupDateTime)}</div>

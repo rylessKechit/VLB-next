@@ -1,3 +1,4 @@
+// src/app/api/dashboard/stats/route.js
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Booking from '@/models/Booking';
@@ -39,7 +40,7 @@ export async function GET(request) {
     
     // Statistiques supplémentaires pour les administrateurs
     if (session.user.role === 'admin') {
-      // Compter le nombre d'utilisateurs administrateurs
+      // Compter le nombre d'utilisateurs
       totalUsers = await User.countDocuments();
       
       // Calculer le revenu total (somme des prix des réservations confirmées, en cours et terminées)
@@ -74,33 +75,4 @@ export async function GET(request) {
       { status: 500 }
     );
   }
-}
-
-// Fonction auxiliaire pour récupérer les statistiques d'un chauffeur spécifique
-async function getDriverStats(driverId) {
-  // Convertir la chaîne en ObjectId pour la recherche
-  const totalBookings = await Booking.countDocuments({ assignedDriver: driverId });
-  const pendingBookings = await Booking.countDocuments({ assignedDriver: driverId, status: 'pending' });
-  const confirmedBookings = await Booking.countDocuments({ assignedDriver: driverId, status: 'confirmed' });
-  const cancelledBookings = await Booking.countDocuments({ assignedDriver: driverId, status: 'cancelled' });
-  
-  // Réservations du jour pour ce chauffeur
-  const startOfDay = new Date();
-  startOfDay.setHours(0, 0, 0, 0);
-  
-  const endOfDay = new Date();
-  endOfDay.setHours(23, 59, 59, 999);
-  
-  const todayBookings = await Booking.countDocuments({
-    assignedDriver: driverId,
-    pickupDateTime: { $gte: startOfDay, $lte: endOfDay }
-  });
-  
-  return {
-    totalBookings,
-    pendingBookings,
-    confirmedBookings,
-    cancelledBookings,
-    todayBookings
-  };
 }

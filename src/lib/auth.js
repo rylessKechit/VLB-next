@@ -3,7 +3,6 @@ import dbConnect from "./mongodb";
 import User from "@/models/User";
 
 export const authOptions = {
-  // Retiré: adapter: MongoDBAdapter(clientPromise),
   providers: [
     CredentialsProvider({
       name: "Identifiants",

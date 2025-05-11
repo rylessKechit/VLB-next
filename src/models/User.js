@@ -23,33 +23,13 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['admin', 'driver'],
-    default: 'driver',
+    enum: ['admin'],
+    default: 'admin',
   },
   status: {
     type: String,
     enum: ['active', 'inactive'],
     default: 'active',
-  },
-  driverInfo: {
-    licenseNumber: String,
-    vehicleInfo: {
-      make: String,
-      model: String,
-      year: Number,
-      licensePlate: String,
-      color: String,
-    },
-    availability: {
-      type: [{ 
-        date: Date, 
-        slots: [{ 
-          start: String, 
-          end: String 
-        }] 
-      }],
-      default: [],
-    },
   },
   lastLogin: {
     type: Date,

@@ -240,10 +240,10 @@ const BookingForm = () => {
         <label htmlFor={`${id}-display`} className="block text-sm font-medium text-gray-700 mb-2">
           {label} <span className="text-red-500">*</span>
         </label>
-        <div className="flex items-center border border-gray-300 rounded-md overflow-hidden">
+        <div className="flex items-center border border-gray-300 rounded-md overflow-hidden shadow-sm">
           <button 
             type="button" 
-            className="w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors"
+            className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-gray-100 hover:bg-gray-200 active:bg-gray-300 transition-colors text-gray-700"
             onClick={() => value > min && onChange(value - 1)}
             aria-label={`Diminuer le nombre de ${label.toLowerCase()}`}
             aria-controls={`${id}-display`}
@@ -255,7 +255,7 @@ const BookingForm = () => {
           </button>
           <span 
             id={`${id}-display`} 
-            className="flex-1 text-center py-2" 
+            className="flex-1 text-center py-2 font-medium text-lg" 
             aria-live="polite" 
             role="status"
           >
@@ -263,7 +263,7 @@ const BookingForm = () => {
           </span>
           <button 
             type="button" 
-            className="w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors"
+            className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-gray-100 hover:bg-gray-200 active:bg-gray-300 transition-colors text-gray-700"
             onClick={() => value < max && onChange(value + 1)}
             aria-label={`Augmenter le nombre de ${label.toLowerCase()}`}
             aria-controls={`${id}-display`}
@@ -318,7 +318,7 @@ const BookingForm = () => {
       <form>
         {/* Étape 1: Détails du trajet */}
         {currentStep === 1 && (
-          <div className="p-6 md:p-8">
+          <div className="p-4 sm:p-6 md:p-8">
             <div className="mb-6">
               <label htmlFor="pickupAddress" className="block text-sm font-medium text-gray-700 mb-2">
                 Adresse de départ <span className="text-red-500">*</span>
@@ -347,41 +347,32 @@ const BookingForm = () => {
               {errors.dropoffAddress && <p className="mt-1 text-sm text-red-600">{errors.dropoffAddress.message}</p>}
             </div>
             
-            {/* Champ conditionnel pour le numéro de vol */}
+            {/* Champs conditionnels adaptés au responsive */}
             {isAirport && (
               <div className="mb-6">
                 <label htmlFor="flightNumber" className="block text-sm font-medium text-gray-700 mb-2">
                   Numéro de vol
                 </label>
-                <input
-                  type="text"
-                  id="flightNumber"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                  {...register('flightNumber')}
-                  placeholder="Ex: AF1234"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    id="flightNumber"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                    {...register('flightNumber')}
+                    placeholder="Ex: AF1234"
+                  />
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                  </div>
+                </div>
                 <p className="mt-1 text-xs text-gray-500">Ce numéro nous permettra de suivre votre vol et d'ajuster notre service en cas de retard</p>
               </div>
             )}
             
-            {/* Champ conditionnel pour le numéro de train */}
-            {isTrainStation && (
-              <div className="mb-6">
-                <label htmlFor="trainNumber" className="block text-sm font-medium text-gray-700 mb-2">
-                  Numéro de train
-                </label>
-                <input
-                  type="text"
-                  id="trainNumber"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                  {...register('trainNumber')}
-                  placeholder="Ex: TGV6214"
-                />
-                <p className="mt-1 text-xs text-gray-500">Ce numéro nous permettra de suivre votre train et d'ajuster notre service en cas de retard</p>
-              </div>
-            )}
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {/* Grille responsive améliorée */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
               <div>
                 <label htmlFor="pickupDate" className="block text-sm font-medium text-gray-700 mb-2">
                   Date et heure de départ <span className="text-red-500">*</span>
@@ -414,27 +405,26 @@ const BookingForm = () => {
                   </label>
                 </div>
                 
-                {formValues.roundTrip && (
-                  <div className="mt-4">
-                    <label htmlFor="returnDate" className="block text-sm font-medium text-gray-700 mb-2">
-                      Date et heure de retour <span className="text-red-500">*</span>
-                    </label>
-                    <DateTimePicker 
-                      dateId="returnDate"
-                      timeId="returnTime"
-                      dateValue={formValues.returnDate}
-                      timeValue={formValues.returnTime}
-                      onDateChange={value => handleInputChange('returnDate', value)}
-                      onTimeChange={value => handleInputChange('returnTime', value)}
-                      minDate={formValues.pickupDate}
-                    />
-                  </div>
-                )}
+                {/* Affichage conditionnel avec animation fluide */}
+                <div className={`transition-all duration-300 overflow-hidden ${formValues.roundTrip ? 'max-h-60 opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+                  <label htmlFor="returnDate" className="block text-sm font-medium text-gray-700 mb-2">
+                    Date et heure de retour <span className="text-red-500">*</span>
+                  </label>
+                  <DateTimePicker 
+                    dateId="returnDate"
+                    timeId="returnTime"
+                    dateValue={formValues.returnDate}
+                    timeValue={formValues.returnTime}
+                    onDateChange={value => handleInputChange('returnDate', value)}
+                    onTimeChange={value => handleInputChange('returnTime', value)}
+                    minDate={formValues.pickupDate}
+                  />
+                </div>
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              {/* Remplacer le champ de nombre de passagers par notre compteur accessible */}
+            {/* Compteurs plus adaptés aux écrans mobiles */}
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 md:gap-6 mb-6">
               <QuantityCounter
                 id="passengers"
                 value={formValues.passengers}
@@ -445,7 +435,6 @@ const BookingForm = () => {
                 helpText="Maximum 7 passagers"
               />
               
-              {/* Remplacer le champ de nombre de bagages par notre compteur accessible */}
               <QuantityCounter
                 id="luggage"
                 value={formValues.luggage}
@@ -461,15 +450,23 @@ const BookingForm = () => {
               <label htmlFor="specialRequests" className="block text-sm font-medium text-gray-700 mb-2">
                 Demandes spéciales
               </label>
-              <textarea
-                id="specialRequests"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                rows="3"
-                {...register('specialRequests')}
-                placeholder="Indiquez-nous toute demande particulière pour votre trajet"
-              ></textarea>
+              <div className="relative">
+                <textarea
+                  id="specialRequests"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                  rows="3"
+                  {...register('specialRequests')}
+                  placeholder="Indiquez-nous toute demande particulière pour votre trajet"
+                ></textarea>
+                <div className="absolute top-3 left-3 text-gray-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                  </svg>
+                </div>
+              </div>
             </div>
             
+            {/* Bouton adaptatif qui prend toute la largeur sur mobile */}
             <button 
               type="button" 
               className="w-full btn btn-primary flex items-center justify-center"
@@ -482,52 +479,10 @@ const BookingForm = () => {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Calcul du prix en cours...
+                  <span className="whitespace-nowrap">Calcul du prix en cours...</span>
                 </>
               ) : 'Obtenir un devis'}
             </button>
-
-            <div className="mt-8 bg-gray-50 p-6 rounded-lg">
-              <h3 className="text-lg font-semibold mb-4">Notre flotte</h3>
-              <div className="flex flex-col md:flex-row items-center">
-                <div className="mb-4 md:mb-0 md:mr-6 w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-2xl text-primary">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
-                    <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1v-5h2a2 2 0 00.5-3.932l-1.144-4.57a2 2 0 00-1.942-1.498H5.372a2 2 0 00-1.928 1.584l-.857 4.287A1 1 0 002 6h1v9z" />
-                  </svg>
-                </div>
-                <div>
-                  <h4 className="font-medium">Une flotte adaptée à vos besoins</h4>
-                  <p className="text-sm text-gray-600">Véhicules spacieux et confortables, berlines, modèles éco-responsables.</p>
-                  <ul className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1">
-                    <li className="text-xs flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-primary mr-1" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      Jusqu'à 7 passagers
-                    </li>
-                    <li className="text-xs flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-primary mr-1" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      WiFi gratuit
-                    </li>
-                    <li className="text-xs flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-primary mr-1" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      Boissons offertes
-                    </li>
-                    <li className="text-xs flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-primary mr-1" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      Options éco
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
           </div>
         )}
         

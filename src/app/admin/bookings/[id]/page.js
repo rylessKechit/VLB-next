@@ -25,7 +25,10 @@ import {
   faEnvelope,
   faPhone,
   faPlus,
-  faCircleDot
+  faCircleDot,
+  faCheck,
+  faCar,
+  faCalendarCheck
 } from '@fortawesome/free-solid-svg-icons';
 import BookingStatusBadge from '@/components/admin/BookingStatusBadge';
 import RouteMap from '@/components/booking/RouteMap';
@@ -108,13 +111,6 @@ export default function BookingDetailPage() {
     try {
       setActionLoading(true);
       
-      // Vérifier que l'ID est défini
-      if (!id) {
-        alert('ID de réservation manquant');
-        setActionLoading(false);
-        return;
-      }
-      
       // Confirmation pour certains changements de statut
       if (newStatus === 'in_progress') {
         if (!confirm('Êtes-vous sûr de vouloir démarrer cette course ?')) {
@@ -146,6 +142,8 @@ export default function BookingDetailPage() {
       }
       
       const data = await response.json();
+      
+      // Mettre à jour l'état local avec les nouvelles données
       setBooking(data.data);
       
       // Message de confirmation
@@ -181,7 +179,7 @@ export default function BookingDetailPage() {
   
   // Fonction pour supprimer une réservation
   const handleDelete = async () => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette réservation?')) {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette réservation? Cette action est irréversible.')) {
       try {
         setActionLoading(true);
         
@@ -204,32 +202,11 @@ export default function BookingDetailPage() {
     }
   };
   
-  // Fonction pour assigner un chauffeur à une réservation
-  const handleAssignDriver = async (driverId) => {
-    try {
-      setActionLoading(true);
-      
-      const response = await fetch(`/api/bookings/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ assignedDriver: driverId }),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Erreur lors de l\'assignation du chauffeur');
-      }
-      
-      const data = await response.json();
-      setBooking(data.data);
-      setActionLoading(false);
-    } catch (error) {
-      console.error('Erreur:', error);
-      setActionLoading(false);
-      // Afficher un message d'erreur à l'utilisateur
-      alert('Erreur lors de l\'assignation du chauffeur. Veuillez réessayer.');
-    }
+  // Fonction pour formater l'adresse
+  const truncateAddress = (address, maxLength = 30) => {
+    if (!address) return '';
+    if (address.length <= maxLength) return address;
+    return address.substring(0, maxLength) + '...';
   };
   
   if (loading) {
@@ -294,26 +271,7 @@ export default function BookingDetailPage() {
             <FontAwesomeIcon icon={faEdit} className="mr-2" />
             Modifier
           </Link>
-          {booking.status === 'pending' && (
-            <button
-              onClick={() => handleStatusChange('confirmed')}
-              disabled={actionLoading}
-              className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors duration-300 flex items-center disabled:opacity-50"
-            >
-              <FontAwesomeIcon icon={faCheckCircle} className="mr-2" />
-              Confirmer
-            </button>
-          )}
-          {(booking.status === 'pending' || booking.status === 'confirmed') && (
-            <button
-              onClick={() => handleStatusChange('cancelled')}
-              disabled={actionLoading}
-              className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-300 flex items-center disabled:opacity-50"
-            >
-              <FontAwesomeIcon icon={faTimesCircle} className="mr-2" />
-              Annuler
-            </button>
-          )}
+          
           {session?.user?.role === 'admin' && (
             <button
               onClick={handleDelete}
@@ -327,7 +285,164 @@ export default function BookingDetailPage() {
         </div>
       </div>
       
-      {/* Carte et informations de statut */}
+      {/* Section du statut avec indicateur de progression */}
+      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h3 className="text-lg font-semibold mb-4">Statut de la réservation</h3>
+        
+        <div className="flex flex-col items-center justify-center mb-6">
+          <div className="inline-block mb-4">
+            <BookingStatusBadge status={booking.status} />
+          </div>
+          
+          {/* Afficher les dates liées au statut si disponibles */}
+          {booking.status !== 'pending' && (
+            <div className="text-sm text-gray-600 mb-2">
+              {booking.status === 'confirmed' && (
+                <span>Confirmée le {formatDateTime(booking.updatedAt)}</span>
+              )}
+              {booking.status === 'in_progress' && booking.startedAt && (
+                <span>Démarrée le {formatDateTime(booking.startedAt)}</span>
+              )}
+              {booking.status === 'completed' && booking.completedAt && (
+                <span>Terminée le {formatDateTime(booking.completedAt)}</span>
+              )}
+              {booking.status === 'cancelled' && (
+                <span>Annulée le {formatDateTime(booking.updatedAt)}</span>
+              )}
+            </div>
+          )}
+          
+          {/* Indicateur visuel de progression */}
+          <div className="relative pt-6 w-full">
+            <div className="flex mb-2 justify-between">
+              <div className={`text-xs font-semibold inline-block text-center ${booking.status === 'pending' || booking.status === 'confirmed' || booking.status === 'in_progress' || booking.status === 'completed' ? 'text-green-600' : 'text-gray-400'}`}>
+                <div className={`rounded-full w-8 h-8 mx-auto mb-1 flex items-center justify-center ${booking.status === 'pending' || booking.status === 'confirmed' || booking.status === 'in_progress' || booking.status === 'completed' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                  <FontAwesomeIcon icon={faCalendarCheck} />
+                </div>
+                Réservée
+              </div>
+              
+              <div className={`text-xs font-semibold inline-block text-center ${booking.status === 'confirmed' || booking.status === 'in_progress' || booking.status === 'completed' ? 'text-green-600' : 'text-gray-400'}`}>
+                <div className={`rounded-full w-8 h-8 mx-auto mb-1 flex items-center justify-center ${booking.status === 'confirmed' || booking.status === 'in_progress' || booking.status === 'completed' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                  <FontAwesomeIcon icon={faCheckCircle} />
+                </div>
+                Confirmée
+              </div>
+              
+              <div className={`text-xs font-semibold inline-block text-center ${booking.status === 'in_progress' || booking.status === 'completed' ? 'text-green-600' : 'text-gray-400'}`}>
+                <div className={`rounded-full w-8 h-8 mx-auto mb-1 flex items-center justify-center ${booking.status === 'in_progress' || booking.status === 'completed' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                  <FontAwesomeIcon icon={faCar} />
+                </div>
+                En cours
+              </div>
+              
+              <div className={`text-xs font-semibold inline-block text-center ${booking.status === 'completed' ? 'text-green-600' : 'text-gray-400'}`}>
+                <div className={`rounded-full w-8 h-8 mx-auto mb-1 flex items-center justify-center ${booking.status === 'completed' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                  <FontAwesomeIcon icon={faCheck} />
+                </div>
+                Terminée
+              </div>
+            </div>
+            
+            {/* Barre de progression */}
+            <div className="relative mb-6">
+              <div className="h-1 bg-gray-200 rounded-full">
+                <div className={`h-1 rounded-full bg-green-500 transition-all duration-500 ${
+                  booking.status === 'pending' ? 'w-1/4' :
+                  booking.status === 'confirmed' ? 'w-2/4' :
+                  booking.status === 'in_progress' ? 'w-3/4' :
+                  booking.status === 'completed' ? 'w-full' :
+                  booking.status === 'cancelled' ? 'w-0 bg-red-500' : ''
+                }`}></div>
+              </div>
+              
+              {/* Affichage spécial pour les annulations */}
+              {booking.status === 'cancelled' && (
+                <div className="mt-4 p-3 bg-red-50 border-l-4 border-red-500 rounded-r-md">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <FontAwesomeIcon icon={faTimesCircle} className="h-5 w-5 text-red-500" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-red-700">Cette réservation a été annulée</p>
+                      <p className="text-sm text-red-600 mt-1">Date d'annulation : {formatDateTime(booking.updatedAt)}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Actions de statut disponibles */}
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+            {/* Bouton pour "Confirmer" - visible uniquement si le statut est "pending" */}
+            {booking.status === 'pending' && (
+              <button
+                onClick={() => handleStatusChange('confirmed')}
+                disabled={actionLoading}
+                className="w-full px-4 py-3 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors duration-300 flex items-center justify-center disabled:opacity-50"
+              >
+                {actionLoading ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-3"></div>
+                ) : (
+                  <FontAwesomeIcon icon={faCheckCircle} className="mr-2" />
+                )}
+                Confirmer la réservation
+              </button>
+            )}
+            
+            {/* Bouton pour "Démarrer la course" - visible uniquement si le statut est "confirmed" */}
+            {booking.status === 'confirmed' && (
+              <button
+                onClick={() => handleStatusChange('in_progress')}
+                disabled={actionLoading}
+                className="w-full px-4 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-300 flex items-center justify-center disabled:opacity-50"
+              >
+                {actionLoading ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-3"></div>
+                ) : (
+                  <FontAwesomeIcon icon={faCar} className="mr-2" />
+                )}
+                Démarrer la course
+              </button>
+            )}
+            
+            {/* Bouton pour "Terminer la course" - visible uniquement si le statut est "in_progress" */}
+            {booking.status === 'in_progress' && (
+              <button
+                onClick={() => handleStatusChange('completed')}
+                disabled={actionLoading}
+                className="w-full px-4 py-3 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-colors duration-300 flex items-center justify-center disabled:opacity-50"
+              >
+                {actionLoading ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-3"></div>
+                ) : (
+                  <FontAwesomeIcon icon={faCheck} className="mr-2" />
+                )}
+                Terminer la course
+              </button>
+            )}
+            
+            {/* Bouton pour "Annuler" - visible uniquement si le statut est "pending" ou "confirmed" */}
+            {(booking.status === 'pending' || booking.status === 'confirmed') && (
+              <button
+                onClick={() => handleStatusChange('cancelled')}
+                disabled={actionLoading}
+                className="w-full px-4 py-3 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-300 flex items-center justify-center disabled:opacity-50"
+              >
+                {actionLoading ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-3"></div>
+                ) : (
+                  <FontAwesomeIcon icon={faTimesCircle} className="mr-2" />
+                )}
+                Annuler la réservation
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      {/* Carte et informations de prix */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 bg-white rounded-lg shadow overflow-hidden">
           <div className="p-6">
@@ -346,34 +461,72 @@ export default function BookingDetailPage() {
         
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Statut</h3>
-            <div className="flex items-center justify-center mb-6">
-              <div className="inline-block">
-                <BookingStatusBadge status={booking.status} />
+            <h3 className="text-lg font-semibold mb-4">Prix</h3>            
+            <div className="flex items-center">
+              <div className="w-10 h-10 rounded-full bg-primary bg-opacity-10 text-primary flex items-center justify-center mr-3">
+                <FontAwesomeIcon icon={faEuroSign} className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Prix</p>
+                <p className="text-2xl font-bold text-primary">{formatPrice(booking.price)}</p>
               </div>
             </div>
             
-            <div className="space-y-4">
-              <div className="flex items-center">
-                <div className="w-10 h-10 rounded-full bg-primary bg-opacity-10 text-primary flex items-center justify-center mr-3">
-                  <FontAwesomeIcon icon={faClock} className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Créée le</p>
-                  <p className="text-sm font-medium">{formatDateTime(booking.createdAt)}</p>
+            {booking.price && booking.price.breakdown && (
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <h4 className="text-sm font-medium mb-2">Détail du prix</h4>
+                <div className="space-y-1 text-sm">
+                  {booking.price.breakdown.baseFare && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Tarif de base</span>
+                      <span>{booking.price.breakdown.baseFare} €</span>
+                    </div>
+                  )}
+                  
+                  {booking.price.breakdown.distanceCharge && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Distance</span>
+                      <span>{booking.price.breakdown.distanceCharge} €</span>
+                    </div>
+                  )}
+                  
+                  {booking.price.breakdown.timeCharge && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Temps</span>
+                      <span>{booking.price.breakdown.timeCharge} €</span>
+                    </div>
+                  )}
+                  
+                  {booking.price.breakdown.luggageCharge > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Bagages ({booking.luggage})</span>
+                      <span>{booking.price.breakdown.luggageCharge} €</span>
+                    </div>
+                  )}
+                  
+                  {booking.price.breakdown.nightRate && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Supplément de nuit</span>
+                      <span>+30%</span>
+                    </div>
+                  )}
+                  
+                  {booking.price.breakdown.weekendRate && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Supplément weekend</span>
+                      <span>+20%</span>
+                    </div>
+                  )}
+                  
+                  {booking.roundTrip && (
+                    <div className="flex justify-between text-green-600 font-medium">
+                      <span>Réduction aller-retour</span>
+                      <span>-10%</span>
+                    </div>
+                  )}
                 </div>
               </div>
-              
-              <div className="flex items-center">
-                <div className="w-10 h-10 rounded-full bg-primary bg-opacity-10 text-primary flex items-center justify-center mr-3">
-                  <FontAwesomeIcon icon={faEuroSign} className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Prix</p>
-                  <p className="text-lg font-bold text-primary">{formatPrice(booking.price)}</p>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
@@ -500,12 +653,13 @@ export default function BookingDetailPage() {
                 <div className="flex-1">
                   <p className="text-sm text-gray-500">Téléphone</p>
                   <div className="flex items-center">
+                    <p className="text-base font-medium mr-3">{booking.customerInfo?.phone}</p>
                     <a 
                       href={`tel:${booking.customerInfo?.phone}`}
                       className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors duration-300 inline-flex items-center text-sm"
                     >
                       <FontAwesomeIcon icon={faPhone} className="mr-2" />
-                      {booking.customerInfo?.phone}
+                      Appeler
                     </a>
                   </div>
                 </div>
@@ -571,65 +725,97 @@ export default function BookingDetailPage() {
       </div>
       
       {/* Historique des modifications */}
-      {session?.user?.role === 'admin' && (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Historique</h3>
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="p-6">
+          <h3 className="text-lg font-semibold mb-4">Historique</h3>
+          
+          <div className="space-y-4">
+            <div className="flex items-start">
+              <div className="relative">
+                <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center mr-3 z-10">
+                  <FontAwesomeIcon icon={faPlus} className="h-5 w-5" />
+                </div>
+                <div className="absolute top-10 bottom-0 left-5 w-0.5 bg-gray-200 -z-10"></div>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">Réservation créée</p>
+                <p className="text-xs text-gray-500">{formatDateTime(booking.createdAt)}</p>
+              </div>
+            </div>
             
-            <div className="space-y-4">
+            {booking.status !== 'pending' && (
               <div className="flex items-start">
                 <div className="relative">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center mr-3 z-10">
-                    <FontAwesomeIcon icon={faPlus} className="h-5 w-5" />
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 z-10 
+                    ${booking.status === 'confirmed' ? 'bg-green-100 text-green-500' : 
+                      booking.status === 'cancelled' ? 'bg-red-100 text-red-500' : 
+                      booking.status === 'in_progress' ? 'bg-blue-100 text-blue-500' :
+                      booking.status === 'completed' ? 'bg-indigo-100 text-indigo-500' :
+                      'bg-gray-100 text-gray-500'}`}>
+                    <FontAwesomeIcon 
+                      icon={
+                        booking.status === 'confirmed' ? faCheckCircle : 
+                        booking.status === 'cancelled' ? faTimesCircle : 
+                        booking.status === 'in_progress' ? faCar :
+                        booking.status === 'completed' ? faCheck :
+                        faCircleDot
+                      } 
+                      className="h-5 w-5" 
+                    />
                   </div>
                   <div className="absolute top-10 bottom-0 left-5 w-0.5 bg-gray-200 -z-10"></div>
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium">Réservation créée</p>
-                  <p className="text-xs text-gray-500">{formatDateTime(booking.createdAt)}</p>
-                </div>
-              </div>
-              
-              {booking.status !== 'pending' && (
-                <div className="flex items-start">
-                  <div className="relative">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 z-10 
-                      ${booking.status === 'confirmed' ? 'bg-green-100 text-green-500' : 
-                        booking.status === 'cancelled' ? 'bg-red-100 text-red-500' : 
-                        'bg-blue-100 text-blue-500'}`}>
-                      <FontAwesomeIcon 
-                        icon={
-                          booking.status === 'confirmed' ? faCheckCircle : 
-                          booking.status === 'cancelled' ? faTimesCircle : 
-                          faCheck
-                        } 
-                        className="h-5 w-5" 
-                      />
-                    </div>
-                    <div className="absolute top-10 bottom-0 left-5 w-0.5 bg-gray-200 -z-10"></div>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">
-                      Statut modifié: <BookingStatusBadge status={booking.status} />
-                    </p>
-                    <p className="text-xs text-gray-500">{formatDateTime(booking.updatedAt)}</p>
-                  </div>
-                </div>
-              )}
-              
-              <div className="flex items-start">
-                <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center mr-3">
-                  <FontAwesomeIcon icon={faCircleDot} className="h-5 w-5" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Dernière mise à jour</p>
+                  <p className="text-sm font-medium">
+                    Statut modifié: <BookingStatusBadge status={booking.status} />
+                  </p>
                   <p className="text-xs text-gray-500">{formatDateTime(booking.updatedAt)}</p>
                 </div>
+              </div>
+            )}
+            
+            {booking.status === 'in_progress' && booking.startedAt && (
+              <div className="flex items-start">
+                <div className="relative">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center mr-3 z-10">
+                    <FontAwesomeIcon icon={faCar} className="h-5 w-5" />
+                  </div>
+                  <div className="absolute top-10 bottom-0 left-5 w-0.5 bg-gray-200 -z-10"></div>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Course démarrée</p>
+                  <p className="text-xs text-gray-500">{formatDateTime(booking.startedAt)}</p>
+                </div>
+              </div>
+            )}
+            
+            {booking.status === 'completed' && booking.completedAt && (
+              <div className="flex items-start">
+                <div className="relative">
+                  <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-500 flex items-center justify-center mr-3 z-10">
+                    <FontAwesomeIcon icon={faCheck} className="h-5 w-5" />
+                  </div>
+                  <div className="absolute top-10 bottom-0 left-5 w-0.5 bg-gray-200 -z-10"></div>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Course terminée</p>
+                  <p className="text-xs text-gray-500">{formatDateTime(booking.completedAt)}</p>
+                </div>
+              </div>
+            )}
+            
+            <div className="flex items-start">
+              <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center mr-3">
+                <FontAwesomeIcon icon={faCircleDot} className="h-5 w-5" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">Dernière mise à jour</p>
+                <p className="text-xs text-gray-500">{formatDateTime(booking.updatedAt)}</p>
               </div>
             </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
