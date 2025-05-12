@@ -75,7 +75,7 @@ export default function ContactPage() {
       <div className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl md:text-4xl font-bold text-center text-primary mb-4 animate-fade-in">
-            CONTACTEZ TAXI VLB À VERRIÈRES-LE-BUISSON (91)
+            CONTACTEZ VOTRE TAXI À VERRIÈRES-LE-BUISSON (91)
           </h1>
           <p className="text-lg text-center text-gray-600 mb-2">
             Réservez votre taxi 24h/24 et 7j/7 en Essonne
@@ -245,32 +245,6 @@ export default function ContactPage() {
                   </button>
                 </form>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* Map Section */}
-      <div className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-5xl mx-auto">
-            <h2 className="text-2xl font-bold mb-12 text-center uppercase">OÙ NOUS TROUVER</h2>
-            
-            <div className="bg-gray-100 p-4 rounded-lg">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d21026.043482089206!2d2.253926465311398!3d48.74645059999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47e677b02a914d0d%3A0x40b82c3688c3880!2s91370%20Verri%C3%A8res-le-Buisson!5e0!3m2!1sfr!2sfr!4v1715264124805!5m2!1sfr!2sfr"
-                width="100%"
-                height="450"
-                style={{ border: 0 }}
-                allowFullScreen=""
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Taxi VLB - Verrières-le-Buisson (91)"
-                className="rounded-lg shadow-md"
-              ></iframe>
-              <p className="text-sm text-gray-500 mt-2 text-center">
-                Nous desservons Verrières-le-Buisson et toute l'Essonne pour vos déplacements en taxi
-              </p>
             </div>
           </div>
         </div>

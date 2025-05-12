@@ -41,6 +41,27 @@
         </image:image>
     </url>
 
+    <!-- Page flotte -->
+    <url>
+        <loc>https://www.taxi-verrieres-le-buisson.com/flotte</loc>
+        <lastmod>2025-04-20T10:00:00+00:00</lastmod>
+        <priority>0.9</priority>
+        <changefreq>monthly</changefreq>
+        <mobile:mobile/>
+        <image:image>
+            <image:loc>https://www.taxi-verrieres-le-buisson.com/images/tesla-model-3.webp</image:loc>
+            <image:title>Tesla Model 3 - Notre véhicule électrique</image:title>
+        </image:image>
+        <image:image>
+            <image:loc>https://www.taxi-verrieres-le-buisson.com/images/mercedes-classe-e.webp</image:loc>
+            <image:title>Mercedes Classe E - Berline premium</image:title>
+        </image:image>
+        <image:image>
+            <image:loc>https://www.taxi-verrieres-le-buisson.com/images/mercedes-classe-v.webp</image:loc>
+            <image:title>Mercedes Classe V - Van premium</image:title>
+        </image:image>
+    </url>
+
     <!-- À propos -->
     <url>
         <loc>https://www.taxi-verrieres-le-buisson.com/about</loc>

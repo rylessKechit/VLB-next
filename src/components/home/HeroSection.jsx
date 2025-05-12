@@ -50,7 +50,7 @@ export default function HeroSection() {
 
       <div className="container relative z-20 px-4 max-w-5xl mx-auto">
         <h1 className={`text-4xl md:text-5xl lg:text-6xl font-bold mb-4 ${animationsEnabled ? 'animate-slide-in-left' : ''}`}>
-          <span className="text-primary">TAXI VLB</span> <span className="text-2xl md:text-3xl block mt-2">VERRIÈRES-LE-BUISSON</span>
+          <span className="text-primary">TAXI VLB</span> <span className="text-2xl md:text-3xl block mt-2 text-primary">VERRIÈRES-LE-BUISSON</span>
         </h1>
         
         <p className="text-xl md:text-2xl font-light mb-6">

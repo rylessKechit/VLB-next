@@ -13,7 +13,7 @@ export async function POST(request) {
       luggage, 
       roundTrip,
       returnDateTime,
-      vehicleType  // Nouveau paramètre pour le type de véhicule
+      vehicleType  // green, berline, van
     } = data;
 
     // Validation des données
@@ -37,52 +37,52 @@ export async function POST(request) {
     const { distanceInMeters, durationInSeconds, distanceText, durationText } = distanceResult;
     const distanceInKm = distanceInMeters / 1000;
     
-    // Tarifs selon le barème Taxi VLB
+    // CORRECTION : Mapper les bons types de véhicules
     const VEHICLE_PRICING = {
       green: {
-        baseFare: 5.0,          // Prise en charge
-        pricePerKm: 2.30,       // Prix par km
-        minDistanceKm: 0,       // Pas de distance minimale
+        baseFare: 5.0,          
+        pricePerKm: 2.30,       
+        minDistanceKm: 0,       
         name: 'Tesla Model 3',
         category: 'Éco'
       },
-      premium: {
-        baseFare: 5.0,          // Prise en charge standard
-        pricePerKm: 1.5,        // Prix standard par km
-        minDistanceKm: 0,       // Pas de distance minimale
+      berline: {                // ✅ Corrigé de 'premium' à 'berline'
+        baseFare: 5.0,          
+        pricePerKm: 1.5,        
+        minDistanceKm: 0,       
         name: 'Mercedes Classe E',
-        category: 'Premium'
+        category: 'Berline'     // ✅ Corrigé
       },
       van: {
-        baseFare: 10.0,         // Prise en charge plus élevée pour le van
-        pricePerKm: 2.0,        // Prix par km pour véhicule spacieux
-        minDistanceKm: 0,       // Pas de distance minimale
+        baseFare: 10.0,         
+        pricePerKm: 2.0,        
+        minDistanceKm: 0,       
         name: 'Mercedes Classe V',
         category: 'Van'
       }
     };
     
-    // Utiliser les tarifs premium par défaut si vehicleType n'est pas spécifié
+    // ✅ Utiliser 'berline' par défaut au lieu de 'premium'
     const selectedVehicle = vehicleType && VEHICLE_PRICING[vehicleType] 
       ? vehicleType 
-      : 'premium';
+      : 'berline';
     
     const vehicleConfig = VEHICLE_PRICING[selectedVehicle];
     
     // Calcul du prix de base
     let totalPrice = vehicleConfig.baseFare;
     
-    // Calcul de la distance facturable (minimum ou distance réelle)
+    // Calcul de la distance facturable
     const chargeableDistance = Math.max(distanceInKm, vehicleConfig.minDistanceKm);
     const distancePrice = chargeableDistance * vehicleConfig.pricePerKm;
     totalPrice += distancePrice;
     
-    // Vérifier si c'est la nuit ou le weekend pour Taxi VLB
+    // Vérifier si c'est la nuit ou le weekend
     const pickupDate = new Date(pickupDateTime);
     const hour = pickupDate.getHours();
     const dayOfWeek = pickupDate.getDay();
     
-    // Tarif de nuit (entre 19h et 7h) - Taxi VLB
+    // Tarif de nuit (entre 19h et 7h)
     const isNightRate = hour >= 19 || hour < 7;
     
     // Tarif weekend (samedi et dimanche)
@@ -151,7 +151,8 @@ export async function POST(request) {
             chargeableDistanceInKm: chargeableDistance,
             durationInMinutes: Math.round(durationInSeconds / 60),
             formattedDistance: distanceText,
-            formattedDuration: durationText
+            formattedDuration: durationText,
+            polyline: polyline // ✅ Ajouté le polyline dans details
           }
         },
         route: {
@@ -171,7 +172,6 @@ export async function POST(request) {
     // Log pour debug
     console.log(`Prix calculé pour ${vehicleConfig.name}: ${totalPrice}€`);
     console.log(`Distance: ${distanceInKm}km, Durée: ${Math.round(durationInSeconds / 60)}min`);
-    console.log(`Majorations: Nuit=${isNightRate ? '15%' : '0%'}, Weekend=${isWeekendRate ? '10%' : '0%'}`);
 
     return NextResponse.json(response);
   } catch (error) {

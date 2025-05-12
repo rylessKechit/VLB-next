@@ -6,17 +6,19 @@ import AddressInput from './AddressInput';
 import DateTimePicker from './DateTimePicker';
 import BookingSuccess from './BookingSuccess';
 import RouteMap from './RouteMap';
+import VehicleSelector from './VehicleSelector';
 
 const BookingForm = () => {
   // États pour les étapes du formulaire
   const [currentStep, setCurrentStep] = useState(1);
   const [priceEstimate, setPriceEstimate] = useState(null);
+  const [availableVehicles, setAvailableVehicles] = useState([]); // État manquant
+  const [selectedVehicle, setSelectedVehicle] = useState(null); // État pour le véhicule sélectionné
   const [isCalculating, setIsCalculating] = useState(false);
   const [error, setError] = useState('');
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [bookingResult, setBookingResult] = useState(null);
   
-  // Utilisation de react-hook-form pour la gestion du formulaire
   const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm({
     defaultValues: {
       pickupAddress: '',
@@ -40,12 +42,10 @@ const BookingForm = () => {
   
   // Initialiser les champs de date et heure
   useEffect(() => {
-    // Date de demain
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const formattedDate = formatDate(tomorrow);
     
-    // Heure actuelle + 2 heures
     const defaultTime = new Date();
     defaultTime.setHours(defaultTime.getHours() + 2);
     const formattedTime = formatTime(defaultTime);
@@ -54,7 +54,6 @@ const BookingForm = () => {
     setValue('pickupTime', formattedTime);
   }, [setValue]);
 
-  // Vérifier si l'adresse contient un aéroport ou une gare
   const [isAirport, setIsAirport] = useState(false);
   const [isTrainStation, setIsTrainStation] = useState(false);
 
@@ -91,15 +90,12 @@ const BookingForm = () => {
   const handleInputChange = (name, value) => {
     setValue(name, value);
     
-    // Si roundTrip est toggled à false, clear return date/time
     if (name === 'roundTrip' && value === false) {
       setValue('returnDate', '');
       setValue('returnTime', '');
     }
     
-    // Si roundTrip est toggled à true, set default return date/time
     if (name === 'roundTrip' && value === true && !formValues.returnDate) {
-      // Default return date is pickup date + 3 days
       const returnDate = new Date(formValues.pickupDate);
       returnDate.setDate(returnDate.getDate() + 3);
       
@@ -107,9 +103,10 @@ const BookingForm = () => {
       setValue('returnTime', formValues.pickupTime);
     }
     
-    // Reset price estimate when key values change
     if (['pickupAddress', 'dropoffAddress', 'pickupDate', 'pickupTime', 'passengers', 'luggage', 'roundTrip'].includes(name)) {
       setPriceEstimate(null);
+      setAvailableVehicles([]);
+      setSelectedVehicle(null);
     }
   };
   
@@ -117,199 +114,130 @@ const BookingForm = () => {
     setValue(name, address);
     setValue(`${name}PlaceId`, placeId);
     setPriceEstimate(null);
+    setAvailableVehicles([]);
+    setSelectedVehicle(null);
   };
   
+  // Fonction corrigée pour calculer le prix
   const calculatePrice = async () => {
-  // Validation des champs obligatoires
-  if (!formValues.pickupAddress || !formValues.dropoffAddress || !formValues.pickupDate || !formValues.pickupTime) {
-    setError('Veuillez remplir tous les champs obligatoires')
-    return
-  }
-  
-  if (!formValues.pickupAddressPlaceId || !formValues.dropoffAddressPlaceId) {
-    setError('Veuillez sélectionner des adresses valides dans les suggestions')
-    return
-  }
-  
-  setError('')
-  setIsCalculating(true)
-  
-  try {
-    // Calculer pour les 3 types de véhicules VLB
-    const vehicleTypes = ['green', 'berline', 'van']
-    const vehicleEstimates = []
+    if (!formValues.pickupAddress || !formValues.dropoffAddress || !formValues.pickupDate || !formValues.pickupTime) {
+      setError('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
     
-    for (const vehicleType of vehicleTypes) {
-      try {
-        const response = await api.post('/price/estimate', {
-          pickupPlaceId: formValues.pickupAddressPlaceId,
-          dropoffPlaceId: formValues.dropoffAddressPlaceId,
-          pickupDateTime: `${formValues.pickupDate}T${formValues.pickupTime}`,
-          passengers: parseInt(formValues.passengers),
-          luggage: parseInt(formValues.luggage),
-          roundTrip: formValues.roundTrip,
-          returnDateTime: formValues.roundTrip && formValues.returnDate ? `${formValues.returnDate}T${formValues.returnTime}` : null,
-          vehicleType: vehicleType
-        })
-        
-        if (response.data && response.data.success) {
-          vehicleEstimates.push({
-            vehicleType,
-            estimate: response.data.data.estimate
-          })
+    if (!formValues.pickupAddressPlaceId || !formValues.dropoffAddressPlaceId) {
+      setError('Veuillez sélectionner des adresses valides dans les suggestions');
+      return;
+    }
+    
+    setError('');
+    setIsCalculating(true);
+    
+    try {
+      // Calculer pour les 3 types de véhicules VLB
+      const vehicleTypes = ['green', 'berline', 'van'];
+      const vehicleEstimates = [];
+      
+      for (const vehicleType of vehicleTypes) {
+        try {
+          // Utiliser fetch au lieu de api.post qui n'existe pas
+          const response = await fetch('/api/price/estimate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              pickupPlaceId: formValues.pickupAddressPlaceId,
+              dropoffPlaceId: formValues.dropoffAddressPlaceId,
+              pickupDateTime: `${formValues.pickupDate}T${formValues.pickupTime}`,
+              passengers: parseInt(formValues.passengers),
+              luggage: parseInt(formValues.luggage),
+              roundTrip: formValues.roundTrip,
+              returnDateTime: formValues.roundTrip && formValues.returnDate ? `${formValues.returnDate}T${formValues.returnTime}` : null,
+              vehicleType: vehicleType
+            })
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+              vehicleEstimates.push({
+                vehicleType,
+                estimate: data.data.estimate
+              });
+            }
+          }
+        } catch (err) {
+          console.error(`Erreur pour le véhicule ${vehicleType}:`, err);
+          continue;
         }
-      } catch (err) {
-        // Continuer avec les autres véhicules même si un calcul échoue
-        continue
       }
-    }
-    
-    if (vehicleEstimates.length === 0) {
-      throw new Error('Impossible de calculer le prix pour aucun véhicule')
-    }
-    
-    // Créer les options de véhicules VLB avec les prix réels
-    const vehicleOptions = [
-      {
-        id: 'green',
-        name: 'Tesla Model 3',
-        desc: 'Élégance et technologie - 100% électrique',
-        capacity: 'Jusqu\'à 4 passagers',
-        luggage: 'Jusqu\'à 3 bagages',
-        estimate: vehicleEstimates.find(v => v.vehicleType === 'green')?.estimate || null,
-        price: vehicleEstimates.find(v => v.vehicleType === 'green')?.estimate?.exactPrice || 0
-      },
-      {
-        id: 'berline',
-        name: 'Mercedes Classe E',
-        desc: 'Confort et prestige au quotidien',
-        capacity: 'Jusqu\'à 4 passagers',
-        luggage: 'Jusqu\'à 4 bagages',
-        estimate: vehicleEstimates.find(v => v.vehicleType === 'berline')?.estimate || null,
-        price: vehicleEstimates.find(v => v.vehicleType === 'berline')?.estimate?.exactPrice || 0
-      },
-      {
-        id: 'van',
-        name: 'Mercedes Classe V',
-        desc: 'Espace et luxe pour vos groupes',
-        capacity: 'Jusqu\'à 7 passagers',
-        luggage: 'Grande capacité bagages',
-        estimate: vehicleEstimates.find(v => v.vehicleType === 'van')?.estimate || null,
-        price: vehicleEstimates.find(v => v.vehicleType === 'van')?.estimate?.exactPrice || 0
+      
+      if (vehicleEstimates.length === 0) {
+        throw new Error('Impossible de calculer le prix pour aucun véhicule');
       }
-    ]
-    
-    // Filtrer les véhicules qui ont pu être calculés
-    const validVehicles = vehicleOptions.filter(v => v.estimate !== null)
-    
-    setAvailableVehicles(validVehicles)
-    setCurrentStep(2)
-  } catch (err) {
-    setError(err.message || 'Erreur lors du calcul du prix')
-  } finally {
-    setIsCalculating(false)
-  }
-}
-
-// Ajouter également cette fonction pour créer des estimations par défaut si nécessaire :
-const createVehicleOptions = (baseEstimate, formValues) => {
-  // Configuration des tarifs VLB pour les 3 véhicules
-  const BASE_FARES = { 
-    green: 5,      // Tesla Model 3
-    berline: 8,    // Classe E
-    van: 12        // Classe V
-  };
-  
-  const PER_KM_RATES = { 
-    green: 1.5,    // Tesla Model 3
-    berline: 1.8,  // Classe E
-    van: 2.2       // Classe V
-  };
-  
-  const MIN_DISTANCE_KM = { 
-    green: 0, 
-    berline: 0, 
-    van: 0 
-  };
-  
-  // Fonction pour calculer le prix d'un véhicule
-  function calculateVehiclePrice(vehicleType) {
-    const baseFare = BASE_FARES[vehicleType];
-    const perKmRate = PER_KM_RATES[vehicleType];
-    const minDistance = MIN_DISTANCE_KM[vehicleType];
-    
-    const distanceInKm = baseEstimate.details?.distanceInKm || 25;
-    const chargeableDistance = Math.max(distanceInKm, minDistance);
-    const distanceCharge = chargeableDistance * perKmRate;
-    
-    let exactPrice = baseFare + distanceCharge;
-    if (formValues.roundTrip) exactPrice *= 2;
-    
-    exactPrice = Math.round(exactPrice * 100) / 100;
-    
-    return {
-      exactPrice,
-      minPrice: Math.round(exactPrice * 0.95 * 100) / 100,
-      maxPrice: Math.round(exactPrice * 1.05 * 100) / 100,
-      currency: 'EUR',
-      breakdown: {
-        baseFare,
-        distanceCharge,
-        actualDistance: distanceInKm,
-        chargeableDistance,
-        pricePerKm: perKmRate,
-        roundTrip: formValues.roundTrip,
-        vehicleType
-      },
-      details: {
-        distanceInKm,
-        chargeableDistanceInKm: chargeableDistance,
-        durationInMinutes: baseEstimate.details?.durationInMinutes || 30,
-        formattedDistance: baseEstimate.details?.formattedDistance || `${distanceInKm} km`,
-        formattedDuration: baseEstimate.details?.formattedDuration || "30 min"
-      }
-    };
-  }
-  
-  // Créer les options pour les 3 véhicules
-  return [
-    {
-      id: 'green',
-      name: 'Tesla Model 3',
-      desc: 'Élégance et technologie - 100% électrique',
-      capacity: 'Jusqu\'à 4 passagers',
-      luggage: 'Jusqu\'à 3 bagages',
-      price: calculateVehiclePrice('green').exactPrice,
-      estimate: calculateVehiclePrice('green')
-    },
-    {
-      id: 'berline',
-      name: 'Mercedes Classe E',
-      desc: 'Confort et prestige au quotidien',
-      capacity: 'Jusqu\'à 4 passagers',
-      luggage: 'Jusqu\'à 4 bagages',
-      price: calculateVehiclePrice('berline').exactPrice,
-      estimate: calculateVehiclePrice('berline')
-    },
-    {
-      id: 'van',
-      name: 'Mercedes Classe V',
-      desc: 'Espace et luxe pour vos groupes',
-      capacity: 'Jusqu\'à 7 passagers',
-      luggage: 'Grande capacité bagages',
-      price: calculateVehiclePrice('van').exactPrice,
-      estimate: calculateVehiclePrice('van')
+      
+      // Créer les options de véhicules VLB avec les prix réels
+      const vehicleOptions = [
+        {
+          id: 'green',
+          name: 'Tesla Model 3',
+          desc: 'Élégance et technologie - 100% électrique',
+          capacity: 'Jusqu\'à 4 passagers',
+          luggage: 'Jusqu\'à 3 bagages',
+          estimate: vehicleEstimates.find(v => v.vehicleType === 'green')?.estimate || null,
+          price: vehicleEstimates.find(v => v.vehicleType === 'green')?.estimate?.exactPrice || 0
+        },
+        {
+          id: 'berline',
+          name: 'Mercedes Classe E',
+          desc: 'Confort et prestige au quotidien',
+          capacity: 'Jusqu\'à 4 passagers',
+          luggage: 'Jusqu\'à 4 bagages',
+          estimate: vehicleEstimates.find(v => v.vehicleType === 'berline')?.estimate || null,
+          price: vehicleEstimates.find(v => v.vehicleType === 'berline')?.estimate?.exactPrice || 0
+        },
+        {
+          id: 'van',
+          name: 'Mercedes Classe V',
+          desc: 'Espace et luxe pour vos groupes',
+          capacity: 'Jusqu\'à 7 passagers',
+          luggage: 'Grande capacité bagages',
+          estimate: vehicleEstimates.find(v => v.vehicleType === 'van')?.estimate || null,
+          price: vehicleEstimates.find(v => v.vehicleType === 'van')?.estimate?.exactPrice || 0
+        }
+      ];
+      
+      // Filtrer les véhicules qui ont pu être calculés
+      const validVehicles = vehicleOptions.filter(v => v.estimate !== null);
+      
+      setAvailableVehicles(validVehicles);
+      setCurrentStep(2); // Aller à l'étape de sélection de véhicule
+    } catch (err) {
+      setError(err.message || 'Erreur lors du calcul du prix');
+    } finally {
+      setIsCalculating(false);
     }
-  ];
-};
+  };
   
   const onFirstStepSubmit = (data) => {
-    calculatePrice(data);
+    calculatePrice();
+  };
+  
+  // Fonction pour passer à l'étape suivante après sélection du véhicule
+  const onVehicleSelect = (vehicleId, estimate) => {
+    setSelectedVehicle(vehicleId);
+    setPriceEstimate(estimate);
+    setCurrentStep(3); // Aller à l'étape finale
   };
   
   const onFinalSubmit = async (data) => {
+    if (!selectedVehicle || !priceEstimate) {
+      setError('Veuillez sélectionner un véhicule');
+      return;
+    }
+    
     try {
-      // Préparer les données dans le format attendu par l'API
       const bookingData = {
         pickupAddress: data.pickupAddress,
         dropoffAddress: data.dropoffAddress,
@@ -331,10 +259,12 @@ const createVehicleOptions = (baseEstimate, formValues) => {
         price: {
           amount: priceEstimate.exactPrice,
           currency: 'EUR'
-        }
+        },
+        vehicleType: selectedVehicle,
+        pickupAddressPlaceId: data.pickupAddressPlaceId,
+        dropoffAddressPlaceId: data.dropoffAddressPlaceId
       };
   
-      // Appeler l'API
       const response = await fetch('/api/bookings', {
         method: 'POST',
         headers: {
@@ -363,12 +293,10 @@ const createVehicleOptions = (baseEstimate, formValues) => {
     }
   };
   
-  // Afficher le composant de confirmation de réservation
   if (bookingSuccess && bookingResult) {
     return <BookingSuccess bookingData={bookingResult} />;
   }
   
-  // Fonction pour créer un composant de compteur accessible
   const QuantityCounter = ({ id, value, onChange, min, max, label, helpText }) => {
     return (
       <div>
@@ -423,7 +351,8 @@ const createVehicleOptions = (baseEstimate, formValues) => {
       <div className="flex border-b border-gray-200">
         {[
           { step: 1, label: "Détails du trajet" },
-          { step: 2, label: "Confirmation" }
+          { step: 2, label: "Sélection véhicule" },
+          { step: 3, label: "Confirmation" }
         ].map((item) => (
           <div 
             key={item.step} 
@@ -434,7 +363,7 @@ const createVehicleOptions = (baseEstimate, formValues) => {
             </div>
             <span className="text-sm font-medium hidden sm:block">{item.label}</span>
             
-            {item.step < 2 && (
+            {item.step < 3 && (
               <div className={`absolute top-7 left-1/2 w-full h-0.5 ${currentStep > item.step ? 'bg-primary' : 'bg-gray-200'}`} style={{ width: 'calc(100% - 4rem)', left: 'calc(50% + 2rem)' }}></div>
             )}
           </div>
@@ -482,7 +411,6 @@ const createVehicleOptions = (baseEstimate, formValues) => {
               {errors.dropoffAddress && <p className="mt-1 text-sm text-red-600">{errors.dropoffAddress.message}</p>}
             </div>
             
-            {/* Champs conditionnels adaptés au responsive */}
             {isAirport && (
               <div className="mb-6">
                 <label htmlFor="flightNumber" className="block text-sm font-medium text-gray-700 mb-2">
@@ -506,7 +434,6 @@ const createVehicleOptions = (baseEstimate, formValues) => {
               </div>
             )}
             
-            {/* Grille responsive améliorée */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
               <div>
                 <label htmlFor="pickupDate" className="block text-sm font-medium text-gray-700 mb-2">
@@ -540,7 +467,6 @@ const createVehicleOptions = (baseEstimate, formValues) => {
                   </label>
                 </div>
                 
-                {/* Affichage conditionnel avec animation fluide */}
                 <div className={`transition-all duration-300 overflow-hidden ${formValues.roundTrip ? 'max-h-60 opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
                   <label htmlFor="returnDate" className="block text-sm font-medium text-gray-700 mb-2">
                     Date et heure de retour <span className="text-red-500">*</span>
@@ -558,7 +484,6 @@ const createVehicleOptions = (baseEstimate, formValues) => {
               </div>
             </div>
             
-            {/* Compteurs plus adaptés aux écrans mobiles */}
             <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 md:gap-6 mb-6">
               <QuantityCounter
                 id="passengers"
@@ -601,7 +526,6 @@ const createVehicleOptions = (baseEstimate, formValues) => {
               </div>
             </div>
             
-            {/* Bouton adaptatif qui prend toute la largeur sur mobile */}
             <button 
               type="button" 
               className="w-full btn btn-primary flex items-center justify-center"
@@ -621,8 +545,53 @@ const createVehicleOptions = (baseEstimate, formValues) => {
           </div>
         )}
         
-        {/* Étape 2: Informations client et confirmation */}
+        {/* Étape 2: Sélection de véhicule */}
         {currentStep === 2 && (
+          <div className="p-6 md:p-8">
+            <h3 className="text-xl font-semibold mb-6 text-center">Choisissez votre véhicule</h3>
+            
+            <div className="mb-6">
+              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <h4 className="font-medium mb-2">Résumé du trajet</h4>
+                <div className="text-sm text-gray-600">
+                  <p><strong>De:</strong> {formValues.pickupAddress}</p>
+                  <p><strong>À:</strong> {formValues.dropoffAddress}</p>
+                  <p><strong>Quand:</strong> {new Date(`${formValues.pickupDate}T${formValues.pickupTime}`).toLocaleString('fr-FR')}</p>
+                  <p><strong>Passagers:</strong> {formValues.passengers} | <strong>Bagages:</strong> {formValues.luggage}</p>
+                </div>
+              </div>
+            </div>
+            
+            <VehicleSelector
+              vehicles={availableVehicles}
+              selectedVehicle={selectedVehicle}
+              onSelect={onVehicleSelect}
+              passengers={formValues.passengers}
+              luggage={formValues.luggage}
+            />
+            
+            <div className="flex justify-between mt-6">
+              <button 
+                type="button" 
+                className="btn btn-outline flex items-center justify-center"
+                onClick={goBack}
+                aria-label="Retourner à l'étape précédente"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                </svg>
+                Retour
+              </button>
+              
+              {!selectedVehicle && (
+                <p className="text-gray-500 flex items-center">Sélectionnez un véhicule pour continuer</p>
+              )}
+            </div>
+          </div>
+        )}
+        
+        {/* Étape 3: Informations client et confirmation */}
+        {currentStep === 3 && (
           <div className="p-6 md:p-8">
             <h3 className="text-xl font-semibold mb-6 text-center">Vos informations</h3>
             
@@ -677,7 +646,7 @@ const createVehicleOptions = (baseEstimate, formValues) => {
             </div>
             
             {/* Résumé de la réservation */}
-            {priceEstimate && (
+            {priceEstimate && selectedVehicle && (
               <div className="bg-gray-50 rounded-lg p-6 mb-6">
                 <h4 className="font-semibold text-lg mb-4">Résumé de votre réservation</h4>
 
@@ -688,7 +657,7 @@ const createVehicleOptions = (baseEstimate, formValues) => {
                     dropoffAddress={formValues.dropoffAddress}
                     pickupPlaceId={formValues.pickupAddressPlaceId}
                     dropoffPlaceId={formValues.dropoffAddressPlaceId}
-                    polyline={priceEstimate.route?.polyline}
+                    polyline={priceEstimate.details?.polyline}
                   />
                   <p className="text-xs text-gray-500 mt-2">
                     Itinéraire approximatif. Le chauffeur pourra prendre un chemin différent selon les conditions de circulation.
@@ -733,6 +702,13 @@ const createVehicleOptions = (baseEstimate, formValues) => {
                       </p>
                     </div>
                   )}
+                  
+                  <div>
+                    <span className="text-sm text-gray-500">Véhicule:</span>
+                    <p className="font-medium">
+                      {availableVehicles.find(v => v.id === selectedVehicle)?.name || selectedVehicle}
+                    </p>
+                  </div>
                   
                   <div>
                     <span className="text-sm text-gray-500">Passagers:</span>

@@ -1,7 +1,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faPlaneDeparture, faRoute, faTrain, faCheck, faUserTie, faWater, faWifi, faClock, faQuoteLeft } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown, faPlaneDeparture, faRoute, faTrain, faCheck, faUserTie, faWater, faWifi, faClock, faQuoteLeft, faLeaf, 
+  faUsers, 
+  faSuitcase, 
+  faChargingStation, 
+  faCouch } from '@fortawesome/free-solid-svg-icons';
 import BookingForm from '@/components/booking/BookingForm';
 import HeroSection from '@/components/home/HeroSection';
 import { Suspense } from 'react';
@@ -118,86 +122,150 @@ export default function Home() {
         <div className="container">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold uppercase">
-              NOTRE FLOTTE DE TAXIS À VERRIÈRES-LE-BUISSON
+              NOTRE FLOTTE PREMIUM
             </h2>
             <p className="text-text-light text-lg mt-4 max-w-3xl mx-auto">
-              Des véhicules spacieux et confortables pour tous vos trajets en Essonne
+              Découvrez nos véhicules d'exception pour tous vos trajets à Verrières-le-Buisson
             </p>
           </div>
           
-          <div className="bg-white rounded-lg shadow-custom p-6 md:p-10 flex flex-col md:flex-row gap-10 mt-12">
-            <div className="w-full md:w-1/2">
-              <Image 
-                src="/images/mercedes-v-class.webp" 
-                alt="Mercedes Classe V Taxi Verrières-le-Buisson" 
-                width={600} 
-                height={400} 
-                className="rounded-lg shadow-custom-light w-full h-auto object-cover"
-                sizes="(max-width: 768px) 100vw, 600px"
-                quality={75}
-                loading="lazy"
-                placeholder="blur"
-                blurDataURL="data:image/webp;base64,UklGRlIAAABXRUJQVlA4WAoAAAAQAAAACQAABQAAQUxQSCQAAAABF0AmbQM29g9QvSJyPCKCA9QDRdgkKDsPYQdpB2HYIbgAtWwA"
-              />
-            </div>
-            <div className="w-full md:w-1/2">
-              <h3 className="text-2xl font-bold mb-4">Flotte Haut de Gamme</h3>
-              <p className="text-text-light mb-6">
-                Notre flotte de véhicules est le choix parfait pour tous vos déplacements à Verrières-le-Buisson et en Île-de-France. Nous disposons de plusieurs modèles pour répondre à vos besoins :
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                <ul className="space-y-3">
-                  <li className="flex items-center">
-                    <FontAwesomeIcon icon={faCheck} className="text-primary mr-3" />
-                    <span>Jusqu'à 7 passagers</span>
-                  </li>
-                  <li className="flex items-center">
-                    <FontAwesomeIcon icon={faCheck} className="text-primary mr-3" />
-                    <span>Grand espace bagages</span>
-                  </li>
-                  <li className="flex items-center">
-                    <FontAwesomeIcon icon={faCheck} className="text-primary mr-3" />
-                    <span>Climatisation efficace</span>
-                  </li>
-                  <li className="flex items-center">
-                    <FontAwesomeIcon icon={faCheck} className="text-primary mr-3" />
-                    <span>Sièges confortables</span>
-                  </li>
-                  <li className="flex items-center">
-                    <FontAwesomeIcon icon={faCheck} className="text-primary mr-3" />
-                    <span>Suspension adaptée</span>
-                  </li>
-                </ul>
-                <ul className="space-y-3">
-                  <li className="flex items-center">
-                    <FontAwesomeIcon icon={faCheck} className="text-primary mr-3" />
-                    <span>WiFi gratuit</span>
-                  </li>
-                  <li className="flex items-center">
-                    <FontAwesomeIcon icon={faCheck} className="text-primary mr-3" />
-                    <span>Prises USB pour recharge</span>
-                  </li>
-                  <li className="flex items-center">
-                    <FontAwesomeIcon icon={faCheck} className="text-primary mr-3" />
-                    <span>Eau minérale offerte</span>
-                  </li>
-                  <li className="flex items-center">
-                    <FontAwesomeIcon icon={faCheck} className="text-primary mr-3" />
-                    <span>Accès facile pour tous</span>
-                  </li>
-                  <li className="flex items-center">
-                    <FontAwesomeIcon icon={faCheck} className="text-primary mr-3" />
-                    <span>Options éco-responsables</span>
-                  </li>
-                </ul>
+          {/* Véhicules en grille */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+            {/* Tesla Model 3 */}
+            <div className="bg-white rounded-lg shadow-custom overflow-hidden hover:shadow-custom-dark transition-all duration-300">
+              <div className="relative h-48">
+                <Image 
+                  src="/images/tesla-model-3-preview.webp" 
+                  alt="Tesla Model 3 - Taxi électrique VLB" 
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  loading="lazy"
+                />
+                <div className="absolute top-3 right-3 bg-green-500 text-white px-2 py-1 rounded-md text-xs font-medium">
+                  <FontAwesomeIcon icon={faLeaf} className="mr-1" />
+                  Électrique
+                </div>
               </div>
-              <Link href="#booking" 
-                className="btn btn-primary"
-                aria-label="Réserver un taxi à Verrières-le-Buisson"
-              >
-                Réserver maintenant
-              </Link>
+              <div className="p-6">
+                <h3 className="text-xl font-bold mb-2">Tesla Model 3</h3>
+                <p className="text-gray-600 mb-4">L'élégance électrique au service de l'environnement</p>
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <FontAwesomeIcon icon={faUsers} className="mr-2 text-primary w-4" />
+                    <span>Jusqu'à 4 passagers</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <FontAwesomeIcon icon={faSuitcase} className="mr-2 text-primary w-4" />
+                    <span>Jusqu'à 3 bagages</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <FontAwesomeIcon icon={faChargingStation} className="mr-2 text-green-500 w-4" />
+                    <span className="font-medium">100% électrique</span>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <Link href="/flotte#green" className="text-primary hover:text-primary-dark font-medium">
+                    En savoir plus →
+                  </Link>
+                </div>
+              </div>
             </div>
+
+            {/* Mercedes Classe E */}
+            <div className="bg-white rounded-lg shadow-custom overflow-hidden hover:shadow-custom-dark transition-all duration-300">
+              <div className="relative h-48">
+                <Image 
+                  src="/images/mercedes-classe-e-preview.webp" 
+                  alt="Mercedes Classe E - Taxi premium VLB" 
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  loading="lazy"
+                />
+                <div className="absolute top-3 right-3 bg-primary text-white px-2 py-1 rounded-md text-xs font-medium">
+                  Berline
+                </div>
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-bold mb-2">Mercedes Classe E</h3>
+                <p className="text-gray-600 mb-4">Le raffinement allemand pour vos trajets d'exception</p>
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <FontAwesomeIcon icon={faUsers} className="mr-2 text-primary w-4" />
+                    <span>Jusqu'à 4 passagers</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <FontAwesomeIcon icon={faSuitcase} className="mr-2 text-primary w-4" />
+                    <span>Jusqu'à 4 bagages</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <FontAwesomeIcon icon={faCouch} className="mr-2 text-primary w-4" />
+                    <span className="font-medium">Sièges cuir chauffants</span>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <Link href="/flotte#berline" className="text-primary hover:text-primary-dark font-medium">
+                    En savoir plus →
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* Mercedes Classe V */}
+            <div className="bg-white rounded-lg shadow-custom overflow-hidden hover:shadow-custom-dark transition-all duration-300">
+              <div className="relative h-48">
+                <Image 
+                  src="/images/mercedes-classe-v-preview.webp" 
+                  alt="Mercedes Classe V - Van premium VLB" 
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  loading="lazy"
+                />
+                <div className="absolute top-3 right-3 bg-secondary text-white px-2 py-1 rounded-md text-xs font-medium">
+                  Van
+                </div>
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-bold mb-2">Mercedes Classe V</h3>
+                <p className="text-gray-600 mb-4">L'espace et le luxe pour vos groupes et familles</p>
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <FontAwesomeIcon icon={faUsers} className="mr-2 text-secondary w-4" />
+                    <span className="font-medium">Jusqu'à 7 passagers</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <FontAwesomeIcon icon={faSuitcase} className="mr-2 text-secondary w-4" />
+                    <span>Grande capacité bagages</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <FontAwesomeIcon icon={faWifi} className="mr-2 text-primary w-4" />
+                    <span>Configuration modulable</span>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <Link href="/flotte#van" className="text-primary hover:text-primary-dark font-medium">
+                    En savoir plus →
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* CTA vers la page flotte */}
+          <div className="text-center mt-12">
+            <p className="text-gray-600 mb-6">Découvrez tous les détails de nos véhicules</p>
+            <Link 
+              href="/flotte" 
+              className="inline-flex items-center bg-primary text-white py-3 px-6 rounded-md font-medium hover:bg-primary-dark transition-colors duration-300"
+              aria-label="Découvrir toute notre flotte de véhicules"
+            >
+              Découvrir toute notre flotte
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </Link>
           </div>
         </div>
       </section>

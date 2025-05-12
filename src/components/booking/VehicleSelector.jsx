@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLeaf, faCar, faUsers, faCarSide, faSuitcase, faWifi, faWater, faChargingStation, faCouch, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import { faLeaf, faCar, faUsers, faCarSide, faSuitcase, faWifi, faWater, faChargingStation, faCouch, faInfoCircle, faCheckCircle, faChevronUp, faChevronDown } from '@fortawesome/free-solid-svg-icons';  // ✅ Import correct
 
 const VehicleSelector = ({ vehicles, selectedVehicle, onSelect, passengers, luggage }) => {
   const [showDetails, setShowDetails] = useState(null);
@@ -24,7 +24,7 @@ const VehicleSelector = ({ vehicles, selectedVehicle, onSelect, passengers, lugg
     switch (vehicleId) {
       case 'green':
         return faLeaf;
-      case 'berline':
+      case 'berline':  // ✅ Corrigé
         return faCar;
       case 'van':
         return faUsers;
@@ -38,7 +38,7 @@ const VehicleSelector = ({ vehicles, selectedVehicle, onSelect, passengers, lugg
     switch (vehicleId) {
       case 'green':
         return 'text-green-600';
-      case 'berline':
+      case 'berline':  // ✅ Corrigé
         return 'text-primary';
       case 'van':
         return 'text-secondary';
@@ -120,7 +120,7 @@ const VehicleSelector = ({ vehicles, selectedVehicle, onSelect, passengers, lugg
                     >
                       <span>Voir les détails</span>
                       <FontAwesomeIcon 
-                        icon={showDetails === vehicle.id ? 'fa-chevron-up' : 'fa-chevron-down'} 
+                        icon={showDetails === vehicle.id ? faChevronUp : faChevronDown}  // ✅ Corrigé
                         className="ml-2 text-xs"
                       />
                     </button>
@@ -131,7 +131,7 @@ const VehicleSelector = ({ vehicles, selectedVehicle, onSelect, passengers, lugg
                 {isSelected && (
                   <div className="mt-4 pt-4 border-t border-primary border-opacity-20">
                     <div className="flex items-center justify-center text-primary font-medium">
-                      <FontAwesomeIcon icon="fa-check-circle" className="mr-2" />
+                      <FontAwesomeIcon icon={faCheckCircle} className="mr-2" />  {/* ✅ Corrigé */}
                       Véhicule sélectionné
                     </div>
                   </div>
@@ -163,9 +163,21 @@ const VehicleSelector = ({ vehicles, selectedVehicle, onSelect, passengers, lugg
                           <span>{formatPrice(breakdown.distanceCharge)}</span>
                         </div>
                       )}
+                      {breakdown.nightRateApplied && (
+                        <div className="flex justify-between text-sm text-orange-600">
+                          <span>Tarif de nuit (+15%)</span>
+                          <span>Appliqué</span>
+                        </div>
+                      )}
+                      {breakdown.weekendRateApplied && (
+                        <div className="flex justify-between text-sm text-blue-600">
+                          <span>Tarif weekend (+10%)</span>
+                          <span>Appliqué</span>
+                        </div>
+                      )}
                       {breakdown.roundTrip && (
                         <div className="flex justify-between text-sm text-primary">
-                          <span>Aller-retour</span>
+                          <span>Aller-retour (réduction 15%)</span>
                           <span>×2</span>
                         </div>
                       )}
@@ -209,7 +221,7 @@ const VehicleSelector = ({ vehicles, selectedVehicle, onSelect, passengers, lugg
                       </>
                     )}
                     
-                    {vehicle.id === 'berline' && (
+                    {vehicle.id === 'berline' && (  /* ✅ Corrigé */
                       <>
                         <div className="flex items-center">
                           <FontAwesomeIcon icon={faCar} className="text-primary mr-3" />
