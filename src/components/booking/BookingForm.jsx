@@ -119,54 +119,189 @@ const BookingForm = () => {
     setPriceEstimate(null);
   };
   
-  const calculatePrice = async (data) => {
-    // Validation du formulaire
-    if (!data.pickupAddress || !data.dropoffAddress || !data.pickupDate || !data.pickupTime) {
-      setError('Veuillez remplir tous les champs obligatoires');
-      return;
-    }
+  const calculatePrice = async () => {
+  // Validation des champs obligatoires
+  if (!formValues.pickupAddress || !formValues.dropoffAddress || !formValues.pickupDate || !formValues.pickupTime) {
+    setError('Veuillez remplir tous les champs obligatoires')
+    return
+  }
+  
+  if (!formValues.pickupAddressPlaceId || !formValues.dropoffAddressPlaceId) {
+    setError('Veuillez sélectionner des adresses valides dans les suggestions')
+    return
+  }
+  
+  setError('')
+  setIsCalculating(true)
+  
+  try {
+    // Calculer pour les 3 types de véhicules VLB
+    const vehicleTypes = ['green', 'berline', 'van']
+    const vehicleEstimates = []
     
-    if (!data.pickupAddressPlaceId || !data.dropoffAddressPlaceId) {
-      setError('Veuillez sélectionner des adresses valides dans les suggestions');
-      return;
-    }
-    
-    setError('');
-    setIsCalculating(true);
-    
-    try {
-      // Appel à votre API backend réelle
-      const response = await fetch('/api/price/estimate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          pickupPlaceId: data.pickupAddressPlaceId,
-          dropoffPlaceId: data.dropoffAddressPlaceId,
-          pickupDateTime: `${data.pickupDate}T${data.pickupTime}`,
-          passengers: data.passengers,
-          luggage: data.luggage,
-          roundTrip: data.roundTrip,
-          returnDateTime: data.roundTrip ? `${data.returnDate}T${data.returnTime}` : null
-        }),
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        setPriceEstimate(result.data.estimate);
-        setCurrentStep(2); // Passer à l'étape suivante
-      } else {
-        setError(result.error || "Erreur lors du calcul du prix.");
+    for (const vehicleType of vehicleTypes) {
+      try {
+        const response = await api.post('/price/estimate', {
+          pickupPlaceId: formValues.pickupAddressPlaceId,
+          dropoffPlaceId: formValues.dropoffAddressPlaceId,
+          pickupDateTime: `${formValues.pickupDate}T${formValues.pickupTime}`,
+          passengers: parseInt(formValues.passengers),
+          luggage: parseInt(formValues.luggage),
+          roundTrip: formValues.roundTrip,
+          returnDateTime: formValues.roundTrip && formValues.returnDate ? `${formValues.returnDate}T${formValues.returnTime}` : null,
+          vehicleType: vehicleType
+        })
+        
+        if (response.data && response.data.success) {
+          vehicleEstimates.push({
+            vehicleType,
+            estimate: response.data.data.estimate
+          })
+        }
+      } catch (err) {
+        // Continuer avec les autres véhicules même si un calcul échoue
+        continue
       }
-    } catch (err) {
-      console.error('Erreur lors du calcul du prix:', err);
-      setError("Une erreur est survenue lors du calcul du prix. Veuillez réessayer.");
-    } finally {
-      setIsCalculating(false);
     }
+    
+    if (vehicleEstimates.length === 0) {
+      throw new Error('Impossible de calculer le prix pour aucun véhicule')
+    }
+    
+    // Créer les options de véhicules VLB avec les prix réels
+    const vehicleOptions = [
+      {
+        id: 'green',
+        name: 'Tesla Model 3',
+        desc: 'Élégance et technologie - 100% électrique',
+        capacity: 'Jusqu\'à 4 passagers',
+        luggage: 'Jusqu\'à 3 bagages',
+        estimate: vehicleEstimates.find(v => v.vehicleType === 'green')?.estimate || null,
+        price: vehicleEstimates.find(v => v.vehicleType === 'green')?.estimate?.exactPrice || 0
+      },
+      {
+        id: 'berline',
+        name: 'Mercedes Classe E',
+        desc: 'Confort et prestige au quotidien',
+        capacity: 'Jusqu\'à 4 passagers',
+        luggage: 'Jusqu\'à 4 bagages',
+        estimate: vehicleEstimates.find(v => v.vehicleType === 'berline')?.estimate || null,
+        price: vehicleEstimates.find(v => v.vehicleType === 'berline')?.estimate?.exactPrice || 0
+      },
+      {
+        id: 'van',
+        name: 'Mercedes Classe V',
+        desc: 'Espace et luxe pour vos groupes',
+        capacity: 'Jusqu\'à 7 passagers',
+        luggage: 'Grande capacité bagages',
+        estimate: vehicleEstimates.find(v => v.vehicleType === 'van')?.estimate || null,
+        price: vehicleEstimates.find(v => v.vehicleType === 'van')?.estimate?.exactPrice || 0
+      }
+    ]
+    
+    // Filtrer les véhicules qui ont pu être calculés
+    const validVehicles = vehicleOptions.filter(v => v.estimate !== null)
+    
+    setAvailableVehicles(validVehicles)
+    setCurrentStep(2)
+  } catch (err) {
+    setError(err.message || 'Erreur lors du calcul du prix')
+  } finally {
+    setIsCalculating(false)
+  }
+}
+
+// Ajouter également cette fonction pour créer des estimations par défaut si nécessaire :
+const createVehicleOptions = (baseEstimate, formValues) => {
+  // Configuration des tarifs VLB pour les 3 véhicules
+  const BASE_FARES = { 
+    green: 5,      // Tesla Model 3
+    berline: 8,    // Classe E
+    van: 12        // Classe V
   };
+  
+  const PER_KM_RATES = { 
+    green: 1.5,    // Tesla Model 3
+    berline: 1.8,  // Classe E
+    van: 2.2       // Classe V
+  };
+  
+  const MIN_DISTANCE_KM = { 
+    green: 0, 
+    berline: 0, 
+    van: 0 
+  };
+  
+  // Fonction pour calculer le prix d'un véhicule
+  function calculateVehiclePrice(vehicleType) {
+    const baseFare = BASE_FARES[vehicleType];
+    const perKmRate = PER_KM_RATES[vehicleType];
+    const minDistance = MIN_DISTANCE_KM[vehicleType];
+    
+    const distanceInKm = baseEstimate.details?.distanceInKm || 25;
+    const chargeableDistance = Math.max(distanceInKm, minDistance);
+    const distanceCharge = chargeableDistance * perKmRate;
+    
+    let exactPrice = baseFare + distanceCharge;
+    if (formValues.roundTrip) exactPrice *= 2;
+    
+    exactPrice = Math.round(exactPrice * 100) / 100;
+    
+    return {
+      exactPrice,
+      minPrice: Math.round(exactPrice * 0.95 * 100) / 100,
+      maxPrice: Math.round(exactPrice * 1.05 * 100) / 100,
+      currency: 'EUR',
+      breakdown: {
+        baseFare,
+        distanceCharge,
+        actualDistance: distanceInKm,
+        chargeableDistance,
+        pricePerKm: perKmRate,
+        roundTrip: formValues.roundTrip,
+        vehicleType
+      },
+      details: {
+        distanceInKm,
+        chargeableDistanceInKm: chargeableDistance,
+        durationInMinutes: baseEstimate.details?.durationInMinutes || 30,
+        formattedDistance: baseEstimate.details?.formattedDistance || `${distanceInKm} km`,
+        formattedDuration: baseEstimate.details?.formattedDuration || "30 min"
+      }
+    };
+  }
+  
+  // Créer les options pour les 3 véhicules
+  return [
+    {
+      id: 'green',
+      name: 'Tesla Model 3',
+      desc: 'Élégance et technologie - 100% électrique',
+      capacity: 'Jusqu\'à 4 passagers',
+      luggage: 'Jusqu\'à 3 bagages',
+      price: calculateVehiclePrice('green').exactPrice,
+      estimate: calculateVehiclePrice('green')
+    },
+    {
+      id: 'berline',
+      name: 'Mercedes Classe E',
+      desc: 'Confort et prestige au quotidien',
+      capacity: 'Jusqu\'à 4 passagers',
+      luggage: 'Jusqu\'à 4 bagages',
+      price: calculateVehiclePrice('berline').exactPrice,
+      estimate: calculateVehiclePrice('berline')
+    },
+    {
+      id: 'van',
+      name: 'Mercedes Classe V',
+      desc: 'Espace et luxe pour vos groupes',
+      capacity: 'Jusqu\'à 7 passagers',
+      luggage: 'Grande capacité bagages',
+      price: calculateVehiclePrice('van').exactPrice,
+      estimate: calculateVehiclePrice('van')
+    }
+  ];
+};
   
   const onFirstStepSubmit = (data) => {
     calculatePrice(data);

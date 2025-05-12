@@ -12,7 +12,8 @@ export async function POST(request) {
       passengers, 
       luggage, 
       roundTrip,
-      returnDateTime
+      returnDateTime,
+      vehicleType  // Nouveau paramètre pour le type de véhicule
     } = data;
 
     // Validation des données
@@ -36,56 +37,85 @@ export async function POST(request) {
     const { distanceInMeters, durationInSeconds, distanceText, durationText } = distanceResult;
     const distanceInKm = distanceInMeters / 1000;
     
-    // Paramètres de base pour le calcul
-    const BASE_FARE = 5.0;
-    const PRICE_PER_KM = 1.5;
-    const PRICE_PER_MINUTE = 0.5;
-    const LUGGAGE_PRICE = 2.0;
-    const ROUND_TRIP_DISCOUNT = 0.9;
+    // Tarifs selon le barème Taxi VLB
+    const VEHICLE_PRICING = {
+      green: {
+        baseFare: 5.0,          // Prise en charge
+        pricePerKm: 2.30,       // Prix par km
+        minDistanceKm: 0,       // Pas de distance minimale
+        name: 'Tesla Model 3',
+        category: 'Éco'
+      },
+      premium: {
+        baseFare: 5.0,          // Prise en charge standard
+        pricePerKm: 1.5,        // Prix standard par km
+        minDistanceKm: 0,       // Pas de distance minimale
+        name: 'Mercedes Classe E',
+        category: 'Premium'
+      },
+      van: {
+        baseFare: 10.0,         // Prise en charge plus élevée pour le van
+        pricePerKm: 2.0,        // Prix par km pour véhicule spacieux
+        minDistanceKm: 0,       // Pas de distance minimale
+        name: 'Mercedes Classe V',
+        category: 'Van'
+      }
+    };
     
-    // Calcul du prix
-    const distancePrice = distanceInKm * PRICE_PER_KM;
-    const timePrice = (durationInSeconds / 60) * PRICE_PER_MINUTE;
-    let totalPrice = BASE_FARE + distancePrice + timePrice;
+    // Utiliser les tarifs premium par défaut si vehicleType n'est pas spécifié
+    const selectedVehicle = vehicleType && VEHICLE_PRICING[vehicleType] 
+      ? vehicleType 
+      : 'premium';
     
-    // Ajout du prix pour les bagages
-    if (luggage > 0) {
-      totalPrice += luggage * LUGGAGE_PRICE;
-    }
+    const vehicleConfig = VEHICLE_PRICING[selectedVehicle];
     
-    // Vérifier si c'est la nuit ou le weekend
+    // Calcul du prix de base
+    let totalPrice = vehicleConfig.baseFare;
+    
+    // Calcul de la distance facturable (minimum ou distance réelle)
+    const chargeableDistance = Math.max(distanceInKm, vehicleConfig.minDistanceKm);
+    const distancePrice = chargeableDistance * vehicleConfig.pricePerKm;
+    totalPrice += distancePrice;
+    
+    // Vérifier si c'est la nuit ou le weekend pour Taxi VLB
     const pickupDate = new Date(pickupDateTime);
     const hour = pickupDate.getHours();
     const dayOfWeek = pickupDate.getDay();
     
-    // Tarif de nuit (entre 22h et 6h)
-    const isNightRate = hour >= 22 || hour < 6;
-    if (isNightRate) {
-      totalPrice *= 1.3; // 30% de plus
-    }
+    // Tarif de nuit (entre 19h et 7h) - Taxi VLB
+    const isNightRate = hour >= 19 || hour < 7;
     
     // Tarif weekend (samedi et dimanche)
     const isWeekendRate = dayOfWeek === 0 || dayOfWeek === 6;
+    
+    // Appliquer majorations si nécessaire
+    let nightWeekendMultiplier = 1;
+    if (isNightRate) {
+      nightWeekendMultiplier *= 1.15; // 15% de plus la nuit
+    }
     if (isWeekendRate) {
-      totalPrice *= 1.2; // 20% de plus
+      nightWeekendMultiplier *= 1.1; // 10% de plus le weekend
     }
     
-    // Appliquer la réduction pour aller-retour
+    totalPrice *= nightWeekendMultiplier;
+    
+    // Appliquer la réduction pour aller-retour (15% de réduction)
     if (roundTrip) {
-      totalPrice *= 2 * ROUND_TRIP_DISCOUNT; // Multiplier par 2 pour l'aller-retour, puis appliquer la réduction
+      totalPrice *= 2 * 0.85; // x2 pour l'aller-retour, puis réduction de 15%
     }
     
     // Arrondir à 2 décimales
     totalPrice = Math.round(totalPrice * 100) / 100;
     
-    // Calculer min et max estimates (±10%)
-    const minPrice = Math.round((totalPrice * 0.9) * 100) / 100;
-    const maxPrice = Math.round((totalPrice * 1.1) * 100) / 100;
+    // Calculer min et max estimates (±5%)
+    const minPrice = Math.round((totalPrice * 0.95) * 100) / 100;
+    const maxPrice = Math.round((totalPrice * 1.05) * 100) / 100;
 
-    // Obtenir le polyline pour la visualisation du trajet (optionnel)
+    // Obtenir le polyline pour la visualisation du trajet
     const polyline = await getRoutePolyline(pickupPlaceId, dropoffPlaceId);
 
-    return NextResponse.json({
+    // Préparer la réponse détaillée
+    const response = {
       success: true,
       data: {
         estimate: {
@@ -93,14 +123,20 @@ export async function POST(request) {
           minPrice,
           maxPrice,
           currency: 'EUR',
+          vehicleType: selectedVehicle,
+          vehicleName: vehicleConfig.name,
+          vehicleCategory: vehicleConfig.category,
           breakdown: {
-            baseFare: BASE_FARE,
+            baseFare: vehicleConfig.baseFare,
             distanceCharge: Math.round(distancePrice * 100) / 100,
-            timeCharge: Math.round(timePrice * 100) / 100,
-            luggageCharge: luggage > 0 ? Math.round((luggage * LUGGAGE_PRICE) * 100) / 100 : 0,
-            nightRate: isNightRate,
-            weekendRate: isWeekendRate,
-            roundTripDiscount: roundTrip,
+            actualDistance: distanceInKm,
+            chargeableDistance: chargeableDistance,
+            pricePerKm: vehicleConfig.pricePerKm,
+            nightRateApplied: isNightRate,
+            weekendRateApplied: isWeekendRate,
+            roundTrip: roundTrip,
+            roundTripDiscountApplied: roundTrip,
+            nightWeekendMultiplier: nightWeekendMultiplier
           },
           distanceInfo: {
             value: distanceInMeters,
@@ -109,6 +145,13 @@ export async function POST(request) {
           durationInfo: {
             value: durationInSeconds,
             text: durationText,
+          },
+          details: {
+            distanceInKm: distanceInKm,
+            chargeableDistanceInKm: chargeableDistance,
+            durationInMinutes: Math.round(durationInSeconds / 60),
+            formattedDistance: distanceText,
+            formattedDuration: durationText
           }
         },
         route: {
@@ -123,7 +166,14 @@ export async function POST(request) {
           polyline: polyline || "encoded_polyline_placeholder"
         }
       }
-    });
+    };
+
+    // Log pour debug
+    console.log(`Prix calculé pour ${vehicleConfig.name}: ${totalPrice}€`);
+    console.log(`Distance: ${distanceInKm}km, Durée: ${Math.round(durationInSeconds / 60)}min`);
+    console.log(`Majorations: Nuit=${isNightRate ? '15%' : '0%'}, Weekend=${isWeekendRate ? '10%' : '0%'}`);
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Erreur lors du calcul du prix:', error);
     
@@ -139,20 +189,15 @@ async function getDistanceMatrix(originPlaceId, destinationPlaceId) {
   try {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
     
-    // Vérifiez si la clé API est définie
     if (!apiKey) {
       console.error('Clé API Google Maps non définie');
       return { success: false };
     }
     
-    // URL avec encodage correct
     const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=place_id:${encodeURIComponent(originPlaceId)}&destinations=place_id:${encodeURIComponent(destinationPlaceId)}&mode=driving&language=fr&key=${apiKey}`;
     
-    // Utiliser le serveur backend pour faire la requête (éviter les CORS et protéger la clé)
     const response = await axios.get(url);
     const data = response.data;
-    
-    console.log('Réponse Distance Matrix API:', data);
     
     if (data.status === 'OK' && data.rows[0].elements[0].status === 'OK') {
       const element = data.rows[0].elements[0];
@@ -173,7 +218,7 @@ async function getDistanceMatrix(originPlaceId, destinationPlaceId) {
   }
 }
 
-// Fonction pour obtenir le polyline (facultatif)
+// Fonction pour obtenir le polyline
 async function getRoutePolyline(originPlaceId, destinationPlaceId) {
   try {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;

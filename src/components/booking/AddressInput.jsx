@@ -91,7 +91,8 @@ const AddressInput = ({ id, value, onChange, onSelect, placeholder, label }) => 
           const place = autocompleteRef.current.getPlace();
           if (place && place.place_id) {
             onChange(place.formatted_address || '');
-            onSelect(place.formatted_address || '', place.place_id);
+            // CORRECTION ICI : Passer les paramètres dans le bon ordre
+            onSelect(place.place_id, place.formatted_address || '');
           }
         });
         
