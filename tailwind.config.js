@@ -24,8 +24,9 @@ module.exports = {
         'text-lighter': '#999999',
       },
       fontFamily: {
-        sans: ['Poppins', 'sans-serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
         serif: ['Playfair Display', 'serif'],
+        rounded: ['Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
         'custom-light': '0 2px 6px rgba(0, 0, 0, 0.05)',
@@ -41,6 +42,8 @@ module.exports = {
       },
       screens: {
         'xs': '480px',
+        'xxs': '375px',
+        'xxxs': '320px',
       },
       animation: {
         'fade-in': 'fadeIn 0.6s ease-out forwards',
@@ -49,6 +52,7 @@ module.exports = {
         'slide-in-up': 'slideInUp 0.6s ease-out forwards',
         'gradient': 'gradient 3s ease infinite',
         'bounce': 'bounce 1s infinite',
+        'bounce-slow': 'bounce 1.5s infinite',
       },
       keyframes: {
         fadeIn: {
@@ -83,10 +87,61 @@ module.exports = {
           },
         },
       },
+      // Espacements personnalisés pour mobile
+      spacing: {
+        '56': '3.5rem', // Pour les zones tactiles recommandées
+        '15': '3.75rem',
+      },
+      // Hauteurs minimales pour les zones tactiles
+      minHeight: {
+        '12': '3rem',
+        '14': '3.5rem',
+        'touch': '44px', // Standard iOS/Android pour zones tactiles
+      },
     },
   },
-  // Suppression du plugin problématique
-  plugins: [],
+  plugins: [
+    // Plugin pour ajouter des utilitaires Tailwind personnalisés
+    function({ addUtilities, theme }) {
+      const newUtilities = {
+        // Utilitaire pour les transitions tactiles
+        '.touch-action-none': {
+          'touch-action': 'none',
+        },
+        '.touch-action-manipulation': {
+          'touch-action': 'manipulation',
+        },
+        // Utilitaire pour désactiver le highlight sur mobile
+        '.tap-highlight-transparent': {
+          '-webkit-tap-highlight-color': 'transparent',
+        },
+        // Utilitaire pour les zones tactiles
+        '.touch-target': {
+          'min-height': '44px',
+          'min-width': '44px',
+          'display': 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+        },
+        // Smooth scroll pour mobile
+        '.scroll-smooth': {
+          'scroll-behavior': 'smooth',
+          '-webkit-overflow-scrolling': 'touch',
+        },
+        // Utilitaires pour améliorer les performances
+        '.will-change-transform': {
+          'will-change': 'transform',
+        },
+        '.will-change-opacity': {
+          'will-change': 'opacity',
+        },
+        '.translate3d-0': {
+          'transform': 'translate3d(0, 0, 0)',
+        },
+      }
+      addUtilities(newUtilities)
+    }
+  ],
   future: {
     hoverOnlyWhenSupported: true,
   },
