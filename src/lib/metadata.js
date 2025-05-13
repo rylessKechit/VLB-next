@@ -49,8 +49,8 @@ export const baseMetadata = {
 // Page d'accueil avec mots-clés longue traîne
 export const homeMetadata = {
   ...baseMetadata,
-  title: 'Taxi Verrières-le-Buisson (91) | Réservation 24/7 | Transport Aéroport CDG Orly',
-  description: 'Taxi VLB à Verrières-le-Buisson (91) : service 24h/24, 7j/7. Transport aéroport CDG, Orly, gares parisiennes, courses longue distance. Devis gratuit. Chauffeur professionnel.',
+  title: 'Taxi Verrières-le-Buisson',
+  description: 'Taxi à Verrières-le-Buisson (91) : service 24h/24, 7j/7. Transport aéroport CDG, Orly, gares parisiennes, longue distance. Devis gratuit. Chauffeur professionnel.',
   keywords: [
     'taxi Verrières-le-Buisson',
     'taxi VLB',
