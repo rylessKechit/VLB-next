@@ -9,32 +9,18 @@ import FontLoader from '@/components/common/FontLoader';
 import CriticalCssLoader from '@/components/common/CriticalCssLoader';
 import { baseMetadata } from '@/lib/metadata';
 import Script from 'next/script';
-import dynamic from 'next/dynamic';
-
-// Lazy loading pour les composants non critiques
-const DynamicFooter = dynamic(() => import('@/components/common/Footer'), {
-  ssr: true,
-  loading: () => <div className="h-32 bg-dark" />
-});
-
-const DynamicMobileCallButton = dynamic(() => import('@/components/common/MobileCallButton'), {
-  ssr: false,
-  loading: () => null
-});
 
 // Configurer les fonts avec display swap pour améliorer le CLS
 const inter = Inter({ 
   subsets: ['latin'],
-  display: 'swap',
-  fallback: ['system-ui', 'Arial', 'sans-serif'],
-  preload: true,
-  adjustFontFallback: false, // Désactiver pour améliorer les performances
+  display: 'swap', // Améliore le CLS (Cumulative Layout Shift)
+  fallback: ['system-ui', 'Arial', 'sans-serif']
 });
 
 export const metadata = {
   ...baseMetadata,
-  title: 'Taxi Verrières-le-Buisson',
-  description: 'Service de taxi à Verrières-le-Buisson (91) disponible 24h/24 et 7j/7. Transferts aéroport, gare et longue distance. Réservation simple et rapide.',
+  title: 'Taxi Verrières-le-Buisson (91) | Service 24/7 | Taxi VLB',
+  description: 'Service de taxi à Verrières-le-Buisson (91) disponible 24h/24 et 7j/7. Transferts aéroport, gare et longue distance. Réservation simple et rapide. Tél: +33 6 00 00 00 00',
   keywords: 'taxi Verrières-le-Buisson, taxi VLB, taxi 91, taxi Essonne, taxi aéroport Verrières-le-Buisson, taxi gare Verrières-le-Buisson, réservation taxi Verrières-le-Buisson',
   alternates: {
     canonical: 'https://www.taxi-verrieres-le-buisson.com',
@@ -80,21 +66,17 @@ export const metadata = {
     email: true,
     address: true,
   },
-  // Ajout de plus de métadonnées pour améliorer les performances
-  manifest: '/manifest.json',
-  authors: [{ name: 'Taxi VLB', url: 'https://www.taxi-verrieres-le-buisson.com' }],
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="fr" className={inter.className}>
       <head>
-        {/* Préconnexion et DNS prefetch pour améliorer les performances */}
+        {/* Préconnexion aux domaines externes pour accélérer le chargement */}
         <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://maps.googleapis.com" />
         
-        {/* Préchargement des ressources critiques */}
+        {/* Chargement différé des polices (déplacé dans CriticalCssLoader) */}
         <link
           rel="preload"
           href="/images/logo.webp" 
@@ -103,36 +85,13 @@ export default function RootLayout({ children }) {
           fetchPriority="high"
         />
         
-        <link
-          rel="preload"
-          href="/images/header-image.webp" 
-          as="image" 
-          type="image/webp"
-          fetchPriority="high"
-        />
-        
-        {/* Favicon et icons */}
-        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        {/* Pour les appareils Apple */}
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <link rel="apple-touch-icon" href="/icons/apple-icon-180x180.png" />
         
         {/* PWA manifest */}
         <link rel="manifest" href="/manifest.json" />
-        <meta name="msapplication-TileColor" content="#d4af37" />
-        <meta name="theme-color" content="#d4af37" />
-        
-        {/* Pour les appareils Apple */}
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Taxi VLB" />
-        
-        {/* Optimisations pour les performances */}
-        <meta httpEquiv="x-dns-prefetch-control" content="on" />
-        <meta name="format-detection" content="telephone=yes, email=yes, address=yes" />
-        
-        {/* Resource hints pour améliorer les performances */}
-        <link rel="prefetch" href="/images/mercedes-class-e.webp" />
-        <link rel="prefetch" href="/images/mercedes-class-v.webp" />
-        <link rel="prefetch" href="/images/tesla-model-3.webp" />
       </head>
       <body className={inter.className}>
         <FontLoader />
@@ -143,30 +102,16 @@ export default function RootLayout({ children }) {
         {/* Fil d'Ariane pour le SEO et la navigation */}
         <Breadcrumb />
         
-        <main className="pb-16 md:pb-0"> 
+        <main className="pb-16 md:pb-0"> {/* Padding bottom pour éviter que le contenu soit caché par la bannière mobile */}
           {children}
         </main>
         
-        <DynamicFooter />
+        <Footer />
         
-        {/* Bouton d'appel mobile avec lazy loading */}
-        <DynamicMobileCallButton />
+        {/* Bouton d'appel mobile */}
+        <MobileCallButton />
         
-        {/* Scripts analytiques avec chargement différé */}
-        {/* Google Tag Manager */}
-        <Script
-          id="gtm-script"
-          strategy="lazyOnload"
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-              'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-              })(window,document,'script','dataLayer','GTM-XXXXXXX');
-            `
-          }}
-        />
+        {/* Scripts analytiques gérés par CriticalCssLoader pour chargement différé */}
         
         {/* Script pour le rich snippet LocalBusiness */}
         <Script
@@ -220,32 +165,29 @@ export default function RootLayout({ children }) {
           }}
         />
         
-        {/* Script pour détecter le type d'appareil - version simplifiée */}
+        {/* Script pour détecter le type d'appareil (mobile/desktop) - version simplifiée */}
         <Script
           id="device-detection"
           strategy="afterInteractive"
         >
           {`
             (function() {
+              // Ajouter des classes pour détecter le type d'appareil
               const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (window.innerWidth <= 768);
               document.documentElement.classList.add(isMobile ? 'is-mobile' : 'is-desktop');
               
+              // Pour les appareils tactiles
               if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
                 document.documentElement.classList.add('is-touch');
               }
+              
+              // Pas de listener resize pour éviter les recalculs constants
+              // L'état initial est suffisant pour les optimisations principales
             })();
           `}
         </Script>
         
-        {/* Noindex pour GTM */}
-        <noscript>
-          <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
-            height="0"
-            width="0"
-            style={{ display: 'none', visibility: 'hidden' }}
-          />
-        </noscript>
+        {/* Script pour optimiser le chargement des polices - déplacé dans CriticalCssLoader */}
       </body>
     </html>
   );
