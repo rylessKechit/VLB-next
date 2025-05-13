@@ -1,8 +1,8 @@
-"use client";
+// src/components/booking/VehicleSelector.jsx - Mise à jour pour le nouveau système tarifaire
 
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLeaf, faCar, faUsers, faCarSide, faSuitcase, faWifi, faWater, faChargingStation, faCouch, faInfoCircle, faCheckCircle, faChevronUp, faChevronDown } from '@fortawesome/free-solid-svg-icons';  // ✅ Import correct
+import { faLeaf, faCar, faUsers, faCarSide, faSuitcase, faWifi, faWater, faChargingStation, faCouch, faInfoCircle, faCheckCircle, faChevronUp, faChevronDown, faClock, faCalendarAlt, faRoute } from '@fortawesome/free-solid-svg-icons';
 
 const VehicleSelector = ({ vehicles, selectedVehicle, onSelect, passengers, luggage }) => {
   const [showDetails, setShowDetails] = useState(null);
@@ -24,7 +24,7 @@ const VehicleSelector = ({ vehicles, selectedVehicle, onSelect, passengers, lugg
     switch (vehicleId) {
       case 'green':
         return faLeaf;
-      case 'berline':  // ✅ Corrigé
+      case 'berline':
         return faCar;
       case 'van':
         return faUsers;
@@ -38,13 +38,24 @@ const VehicleSelector = ({ vehicles, selectedVehicle, onSelect, passengers, lugg
     switch (vehicleId) {
       case 'green':
         return 'text-green-600';
-      case 'berline':  // ✅ Corrigé
+      case 'berline':
         return 'text-primary';
       case 'van':
         return 'text-secondary';
       default:
         return 'text-primary';
     }
+  };
+
+  // Fonction pour obtenir le nom du tarif appliqué
+  const getTariffName = (selectedRate) => {
+    const tariffNames = {
+      'A': 'Tarif A - Jour avec retour en charge',
+      'B': 'Tarif B - Nuit/weekend avec retour en charge',
+      'C': 'Tarif C - Jour avec retour à vide',
+      'D': 'Tarif D - Nuit/weekend avec retour à vide'
+    };
+    return tariffNames[selectedRate] || 'Tarif standard';
   };
 
   if (vehicles.length === 0) {
@@ -63,6 +74,7 @@ const VehicleSelector = ({ vehicles, selectedVehicle, onSelect, passengers, lugg
         const exactPrice = estimate.exactPrice || vehicle.price || 0;
         const breakdown = estimate.breakdown || {};
         const isSelected = selectedVehicle === vehicle.id;
+        const selectedRate = estimate.selectedRate;
 
         return (
           <div key={vehicle.id} className="space-y-4">
@@ -90,6 +102,15 @@ const VehicleSelector = ({ vehicles, selectedVehicle, onSelect, passengers, lugg
                   <div className="flex-1 text-center md:text-left">
                     <h3 className="text-xl font-bold text-gray-800 mb-2">{vehicle.name}</h3>
                     <p className="text-gray-600 mb-3">{vehicle.desc}</p>
+                    
+                    {/* Tarif appliqué */}
+                    {selectedRate && (
+                      <div className="mb-3">
+                        <span className="inline-block px-3 py-1 bg-primary bg-opacity-10 text-primary text-sm font-medium rounded-full">
+                          {getTariffName(selectedRate)}
+                        </span>
+                      </div>
+                    )}
                     
                     {/* Spécifications */}
                     <div className="flex flex-wrap justify-center md:justify-start gap-4 text-sm">
@@ -120,7 +141,7 @@ const VehicleSelector = ({ vehicles, selectedVehicle, onSelect, passengers, lugg
                     >
                       <span>Voir les détails</span>
                       <FontAwesomeIcon 
-                        icon={showDetails === vehicle.id ? faChevronUp : faChevronDown}  // ✅ Corrigé
+                        icon={showDetails === vehicle.id ? faChevronUp : faChevronDown}
                         className="ml-2 text-xs"
                       />
                     </button>
@@ -131,7 +152,7 @@ const VehicleSelector = ({ vehicles, selectedVehicle, onSelect, passengers, lugg
                 {isSelected && (
                   <div className="mt-4 pt-4 border-t border-primary border-opacity-20">
                     <div className="flex items-center justify-center text-primary font-medium">
-                      <FontAwesomeIcon icon={faCheckCircle} className="mr-2" />  {/* ✅ Corrigé */}
+                      <FontAwesomeIcon icon={faCheckCircle} className="mr-2" />
                       Véhicule sélectionné
                     </div>
                   </div>
@@ -142,43 +163,55 @@ const VehicleSelector = ({ vehicles, selectedVehicle, onSelect, passengers, lugg
             {/* Détails expandables */}
             {showDetails === vehicle.id && (
               <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 animate-fade-in">
-                <h4 className="text-lg font-semibold text-gray-800 mb-4">Détails du véhicule</h4>
+                <h4 className="text-lg font-semibold text-gray-800 mb-4">Détails du tarif</h4>
                 
-                {/* Breakdown du prix */}
+                {/* Informations sur le tarif appliqué */}
                 {breakdown && Object.keys(breakdown).length > 0 && (
                   <div className="mb-6">
+                    <div className="bg-white rounded-lg p-4 border border-gray-200 mb-4">
+                      <h5 className="font-medium text-gray-700 mb-3">Tarif appliqué : {selectedRate}</h5>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div className="flex items-center">
+                          <FontAwesomeIcon icon={faClock} className="text-primary mr-2" />
+                          <span>
+                            <strong>Horaire :</strong> {breakdown.conditions?.timeOfDay || 'N/A'}
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <FontAwesomeIcon icon={faCalendarAlt} className="text-primary mr-2" />
+                          <span>
+                            <strong>Jour :</strong> {breakdown.conditions?.dayType || 'N/A'}
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <FontAwesomeIcon icon={faRoute} className="text-primary mr-2" />
+                          <span>
+                            <strong>Retour :</strong> {breakdown.conditions?.returnType || 'N/A'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
                     <h5 className="font-medium text-gray-700 mb-3">Calcul du prix</h5>
                     <div className="space-y-2">
                       {breakdown.baseFare && (
                         <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Tarif de base</span>
+                          <span className="text-gray-600">Prise en charge</span>
                           <span>{formatPrice(breakdown.baseFare)}</span>
                         </div>
                       )}
                       {breakdown.distanceCharge && (
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-600">
-                            Distance ({breakdown.actualDistance?.toFixed(1) || 'N/A'} km)
+                            Distance ({breakdown.actualDistance?.toFixed(1) || 'N/A'} km à {breakdown.pricePerKm || 'N/A'}€/km)
                           </span>
                           <span>{formatPrice(breakdown.distanceCharge)}</span>
                         </div>
                       )}
-                      {breakdown.nightRateApplied && (
-                        <div className="flex justify-between text-sm text-orange-600">
-                          <span>Tarif de nuit (+15%)</span>
-                          <span>Appliqué</span>
-                        </div>
-                      )}
-                      {breakdown.weekendRateApplied && (
-                        <div className="flex justify-between text-sm text-blue-600">
-                          <span>Tarif weekend (+10%)</span>
-                          <span>Appliqué</span>
-                        </div>
-                      )}
                       {breakdown.roundTrip && (
                         <div className="flex justify-between text-sm text-primary">
-                          <span>Aller-retour (réduction 15%)</span>
-                          <span>×2</span>
+                          <span>Aller-retour</span>
+                          <span>x2</span>
                         </div>
                       )}
                       <div className="border-t pt-2 flex justify-between font-semibold">
@@ -221,7 +254,7 @@ const VehicleSelector = ({ vehicles, selectedVehicle, onSelect, passengers, lugg
                       </>
                     )}
                     
-                    {vehicle.id === 'berline' && (  /* ✅ Corrigé */
+                    {vehicle.id === 'berline' && (
                       <>
                         <div className="flex items-center">
                           <FontAwesomeIcon icon={faCar} className="text-primary mr-3" />

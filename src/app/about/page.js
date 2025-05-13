@@ -103,7 +103,7 @@ export default function AboutPage() {
                   <p className="text-xl text-gray-700 mb-3">
                     "Notre objectif est de fournir un service de taxi fiable et de qualité à Verrières-le-Buisson, adapté aux besoins de chacun."
                   </p>
-                  <span className="text-right block text-gray-500">— Pierre Guttin, Fondateur de Taxi VLB</span>
+                  <span className="text-right block text-gray-500">— Pierre G., Fondateur de Taxi VLB</span>
                 </div>
               </div>
             </div>

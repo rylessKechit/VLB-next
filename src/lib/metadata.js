@@ -325,7 +325,7 @@ export const aboutMetadata = {
       foundingDate: '2009',
       founder: {
         '@type': 'Person',
-        name: 'Pierre Guttin',
+        name: 'Pierre G.',
       },
       description: 'Service de taxi professionnel à Verrières-le-Buisson depuis 2009. Spécialisé dans les transferts aéroport, gare et longue distance.',
     },

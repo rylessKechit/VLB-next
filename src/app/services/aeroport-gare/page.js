@@ -4,6 +4,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlane, faRoute, faClock, faTerminal, faTrain, faSubway, faChevronDown, faCheck } from '@fortawesome/free-solid-svg-icons';
 import BookingForm from '@/components/booking/BookingForm';
 import RouteMap from '@/components/booking/RouteMap';
+import { airportTrainMetadata } from '@/lib/metadata';
+
+// ✅ Export des métadonnées
+export const metadata = airportTrainMetadata;
 
 export default function AirportTransferPage() {
   // Aéroports desservis

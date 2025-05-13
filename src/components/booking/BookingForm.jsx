@@ -120,105 +120,103 @@ const BookingForm = () => {
   
   // Fonction corrigée pour calculer le prix
   const calculatePrice = async () => {
-    if (!formValues.pickupAddress || !formValues.dropoffAddress || !formValues.pickupDate || !formValues.pickupTime) {
-      setError('Veuillez remplir tous les champs obligatoires');
-      return;
-    }
+  if (!formValues.pickupAddress || !formValues.dropoffAddress || !formValues.pickupDate || !formValues.pickupTime) {
+    setError('Veuillez remplir tous les champs obligatoires');
+    return;
+  }
+  
+  if (!formValues.pickupAddressPlaceId || !formValues.dropoffAddressPlaceId) {
+    setError('Veuillez sélectionner des adresses valides dans les suggestions');
+    return;
+  }
+  
+  setError('');
+  setIsCalculating(true);
+  
+  try {
+    // Nouveau système : un seul appel API qui calcule selon les tarifs TTC
+    const response = await fetch('/api/price/estimate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        pickupPlaceId: formValues.pickupAddressPlaceId,
+        dropoffPlaceId: formValues.dropoffAddressPlaceId,
+        pickupDateTime: `${formValues.pickupDate}T${formValues.pickupTime}`,
+        passengers: parseInt(formValues.passengers),
+        luggage: parseInt(formValues.luggage),
+        roundTrip: formValues.roundTrip,
+        returnDateTime: formValues.roundTrip && formValues.returnDate ? `${formValues.returnDate}T${formValues.returnTime}` : null
+      })
+    });
     
-    if (!formValues.pickupAddressPlaceId || !formValues.dropoffAddressPlaceId) {
-      setError('Veuillez sélectionner des adresses valides dans les suggestions');
-      return;
-    }
-    
-    setError('');
-    setIsCalculating(true);
-    
-    try {
-      // Calculer pour les 3 types de véhicules VLB
-      const vehicleTypes = ['green', 'berline', 'van'];
-      const vehicleEstimates = [];
-      
-      for (const vehicleType of vehicleTypes) {
-        try {
-          // Utiliser fetch au lieu de api.post qui n'existe pas
-          const response = await fetch('/api/price/estimate', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              pickupPlaceId: formValues.pickupAddressPlaceId,
-              dropoffPlaceId: formValues.dropoffAddressPlaceId,
-              pickupDateTime: `${formValues.pickupDate}T${formValues.pickupTime}`,
-              passengers: parseInt(formValues.passengers),
-              luggage: parseInt(formValues.luggage),
-              roundTrip: formValues.roundTrip,
-              returnDateTime: formValues.roundTrip && formValues.returnDate ? `${formValues.returnDate}T${formValues.returnTime}` : null,
-              vehicleType: vehicleType
-            })
-          });
-          
-          if (response.ok) {
-            const data = await response.json();
-            if (data.success) {
-              vehicleEstimates.push({
-                vehicleType,
-                estimate: data.data.estimate
-              });
-            }
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success) {
+        // Avec le nouveau système, on a qu'un seul prix pour tous les véhicules
+        const estimate = data.data.estimate;
+        
+        // Créer les options de véhicules avec le même prix
+        const vehicleOptions = [
+          {
+            id: 'green',
+            name: 'Tesla Model 3',
+            desc: 'Élégance et technologie - 100% électrique',
+            capacity: 'Jusqu\'à 4 passagers',
+            luggage: 'Jusqu\'à 3 bagages',
+            estimate: estimate,
+            price: estimate.exactPrice
+          },
+          {
+            id: 'berline',
+            name: 'Mercedes Classe E',
+            desc: 'Confort et prestige au quotidien',
+            capacity: 'Jusqu\'à 4 passagers',
+            luggage: 'Jusqu\'à 4 bagages',
+            estimate: estimate,
+            price: estimate.exactPrice
+          },
+          {
+            id: 'van',
+            name: 'Mercedes Classe V',
+            desc: 'Espace et luxe pour vos groupes',
+            capacity: 'Jusqu\'à 7 passagers',
+            luggage: 'Grande capacité bagages',
+            estimate: estimate,
+            price: estimate.exactPrice
           }
-        } catch (err) {
-          console.error(`Erreur pour le véhicule ${vehicleType}:`, err);
-          continue;
-        }
+        ];
+        
+        // Filtrer les véhicules selon la capacité demandée
+        const validVehicles = vehicleOptions.filter(vehicle => {
+          // Le van accepte jusqu'à 7 passagers
+          if (vehicle.id === 'van' && formValues.passengers <= 7) {
+            return true;
+          }
+          // Les autres véhicules acceptent jusqu'à 4 passagers
+          if (vehicle.id !== 'van' && formValues.passengers <= 4) {
+            return true;
+          }
+          return false;
+        });
+        
+        setAvailableVehicles(validVehicles);
+        setCurrentStep(2); // Aller à l'étape de sélection de véhicule
+      } else {
+        throw new Error(data.error || 'Erreur lors du calcul du prix');
       }
-      
-      if (vehicleEstimates.length === 0) {
-        throw new Error('Impossible de calculer le prix pour aucun véhicule');
-      }
-      
-      // Créer les options de véhicules VLB avec les prix réels
-      const vehicleOptions = [
-        {
-          id: 'green',
-          name: 'Tesla Model 3',
-          desc: 'Élégance et technologie - 100% électrique',
-          capacity: 'Jusqu\'à 4 passagers',
-          luggage: 'Jusqu\'à 3 bagages',
-          estimate: vehicleEstimates.find(v => v.vehicleType === 'green')?.estimate || null,
-          price: vehicleEstimates.find(v => v.vehicleType === 'green')?.estimate?.exactPrice || 0
-        },
-        {
-          id: 'berline',
-          name: 'Mercedes Classe E',
-          desc: 'Confort et prestige au quotidien',
-          capacity: 'Jusqu\'à 4 passagers',
-          luggage: 'Jusqu\'à 4 bagages',
-          estimate: vehicleEstimates.find(v => v.vehicleType === 'berline')?.estimate || null,
-          price: vehicleEstimates.find(v => v.vehicleType === 'berline')?.estimate?.exactPrice || 0
-        },
-        {
-          id: 'van',
-          name: 'Mercedes Classe V',
-          desc: 'Espace et luxe pour vos groupes',
-          capacity: 'Jusqu\'à 7 passagers',
-          luggage: 'Grande capacité bagages',
-          estimate: vehicleEstimates.find(v => v.vehicleType === 'van')?.estimate || null,
-          price: vehicleEstimates.find(v => v.vehicleType === 'van')?.estimate?.exactPrice || 0
-        }
-      ];
-      
-      // Filtrer les véhicules qui ont pu être calculés
-      const validVehicles = vehicleOptions.filter(v => v.estimate !== null);
-      
-      setAvailableVehicles(validVehicles);
-      setCurrentStep(2); // Aller à l'étape de sélection de véhicule
-    } catch (err) {
-      setError(err.message || 'Erreur lors du calcul du prix');
-    } finally {
-      setIsCalculating(false);
+    } else {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Erreur lors du calcul du prix');
     }
-  };
+  } catch (err) {
+    console.error('Erreur:', err);
+    setError(err.message || 'Erreur lors du calcul du prix');
+  } finally {
+    setIsCalculating(false);
+  }
+};
   
   const onFirstStepSubmit = (data) => {
     calculatePrice();
@@ -232,60 +230,75 @@ const BookingForm = () => {
   };
   
   const onFinalSubmit = async (data) => {
-    if (!selectedVehicle || !priceEstimate) {
-      setError('Veuillez sélectionner un véhicule');
-      return;
-    }
+  if (!selectedVehicle || !priceEstimate) {
+    setError('Veuillez sélectionner un véhicule');
+    return;
+  }
+  
+  try {
+    const bookingData = {
+      pickupAddress: data.pickupAddress,
+      dropoffAddress: data.dropoffAddress,
+      pickupDate: data.pickupDate,
+      pickupTime: data.pickupTime,
+      passengers: data.passengers,
+      luggage: data.luggage,
+      roundTrip: data.roundTrip,
+      returnDate: data.roundTrip ? data.returnDate : null,
+      returnTime: data.roundTrip ? data.returnTime : null,
+      flightNumber: data.flightNumber || null,
+      trainNumber: data.trainNumber || null,
+      specialRequests: data.specialRequests || '',
+      customerInfo: {
+        name: data.customerName,
+        email: data.customerEmail,
+        phone: data.customerPhone
+      },
+      price: {
+        amount: priceEstimate.exactPrice,
+        currency: 'EUR',
+        // Ajouter les informations du tarif
+        breakdown: priceEstimate.breakdown
+      },
+      vehicleType: selectedVehicle,
+      pickupAddressPlaceId: data.pickupAddressPlaceId,
+      dropoffAddressPlaceId: data.dropoffAddressPlaceId,
+      // Nouvelles données pour le système tarifaire
+      tariffApplied: priceEstimate.selectedRate,
+      routeDetails: priceEstimate.details ? {
+        distance: {
+          value: priceEstimate.details.distanceInKm * 1000,
+          text: priceEstimate.details.formattedDistance,
+        },
+        duration: {
+          value: priceEstimate.details.durationInMinutes * 60,
+          text: priceEstimate.details.formattedDuration,
+        },
+        polyline: priceEstimate.details.polyline,
+      } : null
+    };
+
+    const response = await fetch('/api/bookings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(bookingData),
+    });
+
+    const result = await response.json();
     
-    try {
-      const bookingData = {
-        pickupAddress: data.pickupAddress,
-        dropoffAddress: data.dropoffAddress,
-        pickupDate: data.pickupDate,
-        pickupTime: data.pickupTime,
-        passengers: data.passengers,
-        luggage: data.luggage,
-        roundTrip: data.roundTrip,
-        returnDate: data.roundTrip ? data.returnDate : null,
-        returnTime: data.roundTrip ? data.returnTime : null,
-        flightNumber: data.flightNumber || null,
-        trainNumber: data.trainNumber || null,
-        specialRequests: data.specialRequests || '',
-        customerInfo: {
-          name: data.customerName,
-          email: data.customerEmail,
-          phone: data.customerPhone
-        },
-        price: {
-          amount: priceEstimate.exactPrice,
-          currency: 'EUR'
-        },
-        vehicleType: selectedVehicle,
-        pickupAddressPlaceId: data.pickupAddressPlaceId,
-        dropoffAddressPlaceId: data.dropoffAddressPlaceId
-      };
-  
-      const response = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(bookingData),
-      });
-  
-      const result = await response.json();
-      
-      if (response.ok && result.success) {
-        setBookingResult(result.data);
-        setBookingSuccess(true);
-      } else {
-        setError(result.error || "Une erreur est survenue lors de la réservation.");
-      }
-    } catch (err) {
-      console.error('Erreur lors de la création de la réservation:', err);
-      setError("Une erreur est survenue lors de la réservation. Veuillez réessayer.");
+    if (response.ok && result.success) {
+      setBookingResult(result.data);
+      setBookingSuccess(true);
+    } else {
+      setError(result.error || "Une erreur est survenue lors de la réservation.");
     }
-  };
+  } catch (err) {
+    console.error('Erreur lors de la création de la réservation:', err);
+    setError("Une erreur est survenue lors de la réservation. Veuillez réessayer.");
+  }
+};
   
   const goBack = () => {
     if (currentStep > 1) {

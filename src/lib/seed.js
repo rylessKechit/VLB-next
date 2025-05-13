@@ -39,7 +39,7 @@ export async function seedDatabase() {
       
       // Créer un chauffeur de démonstration
       const demoDriver = new User({
-        name: 'Pierre Guttin',
+        name: 'Pierre G.',
         email: 'chauffeur@taxivlb.com',
         password: process.env.DEFAULT_DRIVER_PASSWORD || 'motdepasse123!',
         role: 'driver',

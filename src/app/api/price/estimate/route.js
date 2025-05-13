@@ -12,8 +12,7 @@ export async function POST(request) {
       passengers, 
       luggage, 
       roundTrip,
-      returnDateTime,
-      vehicleType  // green, berline, van
+      returnDateTime
     } = data;
 
     // Validation des données
@@ -37,77 +36,65 @@ export async function POST(request) {
     const { distanceInMeters, durationInSeconds, distanceText, durationText } = distanceResult;
     const distanceInKm = distanceInMeters / 1000;
     
-    // CORRECTION : Mapper les bons types de véhicules
-    const VEHICLE_PRICING = {
-      green: {
-        baseFare: 5.0,          
-        pricePerKm: 2.30,       
-        minDistanceKm: 0,       
-        name: 'Tesla Model 3',
-        category: 'Éco'
-      },
-      berline: {                // ✅ Corrigé de 'premium' à 'berline'
-        baseFare: 5.0,          
-        pricePerKm: 1.5,        
-        minDistanceKm: 0,       
-        name: 'Mercedes Classe E',
-        category: 'Berline'     // ✅ Corrigé
-      },
-      van: {
-        baseFare: 10.0,         
-        pricePerKm: 2.0,        
-        minDistanceKm: 0,       
-        name: 'Mercedes Classe V',
-        category: 'Van'
-      }
+    // NOUVEAU SYSTÈME TARIFAIRE
+    const TAXI_RATES = {
+      // Prise en charge fixe pour tous les tarifs
+      baseFare: 2.60,
+      
+      // Tarifs kilométriques selon le type de course
+      A: { pricePerKm: 1.00, name: 'Jour avec retour en charge' },      // Jour + retour en charge
+      B: { pricePerKm: 1.50, name: 'Nuit/weekend avec retour en charge' }, // Nuit/weekend + retour en charge
+      C: { pricePerKm: 2.00, name: 'Jour avec retour à vide' },         // Jour + retour à vide
+      D: { pricePerKm: 3.00, name: 'Nuit/weekend avec retour à vide' }  // Nuit/weekend + retour à vide
     };
     
-    // ✅ Utiliser 'berline' par défaut au lieu de 'premium'
-    const selectedVehicle = vehicleType && VEHICLE_PRICING[vehicleType] 
-      ? vehicleType 
-      : 'berline';
-    
-    const vehicleConfig = VEHICLE_PRICING[selectedVehicle];
-    
-    // Calcul du prix de base
-    let totalPrice = vehicleConfig.baseFare;
-    
-    // Calcul de la distance facturable
-    const chargeableDistance = Math.max(distanceInKm, vehicleConfig.minDistanceKm);
-    const distancePrice = chargeableDistance * vehicleConfig.pricePerKm;
-    totalPrice += distancePrice;
-    
-    // Vérifier si c'est la nuit ou le weekend
+    // Déterminer la tarification selon la date/heure et le type de course
     const pickupDate = new Date(pickupDateTime);
     const hour = pickupDate.getHours();
-    const dayOfWeek = pickupDate.getDay();
+    const dayOfWeek = pickupDate.getDay(); // 0 = Dimanche, 6 = Samedi
     
-    // Tarif de nuit (entre 19h et 7h)
-    const isNightRate = hour >= 19 || hour < 7;
+    // Vérifier si c'est la nuit (19h-8h)
+    const isNightTime = hour >= 19 || hour < 8;
     
-    // Tarif weekend (samedi et dimanche)
-    const isWeekendRate = dayOfWeek === 0 || dayOfWeek === 6;
+    // Vérifier si c'est dimanche ou férié (pour simplifier, on considère uniquement dimanche)
+    const isWeekendOrHoliday = dayOfWeek === 0; // Dimanche
     
-    // Appliquer majorations si nécessaire
-    let nightWeekendMultiplier = 1;
-    if (isNightRate) {
-      nightWeekendMultiplier *= 1.15; // 15% de plus la nuit
-    }
-    if (isWeekendRate) {
-      nightWeekendMultiplier *= 1.1; // 10% de plus le weekend
-    }
-    
-    totalPrice *= nightWeekendMultiplier;
-    
-    // Appliquer la réduction pour aller-retour (15% de réduction)
+    // Déterminer le tarif à appliquer
+    let selectedRate;
     if (roundTrip) {
-      totalPrice *= 2 * 0.85; // x2 pour l'aller-retour, puis réduction de 15%
+      // Retour en charge (aller-retour)
+      if (isNightTime || isWeekendOrHoliday) {
+        selectedRate = 'B'; // Nuit/weekend avec retour en charge
+      } else {
+        selectedRate = 'A'; // Jour avec retour en charge
+      }
+    } else {
+      // Retour à vide (aller simple)
+      if (isNightTime || isWeekendOrHoliday) {
+        selectedRate = 'D'; // Nuit/weekend avec retour à vide
+      } else {
+        selectedRate = 'C'; // Jour avec retour à vide
+      }
+    }
+    
+    const rateConfig = TAXI_RATES[selectedRate];
+    
+    // Calcul du prix
+    let totalPrice = TAXI_RATES.baseFare;
+    
+    // Calcul du prix selon la distance
+    const distancePrice = distanceInKm * rateConfig.pricePerKm;
+    totalPrice += distancePrice;
+    
+    // Pour aller-retour, doubler le prix
+    if (roundTrip) {
+      totalPrice *= 2;
     }
     
     // Arrondir à 2 décimales
     totalPrice = Math.round(totalPrice * 100) / 100;
     
-    // Calculer min et max estimates (±5%)
+    // Calculer min et max estimates (±5% pour les variations de circulation)
     const minPrice = Math.round((totalPrice * 0.95) * 100) / 100;
     const maxPrice = Math.round((totalPrice * 1.05) * 100) / 100;
 
@@ -123,20 +110,22 @@ export async function POST(request) {
           minPrice,
           maxPrice,
           currency: 'EUR',
-          vehicleType: selectedVehicle,
-          vehicleName: vehicleConfig.name,
-          vehicleCategory: vehicleConfig.category,
+          selectedRate,
+          rateName: rateConfig.name,
           breakdown: {
-            baseFare: vehicleConfig.baseFare,
+            baseFare: TAXI_RATES.baseFare,
             distanceCharge: Math.round(distancePrice * 100) / 100,
             actualDistance: distanceInKm,
-            chargeableDistance: chargeableDistance,
-            pricePerKm: vehicleConfig.pricePerKm,
-            nightRateApplied: isNightRate,
-            weekendRateApplied: isWeekendRate,
-            roundTrip: roundTrip,
-            roundTripDiscountApplied: roundTrip,
-            nightWeekendMultiplier: nightWeekendMultiplier
+            pricePerKm: rateConfig.pricePerKm,
+            isNightTime,
+            isWeekendOrHoliday,
+            roundTrip,
+            selectedTariff: selectedRate,
+            conditions: {
+              timeOfDay: isNightTime ? 'nuit' : 'jour',
+              dayType: isWeekendOrHoliday ? 'weekend/férié' : 'semaine',
+              returnType: roundTrip ? 'en charge' : 'à vide'
+            }
           },
           distanceInfo: {
             value: distanceInMeters,
@@ -148,11 +137,10 @@ export async function POST(request) {
           },
           details: {
             distanceInKm: distanceInKm,
-            chargeableDistanceInKm: chargeableDistance,
             durationInMinutes: Math.round(durationInSeconds / 60),
             formattedDistance: distanceText,
             formattedDuration: durationText,
-            polyline: polyline // ✅ Ajouté le polyline dans details
+            polyline: polyline
           }
         },
         route: {
@@ -170,7 +158,8 @@ export async function POST(request) {
     };
 
     // Log pour debug
-    console.log(`Prix calculé pour ${vehicleConfig.name}: ${totalPrice}€`);
+    console.log(`Tarif ${selectedRate} appliqué: ${totalPrice}€`);
+    console.log(`Conditions: ${isNightTime ? 'Nuit' : 'Jour'}, ${isWeekendOrHoliday ? 'Weekend' : 'Semaine'}, ${roundTrip ? 'Aller-retour' : 'Aller simple'}`);
     console.log(`Distance: ${distanceInKm}km, Durée: ${Math.round(durationInSeconds / 60)}min`);
 
     return NextResponse.json(response);
