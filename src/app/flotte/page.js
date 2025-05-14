@@ -65,7 +65,7 @@ export default function FlottePage() {
       name: 'Mercedes Classe E',
       desc: 'Le raffinement allemand',
       longDesc: 'La Mercedes Classe E allie tradition et innovation. Son habitacle spacieux en cuir véritable et ses finitions premium garantissent un voyage dans le plus grand confort.',
-      image: '/images/mercedes-classe-e.webp',
+      image: '/images/mercedes-class-e.webp',
       category: 'Berline Premium',
       capacity: 'Confort pour 4 passagers',
       luggage: 'Grand coffre disponible',
