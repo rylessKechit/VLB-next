@@ -1,11 +1,20 @@
-// src/app/api/bookings/route.js - Version corrigée
+// src/app/api/bookings/route.js - Version corrigée pour nodemailer
 
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Booking from '@/models/Booking';
 import { getServerSession } from 'next-auth';  // Importation correcte
 import { authOptions } from '@/lib/auth';
-import nodemailer from 'nodemailer';
+
+// Import dynamique pour éviter les problèmes webpack avec nodemailer
+const nodemailer = (() => {
+  try {
+    return require('nodemailer');
+  } catch (error) {
+    console.error('Nodemailer not available:', error);
+    return null;
+  }
+})();
 
 // Récupérer toutes les réservations - utilisé par le tableau de bord admin
 export async function GET(request) {
@@ -210,129 +219,146 @@ export async function POST(request) {
     await newBooking.save();
     console.log('Réservation enregistrée avec l\'ID:', bookingId);
 
-    // Configuration de Nodemailer
-    const transporter = nodemailer.createTransporter({
-      host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.EMAIL_PORT || '587'),
-      secure: process.env.EMAIL_SECURE === 'true',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
+    // Fonction d'envoi d'email avec gestion d'erreur
+    const sendEmails = async () => {
+      if (!nodemailer) {
+        console.warn('Nodemailer non disponible, emails non envoyés');
+        return;
+      }
 
-    // Obtenir le nom du tarif pour l'email
-    const tariffNames = {
-      'A': 'Jour avec retour en charge',
-      'B': 'Nuit/weekend avec retour en charge',
-      'C': 'Jour avec retour à vide',
-      'D': 'Nuit/weekend avec retour à vide'
+      try {
+        // Configuration de Nodemailer
+        const transporter = nodemailer.createTransporter({
+          host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+          port: parseInt(process.env.EMAIL_PORT || '587'),
+          secure: process.env.EMAIL_SECURE === 'true',
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASSWORD,
+          },
+        });
+
+        // Obtenir le nom du tarif pour l'email
+        const tariffNames = {
+          'A': 'Jour avec retour en charge',
+          'B': 'Nuit/weekend avec retour en charge',
+          'C': 'Jour avec retour à vide',
+          'D': 'Nuit/weekend avec retour à vide'
+        };
+        const tariffName = tariffNames[tariffApplied] || 'Tarif standard';
+
+        // Email pour le propriétaire du site avec les détails du tarif
+        const mailOptions = {
+          from: `"Taxi VLB Réservation" <${process.env.EMAIL_USER}>`,
+          to: process.env.CONTACT_EMAIL || 'contact@taxivlb.com',
+          subject: `Nouvelle réservation Taxi VLB [${bookingId}] - Tarif ${tariffApplied}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee;">
+              <div style="text-align: center; margin-bottom: 20px;">
+                <img src="https://www.taxi-verrieres-le-buisson.com/images/logo.webp" alt="Taxi VLB" style="max-width: 150px; height: auto;" />
+              </div>
+              
+              <h1 style="color: #d4af37; text-align: center;">Nouvelle réservation</h1>
+              
+              <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                <h2 style="color: #2a5a9e; margin-top: 0;">Détails de la course</h2>
+                <p><strong>Référence:</strong> ${bookingId}</p>
+                <p><strong>Client:</strong> ${customerInfo.name}</p>
+                <p><strong>Téléphone:</strong> ${customerInfo.phone}</p>
+                <p><strong>Email:</strong> ${customerInfo.email}</p>
+              </div>
+              
+              <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                <h2 style="color: #2a5a9e; margin-top: 0;">Itinéraire</h2>
+                <p><strong>Départ:</strong> ${pickupAddress}</p>
+                <p><strong>Destination:</strong> ${dropoffAddress}</p>
+                <p><strong>Date:</strong> ${pickupDateTime.toLocaleDateString('fr-FR')}</p>
+                <p><strong>Heure:</strong> ${pickupDateTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
+                <p><strong>Passagers:</strong> ${passengers}</p>
+                <p><strong>Bagages:</strong> ${luggage}</p>
+                ${roundTrip ? `<p><strong>Retour:</strong> ${returnDateTime.toLocaleDateString('fr-FR')} à ${returnDateTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>` : ''}
+              </div>
+              
+              <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                <h2 style="color: #2a5a9e; margin-top: 0;">Tarification</h2>
+                <p><strong>Tarif appliqué:</strong> ${tariffApplied} - ${tariffName}</p>
+                <p><strong>Conditions:</strong> ${price.breakdown.conditions.timeOfDay}, ${price.breakdown.conditions.dayType}, retour ${price.breakdown.conditions.returnType}</p>
+                <p><strong>Prise en charge:</strong> ${price.breakdown.baseFare.toFixed(2)}€</p>
+                <p><strong>Distance:</strong> ${price.breakdown.actualDistance?.toFixed(1)}km à ${price.breakdown.pricePerKm}€/km = ${price.breakdown.distanceCharge?.toFixed(2)}€</p>
+                ${roundTrip ? '<p><strong>Aller-retour:</strong> x2</p>' : ''}
+                <p style="font-size: 18px; margin-top: 10px;"><strong>Prix total: ${price.amount.toFixed(2)}€</strong></p>
+              </div>
+              
+              <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                <h2 style="color: #2a5a9e; margin-top: 0;">Véhicule</h2>
+                <p><strong>Type de véhicule:</strong> ${vehicleType === 'green' ? 'Tesla Model 3' : vehicleType === 'berline' ? 'Mercedes Classe E' : 'Mercedes Classe V'}</p>
+                ${flightNumber ? `<p><strong>Numéro de vol:</strong> ${flightNumber}</p>` : ''}
+                ${trainNumber ? `<p><strong>Numéro de train:</strong> ${trainNumber}</p>` : ''}
+                ${specialRequests ? `<p><strong>Demandes spéciales:</strong> ${specialRequests}</p>` : ''}
+              </div>
+              
+              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #666; font-size: 14px;">
+                <p>Réservation effectuée depuis www.taxi-verrieres-le-buisson.com</p>
+              </div>
+            </div>
+          `,
+        };
+
+        // Envoyer l'email
+        await transporter.sendMail(mailOptions);
+
+        // Email de confirmation pour le client avec les détails du tarif
+        const customerMailOptions = {
+          from: `"Taxi VLB" <${process.env.EMAIL_USER}>`,
+          to: customerInfo.email,
+          subject: `Confirmation de réservation Taxi VLB [${bookingId}]`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee;">
+              <div style="text-align: center; margin-bottom: 20px;">
+                <img src="https://www.taxi-verrieres-le-buisson.com/images/logo.webp" alt="Taxi VLB" style="max-width: 150px; height: auto;" />
+              </div>
+              
+              <h1 style="color: #d4af37; text-align: center;">Réservation confirmée</h1>
+              
+              <p>Bonjour ${customerInfo.name},</p>
+              
+              <p>Nous avons bien reçu votre demande de réservation. Notre équipe va traiter votre demande et vous contacter prochainement pour confirmer votre course.</p>
+              
+              <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                <h2 style="color: #2a5a9e; margin-top: 0;">Résumé de votre réservation</h2>
+                <p><strong>Référence:</strong> ${bookingId}</p>
+                <p><strong>Départ:</strong> ${pickupAddress}</p>
+                <p><strong>Destination:</strong> ${dropoffAddress}</p>
+                <p><strong>Date et heure:</strong> ${pickupDateTime.toLocaleDateString('fr-FR')} à ${pickupDateTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
+                <p><strong>Passagers:</strong> ${passengers}</p>
+                <p><strong>Véhicule:</strong> ${vehicleType === 'green' ? 'Tesla Model 3' : vehicleType === 'berline' ? 'Mercedes Classe E' : 'Mercedes Classe V'}</p>
+                <p style="font-size: 18px; margin-top: 10px;"><strong>Prix total: ${price.amount.toFixed(2)}€</strong></p>
+                <p style="font-size: 14px; color: #666;">(Tarif ${tariffApplied} - ${tariffName})</p>
+              </div>
+              
+              <p style="background-color: #fff3cd; padding: 10px; border-left: 4px solid #ffc107; margin: 15px 0;">
+                Notre chauffeur vous contactera environ 15 minutes avant votre prise en charge.
+              </p>
+              
+              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #666; font-size: 14px;">
+                <p>Merci de votre confiance,</p>
+                <p><strong>L'équipe Taxi VLB</strong></p>
+                <p>📞 +33 6 00 00 00 00</p>
+              </div>
+            </div>
+          `,
+        };
+
+        await transporter.sendMail(customerMailOptions);
+        console.log('Emails envoyés avec succès');
+      } catch (emailError) {
+        console.error('Erreur lors de l\'envoi des emails:', emailError);
+        // Ne pas faire échouer la réservation même si l'email échoue
+      }
     };
-    const tariffName = tariffNames[tariffApplied] || 'Tarif standard';
 
-    // Email pour le propriétaire du site avec les détails du tarif
-    const mailOptions = {
-      from: `"Taxi VLB Réservation" <${process.env.EMAIL_USER}>`,
-      to: process.env.CONTACT_EMAIL || 'contact@taxivlb.com',
-      subject: `Nouvelle réservation Taxi VLB [${bookingId}] - Tarif ${tariffApplied}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee;">
-          <div style="text-align: center; margin-bottom: 20px;">
-            <img src="https://www.taxi-verrieres-le-buisson.com/images/logo.webp" alt="Taxi VLB" style="max-width: 150px; height: auto;" />
-          </div>
-          
-          <h1 style="color: #d4af37; text-align: center;">Nouvelle réservation</h1>
-          
-          <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
-            <h2 style="color: #2a5a9e; margin-top: 0;">Détails de la course</h2>
-            <p><strong>Référence:</strong> ${bookingId}</p>
-            <p><strong>Client:</strong> ${customerInfo.name}</p>
-            <p><strong>Téléphone:</strong> ${customerInfo.phone}</p>
-            <p><strong>Email:</strong> ${customerInfo.email}</p>
-          </div>
-          
-          <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
-            <h2 style="color: #2a5a9e; margin-top: 0;">Itinéraire</h2>
-            <p><strong>Départ:</strong> ${pickupAddress}</p>
-            <p><strong>Destination:</strong> ${dropoffAddress}</p>
-            <p><strong>Date:</strong> ${pickupDateTime.toLocaleDateString('fr-FR')}</p>
-            <p><strong>Heure:</strong> ${pickupDateTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
-            <p><strong>Passagers:</strong> ${passengers}</p>
-            <p><strong>Bagages:</strong> ${luggage}</p>
-            ${roundTrip ? `<p><strong>Retour:</strong> ${returnDateTime.toLocaleDateString('fr-FR')} à ${returnDateTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>` : ''}
-          </div>
-          
-          <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
-            <h2 style="color: #2a5a9e; margin-top: 0;">Tarification</h2>
-            <p><strong>Tarif appliqué:</strong> ${tariffApplied} - ${tariffName}</p>
-            <p><strong>Conditions:</strong> ${price.breakdown.conditions.timeOfDay}, ${price.breakdown.conditions.dayType}, retour ${price.breakdown.conditions.returnType}</p>
-            <p><strong>Prise en charge:</strong> ${price.breakdown.baseFare.toFixed(2)}€</p>
-            <p><strong>Distance:</strong> ${price.breakdown.actualDistance?.toFixed(1)}km à ${price.breakdown.pricePerKm}€/km = ${price.breakdown.distanceCharge?.toFixed(2)}€</p>
-            ${roundTrip ? '<p><strong>Aller-retour:</strong> x2</p>' : ''}
-            <p style="font-size: 18px; margin-top: 10px;"><strong>Prix total: ${price.amount.toFixed(2)}€</strong></p>
-          </div>
-          
-          <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
-            <h2 style="color: #2a5a9e; margin-top: 0;">Véhicule</h2>
-            <p><strong>Type de véhicule:</strong> ${vehicleType === 'green' ? 'Tesla Model 3' : vehicleType === 'berline' ? 'Mercedes Classe E' : 'Mercedes Classe V'}</p>
-            ${flightNumber ? `<p><strong>Numéro de vol:</strong> ${flightNumber}</p>` : ''}
-            ${trainNumber ? `<p><strong>Numéro de train:</strong> ${trainNumber}</p>` : ''}
-            ${specialRequests ? `<p><strong>Demandes spéciales:</strong> ${specialRequests}</p>` : ''}
-          </div>
-          
-          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #666; font-size: 14px;">
-            <p>Réservation effectuée depuis www.taxi-verrieres-le-buisson.com</p>
-          </div>
-        </div>
-      `,
-    };
-
-    // Envoyer l'email
-    await transporter.sendMail(mailOptions);
-
-    // Email de confirmation pour le client avec les détails du tarif
-    const customerMailOptions = {
-      from: `"Taxi VLB" <${process.env.EMAIL_USER}>`,
-      to: customerInfo.email,
-      subject: `Confirmation de réservation Taxi VLB [${bookingId}]`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee;">
-          <div style="text-align: center; margin-bottom: 20px;">
-            <img src="https://www.taxi-verrieres-le-buisson.com/images/logo.webp" alt="Taxi VLB" style="max-width: 150px; height: auto;" />
-          </div>
-          
-          <h1 style="color: #d4af37; text-align: center;">Réservation confirmée</h1>
-          
-          <p>Bonjour ${customerInfo.name},</p>
-          
-          <p>Nous avons bien reçu votre demande de réservation. Notre équipe va traiter votre demande et vous contacter prochainement pour confirmer votre course.</p>
-          
-          <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
-            <h2 style="color: #2a5a9e; margin-top: 0;">Résumé de votre réservation</h2>
-            <p><strong>Référence:</strong> ${bookingId}</p>
-            <p><strong>Départ:</strong> ${pickupAddress}</p>
-            <p><strong>Destination:</strong> ${dropoffAddress}</p>
-            <p><strong>Date et heure:</strong> ${pickupDateTime.toLocaleDateString('fr-FR')} à ${pickupDateTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
-            <p><strong>Passagers:</strong> ${passengers}</p>
-            <p><strong>Véhicule:</strong> ${vehicleType === 'green' ? 'Tesla Model 3' : vehicleType === 'berline' ? 'Mercedes Classe E' : 'Mercedes Classe V'}</p>
-            <p style="font-size: 18px; margin-top: 10px;"><strong>Prix total: ${price.amount.toFixed(2)}€</strong></p>
-            <p style="font-size: 14px; color: #666;">(Tarif ${tariffApplied} - ${tariffName})</p>
-          </div>
-          
-          <p style="background-color: #fff3cd; padding: 10px; border-left: 4px solid #ffc107; margin: 15px 0;">
-            Notre chauffeur vous contactera environ 15 minutes avant votre prise en charge.
-          </p>
-          
-          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #666; font-size: 14px;">
-            <p>Merci de votre confiance,</p>
-            <p><strong>L'équipe Taxi VLB</strong></p>
-            <p>📞 +33 6 00 00 00 00</p>
-          </div>
-        </div>
-      `,
-    };
-
-    await transporter.sendMail(customerMailOptions);
+    // Envoyer les emails de manière asynchrone
+    sendEmails();
 
     // Données de réservation à retourner au client
     const bookingResult = {
@@ -353,7 +379,7 @@ export async function POST(request) {
         amount: price.amount,
         currency: price.currency,
         tariffApplied,
-        tariffName,
+        tariffName: price.breakdown.selectedTariff || tariffApplied,
         breakdown: price.breakdown,
       },
       customerInfo: {

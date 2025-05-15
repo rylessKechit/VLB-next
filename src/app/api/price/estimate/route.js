@@ -23,6 +23,8 @@ export async function POST(request) {
       );
     }
 
+    console.log('Calcul du prix pour:', { pickupPlaceId, dropoffPlaceId, roundTrip });
+
     // Obtenir la distance et le temps de trajet réels via l'API Google Maps
     const distanceResult = await getDistanceMatrix(pickupPlaceId, dropoffPlaceId);
     
@@ -45,7 +47,7 @@ export async function POST(request) {
             maxPrice: calculatePriceFromDistance(estimatedDistance * 1.2, pickupDateTime, roundTrip),
             currency: 'EUR',
             selectedRate: determineRate(pickupDateTime, roundTrip),
-            rateName: 'Estimation approximative',
+            rateName: getTariffName(determineRate(pickupDateTime, roundTrip)),
             breakdown: createBreakdown(estimatedDistance, pickupDateTime, roundTrip),
             distanceInfo: {
               value: estimatedDistance * 1000,
@@ -80,11 +82,63 @@ export async function POST(request) {
       });
     }
 
-    // Continuer avec le code normal si l'API fonctionne
+    // Continuer avec le calcul normal si l'API fonctionne
     const { distanceInMeters, durationInSeconds, distanceText, durationText } = distanceResult;
     const distanceInKm = distanceInMeters / 1000;
+    const durationInMinutes = Math.round(durationInSeconds / 60);
+
+    console.log(`Distance calculée: ${distanceInKm}km, Durée: ${durationInMinutes}min`);
+
+    // Calculer le prix selon le nouveau système tarifaire
+    const priceCalculation = calculatePrice(distanceInKm, pickupDateTime, roundTrip);
     
-    // ... (rest of your existing code)
+    // Obtenir le polyline pour la carte (optionnel)
+    const polyline = await getRoutePolyline(pickupPlaceId, dropoffPlaceId);
+
+    const estimate = {
+      exactPrice: priceCalculation.total,
+      minPrice: priceCalculation.total,
+      maxPrice: priceCalculation.total,
+      currency: 'EUR',
+      selectedRate: priceCalculation.selectedRate,
+      rateName: getTariffName(priceCalculation.selectedRate),
+      breakdown: priceCalculation.breakdown,
+      distanceInfo: {
+        value: distanceInMeters,
+        text: distanceText,
+      },
+      durationInfo: {
+        value: durationInSeconds,
+        text: durationText,
+      },
+      details: {
+        distanceInKm,
+        durationInMinutes,
+        formattedDistance: distanceText,
+        formattedDuration: durationText,
+        polyline,
+        isEstimated: false
+      }
+    };
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        estimate,
+        route: {
+          distance: {
+            value: distanceInMeters,
+            text: distanceText,
+          },
+          duration: {
+            value: durationInSeconds,
+            text: durationText,
+          },
+          polyline,
+          isEstimated: false
+        }
+      }
+    });
     
   } catch (error) {
     console.error('Erreur lors du calcul du prix:', error);
@@ -96,18 +150,97 @@ export async function POST(request) {
   }
 }
 
+// Système tarifaire VLB
+const TAXI_RATES = {
+  baseFare: 2.60, // Prise en charge
+  rates: {
+    A: { pricePerKm: 1.00, description: 'Jour avec retour en charge' },
+    B: { pricePerKm: 1.50, description: 'Nuit/weekend avec retour en charge' },
+    C: { pricePerKm: 2.00, description: 'Jour avec retour à vide' },
+    D: { pricePerKm: 3.00, description: 'Nuit/weekend avec retour à vide' }
+  }
+};
+
+// Déterminer le tarif applicable
+function determineRate(pickupDateTime, roundTrip) {
+  const pickupDate = new Date(pickupDateTime);
+  const hour = pickupDate.getHours();
+  const dayOfWeek = pickupDate.getDay();
+  
+  // Vérification des conditions
+  const isNightTime = hour >= 19 || hour < 8;
+  const isWeekendOrHoliday = dayOfWeek === 0; // Dimanche
+  
+  // Logique de détermination du tarif
+  if (roundTrip) {
+    // Aller-retour = retour en charge
+    return (isNightTime || isWeekendOrHoliday) ? 'B' : 'A';
+  } else {
+    // Aller simple = retour à vide
+    return (isNightTime || isWeekendOrHoliday) ? 'D' : 'C';
+  }
+}
+
+// Calculer le prix total
+function calculatePrice(distanceInKm, pickupDateTime, roundTrip) {
+  const selectedRate = determineRate(pickupDateTime, roundTrip);
+  const rateConfig = TAXI_RATES.rates[selectedRate];
+  
+  // Calculs
+  const baseFare = TAXI_RATES.baseFare;
+  const distanceCharge = distanceInKm * rateConfig.pricePerKm;
+  let total = baseFare + distanceCharge;
+  
+  // Si aller-retour, multiplier par 2
+  if (roundTrip) {
+    total *= 2;
+  }
+  
+  // Arrondir à 2 décimales
+  total = Math.round(total * 100) / 100;
+  
+  const pickupDate = new Date(pickupDateTime);
+  const hour = pickupDate.getHours();
+  const dayOfWeek = pickupDate.getDay();
+  const isNightTime = hour >= 19 || hour < 8;
+  const isWeekendOrHoliday = dayOfWeek === 0;
+  
+  return {
+    total,
+    selectedRate,
+    breakdown: {
+      baseFare,
+      distanceCharge: roundTrip ? distanceCharge * 2 : distanceCharge,
+      pricePerKm: rateConfig.pricePerKm,
+      actualDistance: distanceInKm,
+      isNightTime,
+      isWeekendOrHoliday,
+      roundTrip,
+      selectedTariff: selectedRate,
+      conditions: {
+        timeOfDay: isNightTime ? 'nuit' : 'jour',
+        dayType: isWeekendOrHoliday ? 'weekend/férié' : 'semaine',
+        returnType: roundTrip ? 'en charge' : 'à vide'
+      }
+    }
+  };
+}
+
+// Obtenir le nom du tarif
+function getTariffName(rate) {
+  const names = {
+    'A': 'Tarif A - Jour avec retour en charge',
+    'B': 'Tarif B - Nuit/weekend avec retour en charge',
+    'C': 'Tarif C - Jour avec retour à vide',
+    'D': 'Tarif D - Nuit/weekend avec retour à vide'
+  };
+  return names[rate] || 'Tarif standard';
+}
+
 // Fonctions helper pour le fallback
 function calculatePriceFromDistance(distanceInKm, pickupDateTime, roundTrip) {
-  const TAXI_RATES = {
-    baseFare: 2.60,
-    A: { pricePerKm: 1.00 },
-    B: { pricePerKm: 1.50 },
-    C: { pricePerKm: 2.00 },
-    D: { pricePerKm: 3.00 }
-  };
-  
   const selectedRate = determineRate(pickupDateTime, roundTrip);
-  const rateConfig = TAXI_RATES[selectedRate];
+  const rateConfig = TAXI_RATES.rates[selectedRate];
   
   let totalPrice = TAXI_RATES.baseFare;
   totalPrice += distanceInKm * rateConfig.pricePerKm;
@@ -119,32 +252,9 @@ function calculatePriceFromDistance(distanceInKm, pickupDateTime, roundTrip) {
   return Math.round(totalPrice * 100) / 100;
 }
 
-function determineRate(pickupDateTime, roundTrip) {
-  const pickupDate = new Date(pickupDateTime);
-  const hour = pickupDate.getHours();
-  const dayOfWeek = pickupDate.getDay();
-  
-  const isNightTime = hour >= 19 || hour < 8;
-  const isWeekendOrHoliday = dayOfWeek === 0;
-  
-  if (roundTrip) {
-    return (isNightTime || isWeekendOrHoliday) ? 'B' : 'A';
-  } else {
-    return (isNightTime || isWeekendOrHoliday) ? 'D' : 'C';
-  }
-}
-
 function createBreakdown(distanceInKm, pickupDateTime, roundTrip) {
-  const TAXI_RATES = {
-    baseFare: 2.60,
-    A: { pricePerKm: 1.00 },
-    B: { pricePerKm: 1.50 },
-    C: { pricePerKm: 2.00 },
-    D: { pricePerKm: 3.00 }
-  };
-  
   const selectedRate = determineRate(pickupDateTime, roundTrip);
-  const rateConfig = TAXI_RATES[selectedRate];
+  const rateConfig = TAXI_RATES.rates[selectedRate];
   const pickupDate = new Date(pickupDateTime);
   const hour = pickupDate.getHours();
   const dayOfWeek = pickupDate.getDay();
@@ -154,11 +264,12 @@ function createBreakdown(distanceInKm, pickupDateTime, roundTrip) {
   
   return {
     baseFare: TAXI_RATES.baseFare,
-    distanceCharge: Math.round(distanceInKm * rateConfig.pricePerKm * 100) / 100,
+    distanceCharge: Math.round(distanceInKm * rateConfig.pricePerKm * (roundTrip ? 2 : 1) * 100) / 100,
     actualDistance: distanceInKm,
     pricePerKm: rateConfig.pricePerKm,
     isNightTime,
     isWeekendOrHoliday,
+    roundTrip,
     selectedTariff: selectedRate,
     conditions: {
       timeOfDay: isNightTime ? 'nuit' : 'jour',
@@ -173,20 +284,17 @@ async function getDistanceMatrix(originPlaceId, destinationPlaceId) {
   try {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
     
-    // Debug : Log pour vérifier que la clé API existe
     console.log('API Key exists:', !!apiKey);
-    console.log('Origin PlaceId:', originPlaceId);
-    console.log('Destination PlaceId:', destinationPlaceId);
     
     if (!apiKey) {
       console.error('ERREUR CRITIQUE: Clé API Google Maps non définie');
-      throw new Error('Clé API Google Maps manquante');
+      return { success: false, error: 'Clé API Google Maps manquante' };
     }
     
     // URL avec gestion des caractères spéciaux
     const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=place_id:${encodeURIComponent(originPlaceId)}&destinations=place_id:${encodeURIComponent(destinationPlaceId)}&mode=driving&language=fr&key=${apiKey}`;
     
-    console.log('URL de l\'API Distance Matrix:', url);
+    console.log('Appel API Distance Matrix...');
     
     const response = await axios.get(url, {
       timeout: 10000, // Timeout de 10 secondes
@@ -195,9 +303,8 @@ async function getDistanceMatrix(originPlaceId, destinationPlaceId) {
       }
     });
     
-    console.log('Réponse Distance Matrix:', response.data);
-    
     const data = response.data;
+    console.log('Réponse Distance Matrix Status:', data.status);
     
     if (data.status === 'OK' && data.rows[0].elements[0].status === 'OK') {
       const element = data.rows[0].elements[0];
@@ -214,7 +321,6 @@ async function getDistanceMatrix(originPlaceId, destinationPlaceId) {
       const errorStatus = data.rows[0]?.elements[0]?.status;
       console.error('Erreur API Distance Matrix - Status global:', data.status);
       console.error('Erreur API Distance Matrix - Status élément:', errorStatus);
-      console.error('Message d\'erreur:', data.error_message);
       
       // Messages d'erreur plus explicites
       let errorMessage = 'Impossible de calculer l\'itinéraire';
@@ -245,11 +351,6 @@ async function getDistanceMatrix(originPlaceId, destinationPlaceId) {
     }
   } catch (error) {
     console.error('Erreur lors de l\'appel à l\'API Distance Matrix:', error);
-    
-    if (error.response) {
-      console.error('Status:', error.response.status);
-      console.error('Data:', error.response.data);
-    }
     
     return { 
       success: false, 
