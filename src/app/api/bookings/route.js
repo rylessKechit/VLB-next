@@ -173,7 +173,7 @@ export async function POST(request) {
     // Créer un nouvel objet de réservation pour MongoDB avec le nouveau système tarifaire
     const newBooking = new Booking({
       bookingId,
-      status: 'pending',
+      status: 'confirmed',
       pickupAddress,
       dropoffAddress,
       pickupDateTime,
@@ -240,7 +240,7 @@ export async function POST(request) {
           subject: `Nouvelle réservation Taxi VLB [${bookingId}] - Tarif ${tariffApplied}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee;">
-              <div style="text-align: center; margin-bottom: 20px;">
+              <div style="text-align: center; margin-bottom: 20px; background-color: #2a5a9e; padding: 20px; border-radius: 10px 10px 0 0;">
                 <img src="https://www.taxi-verrieres-le-buisson.com/images/logo.webp" alt="Taxi VLB" style="max-width: 150px; height: auto;" />
               </div>
               
@@ -300,7 +300,7 @@ export async function POST(request) {
           subject: `Confirmation de réservation Taxi VLB [${bookingId}]`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee;">
-              <div style="text-align: center; margin-bottom: 20px;">
+              <div style="text-align: center; margin-bottom: 20px; background-color: #2a5a9e; padding: 20px; border-radius: 10px 10px 0 0;">
                 <img src="https://www.taxi-verrieres-le-buisson.com/images/logo.webp" alt="Taxi VLB" style="max-width: 150px; height: auto;" />
               </div>
               
@@ -308,7 +308,7 @@ export async function POST(request) {
               
               <p>Bonjour ${customerInfo.name},</p>
               
-              <p>Nous avons bien reçu votre demande de réservation. Notre équipe va traiter votre demande et vous contacter prochainement pour confirmer votre course.</p>
+              <p>Nous avons bien reçu votre demande de réservation. Votre course est confirmée et notre chauffeur vous contactera prochainement.</p>
               
               <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
                 <h2 style="color: #2a5a9e; margin-top: 0;">Résumé de votre réservation</h2>
@@ -350,7 +350,7 @@ export async function POST(request) {
     const bookingResult = {
       id: bookingId,
       createdAt: new Date().toISOString(),
-      status: 'pending',
+      status: 'confirmed',
       pickupAddress,
       dropoffAddress,
       pickupDateTime: pickupDateTime.toISOString(),
@@ -380,7 +380,7 @@ export async function POST(request) {
     return NextResponse.json({
       success: true,
       data: bookingResult,
-      message: `Votre demande de réservation a été enregistrée avec le tarif ${tariffApplied}. Vous recevrez un email de confirmation une fois validée.`
+      message: `Votre réservation a été confirmée avec le tarif ${tariffApplied}. Vous recevrez prochainement les coordonnées de votre chauffeur.`
     });
 
   } catch (error) {
