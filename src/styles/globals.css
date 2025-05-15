@@ -324,3 +324,285 @@ a:focus {
     font-size: 0.9rem;
   }
 }
+
+/* CSS supplémentaire pour optimiser l'admin mobile */
+
+/* Optimisations générales pour mobile admin */
+@media (max-width: 768px) {
+  /* Ajustements pour les boutons admin */
+  .btn {
+    @apply text-sm px-3 py-2;
+  }
+  
+  /* Optimisation des formulaires admin */
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="password"],
+  input[type="date"],
+  select,
+  textarea {
+    @apply text-base; /* Évite le zoom sur iOS */
+    min-height: 44px; /* Taille tactile recommandée */
+  }
+  
+  /* Tables responsives */
+  .table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Cards pour remplacer les tables sur mobile */
+  .mobile-card {
+    @apply bg-white rounded-lg shadow p-4 mb-3 border border-gray-200;
+  }
+  
+  /* Amélioration des zones tactiles */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+    @apply flex items-center justify-center;
+  }
+  
+  /* Optimisation du sidebar mobile */
+  .admin-sidebar {
+    @apply w-80 max-w-full;
+  }
+  
+  /* Amélioration des badges de statut */
+  .status-badge {
+    @apply text-xs px-2 py-1 rounded-full font-medium;
+  }
+  
+  /* Optimisation des dropdowns mobiles */
+  .mobile-dropdown {
+    @apply w-full bg-white border border-gray-300 rounded-md shadow-sm;
+  }
+  
+  /* Pagination mobile */
+  .pagination-mobile {
+    @apply flex justify-between items-center w-full;
+  }
+  
+  /* Amélioration des modals sur mobile */
+  .modal-mobile {
+    @apply inset-x-0 bottom-0 mx-4 mb-4 rounded-t-lg;
+  }
+  
+  /* Optimisation des charts sur mobile */
+  .chart-container {
+    @apply h-48 w-full;
+  }
+}
+
+/* Styles spécifiques pour les composants admin */
+.admin-container {
+  @apply max-w-full mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* Header admin responsive */
+.admin-header {
+  @apply sticky top-0 z-10 bg-white shadow-sm border-b border-gray-200;
+}
+
+/* Navigation admin mobile */
+.admin-nav-mobile {
+  @apply fixed inset-x-0 bottom-0 bg-white border-t border-gray-200 px-4 py-2;
+}
+
+/* Cards admin pour mobile */
+.admin-card {
+  @apply bg-white rounded-lg shadow border border-gray-200 p-4 mb-4;
+}
+
+.admin-card-header {
+  @apply flex items-center justify-between mb-3 pb-3 border-b border-gray-200;
+}
+
+/* Boutons admin optimisés */
+.btn-admin-primary {
+  @apply bg-primary text-white px-4 py-2 rounded-md font-medium hover:bg-primary-dark transition-colors duration-200;
+  min-height: 44px;
+}
+
+.btn-admin-secondary {
+  @apply bg-gray-100 text-gray-700 px-4 py-2 rounded-md font-medium hover:bg-gray-200 transition-colors duration-200;
+  min-height: 44px;
+}
+
+/* Formulaires admin responsives */
+.form-admin {
+  @apply space-y-4;
+}
+
+.form-admin label {
+  @apply block text-sm font-medium text-gray-700 mb-1;
+}
+
+.form-admin input,
+.form-admin select,
+.form-admin textarea {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary;
+}
+
+/* Grille responsive pour admin */
+.admin-grid {
+  @apply grid grid-cols-1 gap-4;
+}
+
+@media (min-width: 640px) {
+  .admin-grid {
+    @apply grid-cols-2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-grid {
+    @apply grid-cols-3;
+  }
+}
+
+/* Stats cards responsives */
+.stats-card {
+  @apply bg-white rounded-lg shadow p-4 sm:p-6;
+}
+
+.stats-card-icon {
+  @apply w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white;
+}
+
+.stats-card-value {
+  @apply text-xl sm:text-2xl font-bold;
+}
+
+.stats-card-label {
+  @apply text-sm text-gray-600 font-medium;
+}
+
+/* Navigation breadcrumb responsive */
+.breadcrumb-admin {
+  @apply flex items-center space-x-2 text-sm text-gray-500 mb-4;
+}
+
+.breadcrumb-admin a {
+  @apply hover:text-primary transition-colors duration-200;
+}
+
+/* Amélioration des messages d'état */
+.alert-admin {
+  @apply p-4 rounded-md mb-4;
+}
+
+.alert-admin.success {
+  @apply bg-green-50 text-green-800 border border-green-200;
+}
+
+.alert-admin.error {
+  @apply bg-red-50 text-red-800 border border-red-200;
+}
+
+.alert-admin.warning {
+  @apply bg-yellow-50 text-yellow-800 border border-yellow-200;
+}
+
+.alert-admin.info {
+  @apply bg-blue-50 text-blue-800 border border-blue-200;
+}
+
+/* Loading states */
+.loading-spinner-admin {
+  @apply animate-spin rounded-full border-t-2 border-b-2 border-primary;
+}
+
+/* Optimisation des overflow pour mobile */
+.overflow-x-auto-mobile {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Fix pour éviter le scroll horizontal */
+.admin-content {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Amélioration des menus déroulants */
+.dropdown-admin {
+  @apply relative inline-block;
+}
+
+.dropdown-admin-content {
+  @apply absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50;
+}
+
+.dropdown-admin-item {
+  @apply block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900;
+}
+
+/* Optimisation des tooltips pour mobile */
+@media (hover: none) {
+  .tooltip {
+    display: none;
+  }
+}
+
+/* Animation améliorée pour mobile */
+.slide-up-mobile {
+  transform: translateY(100%);
+  transition: transform 0.3s ease-out;
+}
+
+.slide-up-mobile.active {
+  transform: translateY(0);
+}
+
+/* Gestion des focus states pour mobile */
+.focus-visible-only:focus:not(:focus-visible) {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Amélioration des interactions tactiles */
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Optimisation pour les écrans haute densité */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .admin-icon {
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Styles pour les toasts/notifications */
+.toast-admin {
+  @apply fixed top-4 right-4 max-w-sm w-full bg-white shadow-lg rounded-lg border border-gray-200 p-4 z-50;
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive text sizes */
+.text-responsive {
+  @apply text-sm sm:text-base;
+}
+
+.text-responsive-lg {
+  @apply text-base sm:text-lg;
+}
+
+.text-responsive-xl {
+  @apply text-lg sm:text-xl;
+}

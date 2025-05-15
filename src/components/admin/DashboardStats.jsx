@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 /**
- * Composant de statistiques pour le tableau de bord admin
+ * Composant de statistiques responsive pour le tableau de bord admin
+ * Optimisé pour mobile et desktop
  * 
  * @param {Object} props
  * @param {string} props.title - Titre de la statistique
@@ -14,14 +15,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
  */
 const DashboardStats = ({ title, value, icon, color, link }) => {
   const content = (
-    <div className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow duration-300">
+    <div className="bg-white p-3 sm:p-4 lg:p-6 rounded-lg shadow hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
       <div className="flex items-center">
-        <div className={`w-10 h-10 rounded-full ${color} flex items-center justify-center text-white mr-3`}>
-          <FontAwesomeIcon icon={icon} className="h-5 w-5" />
+        <div className={`w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full ${color} flex items-center justify-center text-white mr-3 flex-shrink-0`}>
+          <FontAwesomeIcon icon={icon} className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5" />
         </div>
-        <div>
-          <h3 className="text-sm font-medium text-gray-600">{title}</h3>
-          <p className="text-2xl font-semibold">{value}</p>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-xs sm:text-sm font-medium text-gray-600 truncate">{title}</h3>
+          <p className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900">{value}</p>
         </div>
       </div>
     </div>
@@ -30,7 +31,7 @@ const DashboardStats = ({ title, value, icon, color, link }) => {
   // Si un lien est fourni, envelopper le contenu dans un composant Link
   if (link) {
     return (
-      <Link href={link} className="block">
+      <Link href={link} className="block group">
         {content}
       </Link>
     );
