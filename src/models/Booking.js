@@ -1,11 +1,11 @@
-// src/models/Booking.js - Modèle complet avec nouveau système tarifaire
+// src/models/Booking.js - Version corrigée sans index dupliqué
 import mongoose from 'mongoose';
 
 const BookingSchema = new mongoose.Schema({
   bookingId: {
     type: String,
     required: true,
-    unique: true,
+    unique: true, // L'index unique est déjà déclaré ici
   },
   status: {
     type: String,
@@ -208,7 +208,7 @@ const BookingSchema = new mongoose.Schema({
 });
 
 // Index pour améliorer les performances des requêtes
-BookingSchema.index({ bookingId: 1 });
+// SUPPRESSION DE L'INDEX DUPLIQUÉ sur bookingId (déjà défini avec unique: true)
 BookingSchema.index({ status: 1 });
 BookingSchema.index({ pickupDateTime: 1 });
 BookingSchema.index({ 'price.tariffApplied': 1 });
