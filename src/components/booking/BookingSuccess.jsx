@@ -21,19 +21,24 @@ const BookingSuccess = ({ bookingData }) => {
     });
   };
 
-  // Formatage du prix
-  const formatPrice = (price) => {
-    if (!price) return '0,00 €';
+  const formatPriceRange = (priceRange) => {
+    if (!priceRange) return null;
     
-    return new Intl.NumberFormat('fr-FR', {
+    const min = new Intl.NumberFormat('fr-FR', {
       style: 'currency',
-      currency: price.currency || 'EUR'
-    }).format(price.amount);
-  };
-
-  // Fonction pour générer QR code (simulée)
-  const getQRCodeUrl = (bookingId) => {
-    return `/api/qr-code/${bookingId}`;
+      currency: 'EUR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(priceRange.min);
+    
+    const max = new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(priceRange.max);
+    
+    return `${min} - ${max}`;
   };
 
   // Fonction pour afficher la version imprimable
@@ -184,7 +189,7 @@ const BookingSuccess = ({ bookingData }) => {
             <div className="bg-white border border-gray-200 rounded-lg p-4">
               <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-100">
                 <span className="font-medium">Prix total</span>
-                <span className="text-xl font-bold text-primary">{formatPrice(bookingData.price)}</span>
+                <span className="text-xl font-bold text-primary">{formatPriceRange(bookingData.price.priceRange)}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Paiement auprès du chauffeur</span>

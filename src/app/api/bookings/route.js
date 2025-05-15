@@ -1,4 +1,4 @@
-// src/app/api/bookings/route.js - Correction de l'erreur nodemailer
+// src/app/api/bookings/route.js - Version modifiée pour les fourchettes de prix
 
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
@@ -29,17 +29,13 @@ export async function GET(request) {
     const limit = parseInt(searchParams.get('limit') || '50');
     const skip = parseInt(searchParams.get('skip') || '0');
     
-    console.log("Paramètres de recherche:", { status, startDate, endDate, search, limit, skip });
-    
     // Construire le filtre de recherche
     const query = {};
     
-    // Filtrer par statut
     if (status) {
       query.status = status;
     }
     
-    // Filtrer par date
     if (startDate || endDate) {
       query.pickupDateTime = {};
       
@@ -52,7 +48,6 @@ export async function GET(request) {
       }
     }
     
-    // Recherche par texte
     if (search) {
       const searchRegex = new RegExp(search, 'i');
       query.$or = [
@@ -67,18 +62,12 @@ export async function GET(request) {
       ];
     }
     
-    console.log("Requête MongoDB:", JSON.stringify(query));
-    
     try {
-      // Récupérer les réservations
       const bookings = await Booking.find(query)
         .sort({ pickupDateTime: 1 })
         .skip(skip)
         .limit(limit);
       
-      console.log(`Nombre de réservations trouvées: ${bookings.length}`);
-      
-      // Compter le nombre total de réservations correspondant au filtre
       const total = await Booking.countDocuments(query);
       
       return NextResponse.json({
@@ -134,7 +123,6 @@ export async function POST(request) {
       vehicleType,
       pickupAddressPlaceId,
       dropoffAddressPlaceId,
-      // Nouvelles données du système tarifaire
       tariffApplied,
       routeDetails
     } = data;
@@ -170,7 +158,7 @@ export async function POST(request) {
       returnDateTime = new Date(`${returnDate}T${returnTime}`);
     }
 
-    // Créer un nouvel objet de réservation pour MongoDB avec le nouveau système tarifaire
+    // Créer un nouvel objet de réservation pour MongoDB avec les fourchettes de prix
     const newBooking = new Booking({
       bookingId,
       status: 'confirmed',
@@ -185,7 +173,7 @@ export async function POST(request) {
       trainNumber,
       specialRequests,
       price: {
-        amount: price.amount,
+        amount: price.amount, // Prix maximum de la fourchette
         currency: price.currency,
         tariffApplied: tariffApplied,
         tariffName: price.breakdown.selectedTariff || tariffApplied,
@@ -198,6 +186,8 @@ export async function POST(request) {
           isWeekendOrHoliday: price.breakdown.isWeekendOrHoliday,
           conditions: price.breakdown.conditions,
         },
+        // NOUVEAU : Ajouter la fourchette de prix
+        priceRange: price.priceRange || null,
       },
       customerInfo,
       vehicleType,
@@ -210,38 +200,46 @@ export async function POST(request) {
     await newBooking.save();
     console.log('Réservation enregistrée avec l\'ID:', bookingId);
 
-    // Debug des variables d'environnement
-    console.log('Environment check:', {
-      hasEmailHost: !!process.env.EMAIL_HOST,
-      hasEmailPort: !!process.env.EMAIL_PORT,
-      hasEmailUser: !!process.env.EMAIL_USER,
-      hasEmailPassword: !!process.env.EMAIL_PASSWORD,
-      hasContactEmail: !!process.env.CONTACT_EMAIL,
-      nodeEnv: process.env.NODE_ENV
-    });
-
-    // Fonction d'envoi d'email avec la méthode correcte
+    // Fonction d'envoi d'email avec la fourchette de prix
     const sendEmails = async () => {
       console.log('=== DÉBUT ENVOI EMAILS ===');
       
       try {
-        // Configuration plus robuste pour Vercel
         const transporter = nodemailer.createTransport({
           service: 'gmail',
           auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASSWORD,
           },
-          // Augmenter les timeouts pour Vercel
           connectionTimeout: 10000,
           greetingTimeout: 5000,
           socketTimeout: 10000,
         });
 
-        // Vérifier la connexion avant d'envoyer
         console.log('Test de connexion SMTP...');
         await transporter.verify();
         console.log('✅ Connexion SMTP vérifiée');
+
+        // Fonction pour formater la fourchette de prix
+        const formatPriceRange = (priceRange) => {
+          if (!priceRange) return 'Prix non défini';
+          
+          const min = new Intl.NumberFormat('fr-FR', {
+            style: 'currency',
+            currency: 'EUR',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+          }).format(priceRange.min);
+          
+          const max = new Intl.NumberFormat('fr-FR', {
+            style: 'currency',
+            currency: 'EUR',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+          }).format(priceRange.max);
+          
+          return `${min} - ${max}`;
+        };
 
         // Obtenir le nom du tarif pour l'email
         const tariffNames = {
@@ -252,9 +250,9 @@ export async function POST(request) {
         };
         const tariffName = tariffNames[tariffApplied] || 'Tarif standard';
 
-        // Email pour le propriétaire avec design professionnel
+        // Email pour le propriétaire avec les fourchettes
         const mailOptions = {
-          from: `"Taxi VLB" <${process.env.EMAIL_USER}>`, // Nom d'expéditeur personnalisé
+          from: `"Taxi VLB" <${process.env.EMAIL_USER}>`,
           to: process.env.CONTACT_EMAIL || 'contact@taxivlb.com',
           subject: `Nouvelle réservation Taxi VLB [${bookingId}] - Tarif ${tariffApplied}`,
           html: `
@@ -288,10 +286,8 @@ export async function POST(request) {
                 <h2 style="color: #2a5a9e; margin-top: 0;">Tarification</h2>
                 <p><strong>Tarif appliqué:</strong> ${tariffApplied} - ${tariffName}</p>
                 <p><strong>Conditions:</strong> ${price.breakdown.conditions.timeOfDay}, ${price.breakdown.conditions.dayType}, retour ${price.breakdown.conditions.returnType}</p>
-                <p><strong>Prise en charge:</strong> ${price.breakdown.baseFare.toFixed(2)}€</p>
-                <p><strong>Distance:</strong> ${price.breakdown.actualDistance?.toFixed(1)}km à ${price.breakdown.pricePerKm}€/km = ${price.breakdown.distanceCharge?.toFixed(2)}€</p>
-                ${roundTrip ? '<p><strong>Aller-retour:</strong> x2</p>' : ''}
-                <p style="font-size: 18px; margin-top: 10px;"><strong>Prix total: ${price.amount.toFixed(2)}€</strong></p>
+                <p style="font-size: 18px; margin-top: 10px;"><strong>Prix estimé: ${formatPriceRange(price.priceRange)}</strong></p>
+                <p style="font-size: 14px; color: #666;">Le prix final sera défini avec le client dans cette fourchette</p>
               </div>
               
               <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
@@ -301,22 +297,17 @@ export async function POST(request) {
                 ${trainNumber ? `<p><strong>Numéro de train:</strong> ${trainNumber}</p>` : ''}
                 ${specialRequests ? `<p><strong>Demandes spéciales:</strong> ${specialRequests}</p>` : ''}
               </div>
-              
-              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #666; font-size: 14px;">
-                <p>Réservation effectuée depuis www.taxi-verrieres-le-buisson.com</p>
-              </div>
             </div>
           `,
         };
 
-        // Envoyer avec gestion d'erreur
         console.log('Envoi email propriétaire vers:', mailOptions.to);
         const info1 = await transporter.sendMail(mailOptions);
         console.log('✅ Email propriétaire envoyé:', info1.messageId);
 
-        // Email client avec le même design que l'original
+        // Email client avec la fourchette de prix
         const customerMailOptions = {
-          from: `"Taxi VLB" <${process.env.EMAIL_USER}>`, // Nom d'expéditeur personnalisé
+          from: `"Taxi VLB" <${process.env.EMAIL_USER}>`,
           to: customerInfo.email,
           subject: `Confirmation de réservation Taxi VLB [${bookingId}]`,
           html: `
@@ -339,8 +330,16 @@ export async function POST(request) {
                 <p><strong>Date et heure:</strong> ${pickupDateTime.toLocaleDateString('fr-FR')} à ${pickupDateTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
                 <p><strong>Passagers:</strong> ${passengers}</p>
                 <p><strong>Véhicule:</strong> ${vehicleType === 'green' ? 'Tesla Model 3' : vehicleType === 'berline' ? 'Mercedes Classe E' : 'Mercedes Classe V'}</p>
-                <p style="font-size: 18px; margin-top: 10px;"><strong>Prix total: ${price.amount.toFixed(2)}€</strong></p>
+                <p style="font-size: 18px; margin-top: 10px;"><strong>Prix estimé: ${formatPriceRange(price.priceRange)}</strong></p>
                 <p style="font-size: 14px; color: #666;">(Tarif ${tariffApplied} - ${tariffName})</p>
+              </div>
+              
+              <div style="background-color: #fffbf0; border: 1px solid #ffd93d; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                <h3 style="color: #805500; margin-top: 0;">💡 À propos du prix</h3>
+                <p style="color: #805500; margin: 0;">
+                  Cette fourchette de prix tient compte des conditions de circulation et autres facteurs du trajet. 
+                  Le prix final sera convenu avec votre chauffeur et restera dans cette fourchette.
+                </p>
               </div>
               
               <p style="background-color: #fff3cd; padding: 10px; border-left: 4px solid #ffc107; margin: 15px 0;">
@@ -364,25 +363,17 @@ export async function POST(request) {
 
       } catch (emailError) {
         console.error('=== ERREUR EMAIL DÉTAILLÉE ===');
-        console.error('Type d\'erreur:', emailError.constructor.name);
         console.error('Message:', emailError.message);
-        console.error('Code:', emailError.code);
-        console.error('Command:', emailError.command);
-        console.error('Response:', emailError.response);
-        console.error('Stack:', emailError.stack);
-        
-        throw emailError; // Relancer l'erreur pour la voir dans les logs
+        throw emailError;
       }
     };
 
-    // Appeler l'envoi d'emails AVANT la réponse pour s'assurer qu'ils sont traités
+    // Appeler l'envoi d'emails
     try {
       await sendEmails();
       console.log('Emails traités avec succès');
     } catch (emailError) {
       console.error('Erreur finale lors de l\'envoi des emails:', emailError);
-      // Vous pouvez choisir de faire échouer la réservation ou continuer
-      // Pour l'instant, on continue et on log juste l'erreur
     }
 
     // Données de réservation à retourner au client
@@ -406,6 +397,7 @@ export async function POST(request) {
         tariffApplied,
         tariffName: price.breakdown.selectedTariff || tariffApplied,
         breakdown: price.breakdown,
+        priceRange: price.priceRange, // Inclure la fourchette dans la réponse
       },
       customerInfo: {
         name: customerInfo.name,

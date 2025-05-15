@@ -1,11 +1,12 @@
-// src/models/Booking.js - Version corrigée sans index dupliqué
+// src/models/Booking.js - Version avec support des fourchettes de prix
+
 import mongoose from 'mongoose';
 
 const BookingSchema = new mongoose.Schema({
   bookingId: {
     type: String,
     required: true,
-    unique: true, // L'index unique est déjà déclaré ici
+    unique: true,
   },
   status: {
     type: String,
@@ -56,12 +57,13 @@ const BookingSchema = new mongoose.Schema({
     amount: {
       type: Number,
       required: true,
+      description: 'Prix maximum de la fourchette ou prix convenu'
     },
     currency: {
       type: String,
       default: 'EUR',
     },
-    // NOUVEAUX CHAMPS pour le système tarifaire
+    // Système tarifaire
     tariffApplied: {
       type: String,
       enum: ['A', 'B', 'C', 'D'],
@@ -94,6 +96,15 @@ const BookingSchema = new mongoose.Schema({
         required: true,
         description: 'Distance réelle en kilomètres'
       },
+      minimumCourse: {
+        type: Number,
+        description: 'Course minimum appliquée (20€ standard, 25€ VAN)'
+      },
+      approachFee: {
+        type: Number,
+        required: true,
+        description: 'Frais d\'approche (13€ jour, 10€ nuit)'
+      },
       isNightTime: {
         type: Boolean,
         default: false,
@@ -124,6 +135,22 @@ const BookingSchema = new mongoose.Schema({
           description: 'Type de retour (aller-retour ou aller simple)'
         },
       },
+    },
+    // NOUVEAU : Fourchette de prix
+    priceRange: {
+      min: {
+        type: Number,
+        description: 'Prix minimum de la fourchette'
+      },
+      max: {
+        type: Number,
+        description: 'Prix maximum de la fourchette'
+      }
+    },
+    // NOUVEAU : Prix final négocié
+    finalPrice: {
+      type: Number,
+      description: 'Prix final convenu avec le chauffeur (dans la fourchette)'
     },
   },
   customerInfo: {
@@ -162,7 +189,7 @@ const BookingSchema = new mongoose.Schema({
     type: String,
     description: 'Notes administrateur'
   },
-  // NOUVEAU : Détails de l'itinéraire
+  // Détails de l'itinéraire
   routeDetails: {
     distance: {
       value: {
@@ -208,7 +235,6 @@ const BookingSchema = new mongoose.Schema({
 });
 
 // Index pour améliorer les performances des requêtes
-// SUPPRESSION DE L'INDEX DUPLIQUÉ sur bookingId (déjà défini avec unique: true)
 BookingSchema.index({ status: 1 });
 BookingSchema.index({ pickupDateTime: 1 });
 BookingSchema.index({ 'price.tariffApplied': 1 });
@@ -262,6 +288,61 @@ BookingSchema.methods.getFormattedPrice = function() {
     style: 'currency',
     currency: this.price.currency || 'EUR'
   }).format(this.price.amount);
+};
+
+// NOUVELLE MÉTHODE : Obtenir la fourchette de prix formatée
+BookingSchema.methods.getFormattedPriceRange = function() {
+  if (!this.price.priceRange) return null;
+  
+  const min = new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: this.price.currency || 'EUR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(this.price.priceRange.min);
+  
+  const max = new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: this.price.currency || 'EUR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(this.price.priceRange.max);
+  
+  return `${min} - ${max}`;
+};
+
+// NOUVELLE MÉTHODE : Obtenir le prix effectif (final ou max de la fourchette)
+BookingSchema.methods.getEffectivePrice = function() {
+  return this.price.finalPrice || this.price.amount;
+};
+
+// NOUVELLE MÉTHODE : Mettre à jour le prix final
+BookingSchema.methods.setFinalPrice = function(finalPrice) {
+  if (!this.price.priceRange) {
+    throw new Error('Aucune fourchette de prix définie');
+  }
+  
+  if (finalPrice < this.price.priceRange.min || finalPrice > this.price.priceRange.max) {
+    throw new Error(`Le prix final doit être entre ${this.price.priceRange.min}€ et ${this.price.priceRange.max}€`);
+  }
+  
+  this.price.finalPrice = finalPrice;
+  return this.save();
+};
+
+// NOUVELLE MÉTHODE : Vérifier si le prix est dans la fourchette
+BookingSchema.methods.isPriceInRange = function(price) {
+  if (!this.price.priceRange) return true;
+  return price >= this.price.priceRange.min && price <= this.price.priceRange.max;
+};
+
+// NOUVELLE MÉTHODE : Obtenir le supplément VAN
+BookingSchema.methods.getVanSupplement = function() {
+  if (this.vehicleType === 'van') {
+    // Le supplément VAN est de 15€
+    return 15;
+  }
+  return 0;
 };
 
 // Assurer que les virtuals sont inclus lors de la conversion en JSON

@@ -1,3 +1,5 @@
+// src/components/booking/BookingForm.jsx - Version modifiée pour les fourchettes de prix
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -148,13 +150,14 @@ const BookingForm = () => {
           const estimate = data.data.estimate;
           
           // Vérifier que l'estimate contient les données nécessaires
-          if (typeof estimate.exactPrice === 'undefined') {
-            throw new Error('Prix non disponible dans la réponse de l\'API');
+          if (!estimate.priceRanges || typeof estimate.basePrice === 'undefined') {
+            throw new Error('Données de prix incomplètes dans la réponse de l\'API');
           }
           
           console.log('Estimate reçu:', estimate);
-          console.log('ExactPrice:', estimate.exactPrice);
+          console.log('Price ranges:', estimate.priceRanges);
           
+          // Créer les options de véhicules avec les fourchettes de prix
           const vehicleOptions = [
             {
               id: 'green',
@@ -163,7 +166,7 @@ const BookingForm = () => {
               capacity: 'Jusqu\'à 4 passagers',
               luggage: 'Jusqu\'à 3 bagages',
               estimate: estimate,
-              price: estimate.exactPrice
+              priceRange: estimate.priceRanges.standard
             },
             {
               id: 'berline',
@@ -172,7 +175,7 @@ const BookingForm = () => {
               capacity: 'Jusqu\'à 4 passagers',
               luggage: 'Jusqu\'à 4 bagages',
               estimate: estimate,
-              price: estimate.exactPrice
+              priceRange: estimate.priceRanges.standard
             },
             {
               id: 'van',
@@ -181,12 +184,13 @@ const BookingForm = () => {
               capacity: 'Jusqu\'à 7 passagers',
               luggage: 'Grande capacité bagages',
               estimate: estimate,
-              price: estimate.exactPrice
+              priceRange: estimate.priceRanges.van
             }
           ];
           
-          console.log('VehicleOptions créées:', vehicleOptions);
+          console.log('VehicleOptions créées avec fourchettes:', vehicleOptions);
           
+          // Filtrer les véhicules selon le nombre de passagers
           const validVehicles = vehicleOptions.filter(vehicle => {
             if (vehicle.id === 'van' && formValues.passengers <= 7) {
               return true;
@@ -231,6 +235,15 @@ const BookingForm = () => {
       return;
     }
     
+    // Récupérer la fourchette de prix pour le véhicule sélectionné
+    const selectedVehicleData = availableVehicles.find(v => v.id === selectedVehicle);
+    const priceRange = selectedVehicleData ? selectedVehicleData.priceRange : null;
+    
+    if (!priceRange) {
+      setError('Erreur lors de la récupération du prix');
+      return;
+    }
+    
     try {
       const bookingData = {
         pickupAddress: data.pickupAddress,
@@ -250,10 +263,12 @@ const BookingForm = () => {
           email: data.customerEmail,
           phone: data.customerPhone
         },
+        // MODIFICATION : Utiliser le prix maximum de la fourchette pour la réservation
         price: {
-          amount: priceEstimate.exactPrice,
+          amount: priceRange.max, // Prix maximum de la fourchette
           currency: 'EUR',
-          breakdown: priceEstimate.breakdown
+          breakdown: priceEstimate.breakdown,
+          priceRange: priceRange // Ajouter la fourchette de prix
         },
         vehicleType: selectedVehicle,
         pickupAddressPlaceId: data.pickupAddressPlaceId,
