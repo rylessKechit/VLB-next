@@ -1,20 +1,11 @@
-// src/app/api/bookings/route.js - Version corrigée pour nodemailer
+// src/app/api/bookings/route.js - Version corrigée
 
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Booking from '@/models/Booking';
-import { getServerSession } from 'next-auth';  // Importation correcte
+import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-
-// Import dynamique pour éviter les problèmes webpack avec nodemailer
-const nodemailer = (() => {
-  try {
-    return require('nodemailer');
-  } catch (error) {
-    console.error('Nodemailer not available:', error);
-    return null;
-  }
-})();
+import nodemailer from 'nodemailer';
 
 // Récupérer toutes les réservations - utilisé par le tableau de bord admin
 export async function GET(request) {
@@ -219,16 +210,11 @@ export async function POST(request) {
     await newBooking.save();
     console.log('Réservation enregistrée avec l\'ID:', bookingId);
 
-    // Fonction d'envoi d'email avec gestion d'erreur
+    // Fonction d'envoi d'email avec la méthode correcte
     const sendEmails = async () => {
-      if (!nodemailer) {
-        console.warn('Nodemailer non disponible, emails non envoyés');
-        return;
-      }
-
       try {
-        // Configuration de Nodemailer
-        const transporter = nodemailer.createTransporter({
+        // Configuration de Nodemailer avec la méthode correcte
+        const transporter = nodemailer.createTransport({
           host: process.env.EMAIL_HOST || 'smtp.gmail.com',
           port: parseInt(process.env.EMAIL_PORT || '587'),
           secure: process.env.EMAIL_SECURE === 'true',
