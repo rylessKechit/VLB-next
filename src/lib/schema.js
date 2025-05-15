@@ -9,7 +9,7 @@ export const taxiService = {
     "name": "Taxi VLB - Service de taxi à Verrières-le-Buisson",
     "image": "https://www.taxi-verrieres-le-buisson.com/images/logo.webp",
     "url": "https://www.taxi-verrieres-le-buisson.com",
-    "telephone": "+33600000000",
+    "telephone": "+33665113928",
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "Verrières-le-Buisson",

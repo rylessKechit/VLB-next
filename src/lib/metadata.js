@@ -81,7 +81,7 @@ export const homeMetadata = {
         name: 'Taxi VLB',
         alternateName: 'Taxi Verrières-le-Buisson VLB',
         url: 'https://www.taxi-verrieres-le-buisson.com',
-        telephone: '+33600000000',
+        telephone: '+33665113928',
         email: 'contact@taxivlb.com',
         priceRange: '€€',
         image: 'https://www.taxi-verrieres-le-buisson.com/images/logo.webp',
@@ -155,7 +155,7 @@ export const homeMetadata = {
 export const contactMetadata = {
   ...baseMetadata,
   title: 'Contact Taxi VLB | Réservation 24/7 | Numéro Taxi Verrières-le-Buisson (91)',
-  description: 'Contactez Taxi VLB à Verrières-le-Buisson : ☎️ +33 6 00 00 00 00 (24h/24). Réservation taxi en ligne. Service aéroport CDG, Orly, gares. Devis gratuit immédiat.',
+  description: 'Contactez Taxi VLB à Verrières-le-Buisson : ☎️ +33 6 65 11 39 28 (24h/24). Réservation taxi en ligne. Service aéroport CDG, Orly, gares. Devis gratuit immédiat.',
   keywords: [
     'contact taxi Verrières-le-Buisson',
     'numéro taxi VLB',
@@ -182,7 +182,7 @@ export const contactMetadata = {
       name: 'Taxi VLB',
       contactPoint: {
         '@type': 'ContactPoint',
-        telephone: '+33600000000',
+        telephone: '+33665113928',
         contactType: 'customer service',
         areaServed: 'FR',
         availableLanguage: 'French',

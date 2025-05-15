@@ -349,7 +349,7 @@ export async function POST(request) {
               <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #666; font-size: 14px;">
                 <p>Merci de votre confiance,</p>
                 <p><strong>L'équipe Taxi VLB</strong></p>
-                <p>📞 +33 6 00 00 00 00</p>
+                <p>📞 +33 6 65 11 39 28</p>
               </div>
             </div>
           `,

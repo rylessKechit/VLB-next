@@ -152,14 +152,14 @@ function calculatePriceRanges(basePrice, approachFee) {
   // Pour les véhicules standard (Tesla et Mercedes Classe E)
   // Fourchette : prix effectif + frais d'approche → prix effectif + frais d'approche 10€
   const standardMin = effectiveBasePrice + approachFee;
-  const standardMax = effectiveBasePrice + approachFee + 10;
+  const standardMax = effectiveBasePrice + approachFee + 5;
   
   // Pour le VAN (Mercedes Classe V)
   // Course minimum VAN = 25€ (au lieu de 20€ pour les standards)
   const minimumCourseVan = 25;
   const effectiveBasePriceVan = Math.max(basePrice, minimumCourseVan);
-  const vanMin = effectiveBasePriceVan + approachFee + 15;
-  const vanMax = effectiveBasePriceVan + approachFee + 25;
+  const vanMin = effectiveBasePriceVan + approachFee + 10;
+  const vanMax = effectiveBasePriceVan + approachFee + 15;
   
   return {
     standard: {
@@ -175,7 +175,7 @@ function calculatePriceRanges(basePrice, approachFee) {
 
 // Système tarifaire VLB (modifié avec frais d'approche)
 const TAXI_RATES = {
-  baseFare: 2.60, // Prise en charge
+  baseFare: 0, // Prise en charge
   rates: {
     A: { pricePerKm: 1.00, description: 'Jour avec retour en charge' },
     B: { pricePerKm: 1.50, description: 'Nuit/weekend avec retour en charge' },
@@ -184,8 +184,8 @@ const TAXI_RATES = {
   },
   // NOUVEAUX : Frais d'approche
   approachFees: {
-    day: 13,    // 13€ en journée
-    night: 10   // 10€ de nuit
+    day: 10,    // 10€ en journée
+    night: 5   // 0€ de nuit
   }
 };
 

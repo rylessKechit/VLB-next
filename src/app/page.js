@@ -443,7 +443,7 @@ export default function Home() {
                       "name": "Comment réserver un taxi à Verrières-le-Buisson ?",
                       "acceptedAnswer": {
                         "@type": "Answer",
-                        "text": "Vous pouvez réserver notre service de taxi via notre formulaire en ligne, par téléphone au +33 6 00 00 00 00 ou par email. Nous recommandons de réserver à l'avance pour garantir la disponibilité."
+                        "text": "Vous pouvez réserver notre service de taxi via notre formulaire en ligne, par téléphone au +33 6 65 11 39 28 ou par email. Nous recommandons de réserver à l'avance pour garantir la disponibilité."
                       }
                     },
                     {
@@ -479,7 +479,7 @@ export default function Home() {
               {[
                 {
                   question: "Comment réserver un taxi à Verrières-le-Buisson ?",
-                  answer: "Vous pouvez réserver notre service de taxi via notre formulaire en ligne, par téléphone au +33 6 00 00 00 00 ou par email. Nous recommandons de réserver à l'avance pour garantir la disponibilité."
+                  answer: "Vous pouvez réserver notre service de taxi via notre formulaire en ligne, par téléphone au +33 6 65 11 39 28 ou par email. Nous recommandons de réserver à l'avance pour garantir la disponibilité."
                 },
                 {
                   question: "Quel est le prix d'une course de taxi à Verrières-le-Buisson ?",
@@ -584,7 +584,7 @@ export default function Home() {
                 <Link href="/contact" className="btn btn-primary">
                   Nous contacter
                 </Link>
-                <Link href="tel:+33600000000" className="btn btn-outline flex items-center justify-center">
+                <Link href="tel:+33665113928" className="btn btn-outline flex items-center justify-center">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                   </svg>

@@ -64,11 +64,11 @@ const Footer = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link href="tel:+33600000000" className="flex items-center text-gray-300 hover:text-white transition-colors duration-300">
+                  <Link href="tel:+33665113928" className="flex items-center text-gray-300 hover:text-white transition-colors duration-300">
                     <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center mr-3">
                       <FontAwesomeIcon icon={faPhone} />
                     </div>
-                    <span>+33 6 00 00 00 00</span>
+                    <span>+33 6 65 11 39 28</span>
                   </Link>
                 </li>
                 <li>

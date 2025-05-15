@@ -62,7 +62,7 @@ export default function ContactPage() {
       
       setSubmitResult({
         success: false,
-        message: 'Une erreur est survenue lors de l\'envoi de votre message. Veuillez réessayer ou contactez-nous directement par téléphone au +33 6 00 00 00 00.',
+        message: 'Une erreur est survenue lors de l\'envoi de votre message. Veuillez réessayer ou contactez-nous directement par téléphone au +33 6 65 11 39 28.',
       });
     } finally {
       setIsSubmitting(false);
@@ -106,8 +106,8 @@ export default function ContactPage() {
                   <div>
                     <h3 className="text-lg font-semibold mb-1">TÉLÉPHONE</h3>
                     <p className="text-gray-700">
-                      <a href="tel:+33600000000" className="hover:text-primary transition-colors duration-300">
-                        +33 6 00 00 00 00
+                      <a href="tel:+33665113928" className="hover:text-primary transition-colors duration-300">
+                        +33 6 65 11 39 28
                       </a>
                     </p>
                     <p className="text-sm text-gray-500 mt-1">Disponible 24h/24 pour vos réservations de taxi</p>
@@ -258,7 +258,7 @@ export default function ContactPage() {
             Pour une réponse rapide, envoyez-nous un message via WhatsApp pour réserver votre taxi à Verrières-le-Buisson
           </p>
           <a 
-            href="https://wa.me/+33600000000" 
+            href="https://wa.me/+33665113928" 
             target="_blank" 
             rel="noopener noreferrer" 
             className="inline-flex items-center bg-white text-[#25D366] py-3 px-6 rounded-md font-medium hover:bg-gray-100 transition-colors duration-300"

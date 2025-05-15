@@ -20,7 +20,7 @@ export async function seedDatabase() {
         email: 'admin@taxivlb.com',
         password: process.env.DEFAULT_ADMIN_PASSWORD || 'motdepasse123',
         role: 'admin',
-        phone: '+33600000000',
+        phone: '+33665113928',
         status: 'active'
       });
       

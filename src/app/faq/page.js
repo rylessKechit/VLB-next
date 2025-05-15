@@ -32,7 +32,7 @@ export default function FAQPage() {
   const faqItems = [
     {
       question: "Comment réserver un taxi à Verrières-le-Buisson ?",
-      answer: "Vous pouvez réserver notre service de taxi à Verrières-le-Buisson de plusieurs façons: via notre formulaire de réservation en ligne, par téléphone au +33 6 00 00 00 00 disponible 24h/24, ou par email à contact@taxivlb.com. Nous vous confirmerons rapidement votre réservation avec tous les détails nécessaires."
+      answer: "Vous pouvez réserver notre service de taxi à Verrières-le-Buisson de plusieurs façons: via notre formulaire de réservation en ligne, par téléphone au +33 6 65 11 39 28 disponible 24h/24, ou par email à contact@taxivlb.com. Nous vous confirmerons rapidement votre réservation avec tous les détails nécessaires."
     },
     {
       question: "Quels sont les tarifs pour un taxi à Verrières-le-Buisson ?",
@@ -127,7 +127,7 @@ export default function FAQPage() {
                   Contactez-nous
                 </Link>
                 <Link 
-                  href="tel:+33600000000" 
+                  href="tel:+33665113928" 
                   className="bg-transparent border-2 border-primary text-primary py-3 px-6 rounded-md font-medium hover:bg-primary hover:text-white transition-colors duration-300 flex items-center justify-center"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">

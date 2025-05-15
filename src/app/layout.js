@@ -20,7 +20,7 @@ const inter = Inter({
 export const metadata = {
   ...baseMetadata,
   title: 'Taxi Verrières-le-Buisson (91) | Service 24/7 | Taxi VLB',
-  description: 'Service de taxi à Verrières-le-Buisson (91) disponible 24h/24 et 7j/7. Transferts aéroport, gare et longue distance. Réservation simple et rapide. Tél: +33 6 00 00 00 00',
+  description: 'Service de taxi à Verrières-le-Buisson (91) disponible 24h/24 et 7j/7. Transferts aéroport, gare et longue distance. Réservation simple et rapide. Tél: +33 6 65 11 39 28',
   keywords: 'taxi Verrières-le-Buisson, taxi VLB, taxi 91, taxi Essonne, taxi aéroport Verrières-le-Buisson, taxi gare Verrières-le-Buisson, réservation taxi Verrières-le-Buisson',
   alternates: {
     canonical: 'https://www.taxi-verrieres-le-buisson.com',
@@ -126,7 +126,7 @@ export default function RootLayout({ children }) {
               "name": "Taxi VLB - Service de taxi à Verrières-le-Buisson",
               "image": "https://www.taxi-verrieres-le-buisson.com/images/logo.webp",
               "url": "https://www.taxi-verrieres-le-buisson.com",
-              "telephone": "+33600000000",
+              "telephone": "+33665113928",
               "address": {
                 "@type": "PostalAddress",
                 "streetAddress": "Verrières-le-Buisson",
