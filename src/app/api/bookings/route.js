@@ -1,4 +1,4 @@
-// src/app/api/bookings/route.js - Version corrigée
+// src/app/api/bookings/route.js - Correction de l'erreur nodemailer
 
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
@@ -210,19 +210,38 @@ export async function POST(request) {
     await newBooking.save();
     console.log('Réservation enregistrée avec l\'ID:', bookingId);
 
+    // Debug des variables d'environnement
+    console.log('Environment check:', {
+      hasEmailHost: !!process.env.EMAIL_HOST,
+      hasEmailPort: !!process.env.EMAIL_PORT,
+      hasEmailUser: !!process.env.EMAIL_USER,
+      hasEmailPassword: !!process.env.EMAIL_PASSWORD,
+      hasContactEmail: !!process.env.CONTACT_EMAIL,
+      nodeEnv: process.env.NODE_ENV
+    });
+
     // Fonction d'envoi d'email avec la méthode correcte
     const sendEmails = async () => {
+      console.log('=== DÉBUT ENVOI EMAILS ===');
+      
       try {
-        // Configuration de Nodemailer avec la méthode correcte
+        // Configuration plus robuste pour Vercel
         const transporter = nodemailer.createTransport({
-          host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-          port: parseInt(process.env.EMAIL_PORT || '587'),
-          secure: process.env.EMAIL_SECURE === 'true',
+          service: 'gmail',
           auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASSWORD,
           },
+          // Augmenter les timeouts pour Vercel
+          connectionTimeout: 10000,
+          greetingTimeout: 5000,
+          socketTimeout: 10000,
         });
+
+        // Vérifier la connexion avant d'envoyer
+        console.log('Test de connexion SMTP...');
+        await transporter.verify();
+        console.log('✅ Connexion SMTP vérifiée');
 
         // Obtenir le nom du tarif pour l'email
         const tariffNames = {
@@ -233,9 +252,9 @@ export async function POST(request) {
         };
         const tariffName = tariffNames[tariffApplied] || 'Tarif standard';
 
-        // Email pour le propriétaire du site avec les détails du tarif
+        // Email pour le propriétaire avec design professionnel
         const mailOptions = {
-          from: `"Taxi VLB Réservation" <${process.env.EMAIL_USER}>`,
+          from: `"Taxi VLB" <${process.env.EMAIL_USER}>`, // Nom d'expéditeur personnalisé
           to: process.env.CONTACT_EMAIL || 'contact@taxivlb.com',
           subject: `Nouvelle réservation Taxi VLB [${bookingId}] - Tarif ${tariffApplied}`,
           html: `
@@ -290,12 +309,14 @@ export async function POST(request) {
           `,
         };
 
-        // Envoyer l'email
-        await transporter.sendMail(mailOptions);
+        // Envoyer avec gestion d'erreur
+        console.log('Envoi email propriétaire vers:', mailOptions.to);
+        const info1 = await transporter.sendMail(mailOptions);
+        console.log('✅ Email propriétaire envoyé:', info1.messageId);
 
-        // Email de confirmation pour le client avec les détails du tarif
+        // Email client avec le même design que l'original
         const customerMailOptions = {
-          from: `"Taxi VLB" <${process.env.EMAIL_USER}>`,
+          from: `"Taxi VLB" <${process.env.EMAIL_USER}>`, // Nom d'expéditeur personnalisé
           to: customerInfo.email,
           subject: `Confirmation de réservation Taxi VLB [${bookingId}]`,
           html: `
@@ -335,16 +356,34 @@ export async function POST(request) {
           `,
         };
 
-        await transporter.sendMail(customerMailOptions);
-        console.log('Emails envoyés avec succès');
+        console.log('Envoi email client vers:', customerInfo.email);
+        const info2 = await transporter.sendMail(customerMailOptions);
+        console.log('✅ Email client envoyé:', info2.messageId);
+
+        console.log('=== EMAILS ENVOYÉS AVEC SUCCÈS ===');
+
       } catch (emailError) {
-        console.error('Erreur lors de l\'envoi des emails:', emailError);
-        // Ne pas faire échouer la réservation même si l'email échoue
+        console.error('=== ERREUR EMAIL DÉTAILLÉE ===');
+        console.error('Type d\'erreur:', emailError.constructor.name);
+        console.error('Message:', emailError.message);
+        console.error('Code:', emailError.code);
+        console.error('Command:', emailError.command);
+        console.error('Response:', emailError.response);
+        console.error('Stack:', emailError.stack);
+        
+        throw emailError; // Relancer l'erreur pour la voir dans les logs
       }
     };
 
-    // Envoyer les emails de manière asynchrone
-    sendEmails();
+    // Appeler l'envoi d'emails AVANT la réponse pour s'assurer qu'ils sont traités
+    try {
+      await sendEmails();
+      console.log('Emails traités avec succès');
+    } catch (emailError) {
+      console.error('Erreur finale lors de l\'envoi des emails:', emailError);
+      // Vous pouvez choisir de faire échouer la réservation ou continuer
+      // Pour l'instant, on continue et on log juste l'erreur
+    }
 
     // Données de réservation à retourner au client
     const bookingResult = {
