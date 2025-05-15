@@ -2,24 +2,23 @@
 
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import AddressInput from './AddressInput';
-import DateTimePicker from './DateTimePicker';
 import BookingSuccess from './BookingSuccess';
-import RouteMap from './RouteMap';
-import VehicleSelector from './VehicleSelector';
+import BookingStepOne from './steps/BookingStepOne';
+import BookingStepTwo from './steps/BookingStepTwo';
+import BookingStepThree from './steps/BookingStepThree';
 
 const BookingForm = () => {
   // États pour les étapes du formulaire
   const [currentStep, setCurrentStep] = useState(1);
   const [priceEstimate, setPriceEstimate] = useState(null);
-  const [availableVehicles, setAvailableVehicles] = useState([]); // État manquant
-  const [selectedVehicle, setSelectedVehicle] = useState(null); // État pour le véhicule sélectionné
+  const [availableVehicles, setAvailableVehicles] = useState([]);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [error, setError] = useState('');
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [bookingResult, setBookingResult] = useState(null);
   
-  const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm({
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm({
     defaultValues: {
       pickupAddress: '',
       dropoffAddress: '',
@@ -54,26 +53,6 @@ const BookingForm = () => {
     setValue('pickupTime', formattedTime);
   }, [setValue]);
 
-  const [isAirport, setIsAirport] = useState(false);
-  const [isTrainStation, setIsTrainStation] = useState(false);
-
-  useEffect(() => {
-    const checkAddressType = (address) => {
-      if (!address) return;
-      
-      const airportKeywords = ['aéroport', 'airport', 'cdg', 'orly', 'beauvais', 'roissy'];
-      const trainKeywords = ['gare', 'station', 'sncf', 'tgv', 'train'];
-      
-      const lowerCaseAddress = address.toLowerCase();
-      
-      setIsAirport(airportKeywords.some(keyword => lowerCaseAddress.includes(keyword)));
-      setIsTrainStation(trainKeywords.some(keyword => lowerCaseAddress.includes(keyword)));
-    };
-    
-    checkAddressType(formValues.pickupAddress);
-    checkAddressType(formValues.dropoffAddress);
-  }, [formValues.pickupAddress, formValues.dropoffAddress]);
-  
   const formatDate = (date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -118,29 +97,24 @@ const BookingForm = () => {
     setSelectedVehicle(null);
   };
   
-  // Fonction corrigée pour calculer le prix
+  // Fonction pour calculer le prix
   const calculatePrice = async () => {
-  if (!formValues.pickupAddress || !formValues.dropoffAddress || !formValues.pickupDate || !formValues.pickupTime) {
-    setError('Veuillez remplir tous les champs obligatoires');
-    return;
-  }
-  
-  if (!formValues.pickupAddressPlaceId || !formValues.dropoffAddressPlaceId) {
-    setError('Veuillez sélectionner des adresses valides dans les suggestions');
-    return;
-  }
-  
-  setError('');
-  setIsCalculating(true);
-  
-  try {
-    // Nouveau système : un seul appel API qui calcule selon les tarifs TTC
-    const response = await fetch('/api/price/estimate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    // Validation des champs requis
+    if (!formValues.pickupAddress || !formValues.dropoffAddress || !formValues.pickupDate || !formValues.pickupTime) {
+      setError('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+    
+    if (!formValues.pickupAddressPlaceId || !formValues.dropoffAddressPlaceId) {
+      setError('Veuillez sélectionner des adresses valides dans les suggestions');
+      return;
+    }
+    
+    setError('');
+    setIsCalculating(true);
+    
+    try {
+      console.log('Envoi de la requête de prix avec:', {
         pickupPlaceId: formValues.pickupAddressPlaceId,
         dropoffPlaceId: formValues.dropoffAddressPlaceId,
         pickupDateTime: `${formValues.pickupDate}T${formValues.pickupTime}`,
@@ -148,157 +122,177 @@ const BookingForm = () => {
         luggage: parseInt(formValues.luggage),
         roundTrip: formValues.roundTrip,
         returnDateTime: formValues.roundTrip && formValues.returnDate ? `${formValues.returnDate}T${formValues.returnTime}` : null
-      })
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      if (data.success) {
-        // Avec le nouveau système, on a qu'un seul prix pour tous les véhicules
-        const estimate = data.data.estimate;
+      });
+
+      const response = await fetch('/api/price/estimate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          pickupPlaceId: formValues.pickupAddressPlaceId,
+          dropoffPlaceId: formValues.dropoffAddressPlaceId,
+          pickupDateTime: `${formValues.pickupDate}T${formValues.pickupTime}`,
+          passengers: parseInt(formValues.passengers),
+          luggage: parseInt(formValues.luggage),
+          roundTrip: formValues.roundTrip,
+          returnDateTime: formValues.roundTrip && formValues.returnDate ? `${formValues.returnDate}T${formValues.returnTime}` : null
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Réponse de l\'API price/estimate:', data);
         
-        // Créer les options de véhicules avec le même prix
-        const vehicleOptions = [
-          {
-            id: 'green',
-            name: 'Tesla Model 3',
-            desc: 'Élégance et technologie - 100% électrique',
-            capacity: 'Jusqu\'à 4 passagers',
-            luggage: 'Jusqu\'à 3 bagages',
-            estimate: estimate,
-            price: estimate.exactPrice
-          },
-          {
-            id: 'berline',
-            name: 'Mercedes Classe E',
-            desc: 'Confort et prestige au quotidien',
-            capacity: 'Jusqu\'à 4 passagers',
-            luggage: 'Jusqu\'à 4 bagages',
-            estimate: estimate,
-            price: estimate.exactPrice
-          },
-          {
-            id: 'van',
-            name: 'Mercedes Classe V',
-            desc: 'Espace et luxe pour vos groupes',
-            capacity: 'Jusqu\'à 7 passagers',
-            luggage: 'Grande capacité bagages',
-            estimate: estimate,
-            price: estimate.exactPrice
+        if (data.success && data.data && data.data.estimate) {
+          const estimate = data.data.estimate;
+          
+          // Vérifier que l'estimate contient les données nécessaires
+          if (typeof estimate.exactPrice === 'undefined') {
+            throw new Error('Prix non disponible dans la réponse de l\'API');
           }
-        ];
-        
-        // Filtrer les véhicules selon la capacité demandée
-        const validVehicles = vehicleOptions.filter(vehicle => {
-          // Le van accepte jusqu'à 7 passagers
-          if (vehicle.id === 'van' && formValues.passengers <= 7) {
-            return true;
-          }
-          // Les autres véhicules acceptent jusqu'à 4 passagers
-          if (vehicle.id !== 'van' && formValues.passengers <= 4) {
-            return true;
-          }
-          return false;
-        });
-        
-        setAvailableVehicles(validVehicles);
-        setCurrentStep(2); // Aller à l'étape de sélection de véhicule
+          
+          console.log('Estimate reçu:', estimate);
+          console.log('ExactPrice:', estimate.exactPrice);
+          
+          const vehicleOptions = [
+            {
+              id: 'green',
+              name: 'Tesla Model 3',
+              desc: 'Élégance et technologie - 100% électrique',
+              capacity: 'Jusqu\'à 4 passagers',
+              luggage: 'Jusqu\'à 3 bagages',
+              estimate: estimate,
+              price: estimate.exactPrice
+            },
+            {
+              id: 'berline',
+              name: 'Mercedes Classe E',
+              desc: 'Confort et prestige au quotidien',
+              capacity: 'Jusqu\'à 4 passagers',
+              luggage: 'Jusqu\'à 4 bagages',
+              estimate: estimate,
+              price: estimate.exactPrice
+            },
+            {
+              id: 'van',
+              name: 'Mercedes Classe V',
+              desc: 'Espace et luxe pour vos groupes',
+              capacity: 'Jusqu\'à 7 passagers',
+              luggage: 'Grande capacité bagages',
+              estimate: estimate,
+              price: estimate.exactPrice
+            }
+          ];
+          
+          console.log('VehicleOptions créées:', vehicleOptions);
+          
+          const validVehicles = vehicleOptions.filter(vehicle => {
+            if (vehicle.id === 'van' && formValues.passengers <= 7) {
+              return true;
+            }
+            if (vehicle.id !== 'van' && formValues.passengers <= 4) {
+              return true;
+            }
+            return false;
+          });
+          
+          console.log('Valid vehicles:', validVehicles);
+          console.log('Passage à l\'étape 2');
+          
+          setAvailableVehicles(validVehicles);
+          setCurrentStep(2);
+        } else {
+          console.error('Données manquantes dans la réponse:', data);
+          throw new Error(data.error || 'Données incomplètes reçues de l\'API');
+        }
       } else {
-        throw new Error(data.error || 'Erreur lors du calcul du prix');
+        const errorData = await response.json();
+        console.error('Erreur HTTP:', response.status, errorData);
+        throw new Error(errorData.error || 'Erreur lors du calcul du prix');
       }
-    } else {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Erreur lors du calcul du prix');
+    } catch (err) {
+      console.error('Erreur:', err);
+      setError(err.message || 'Erreur lors du calcul du prix');
+    } finally {
+      setIsCalculating(false);
     }
-  } catch (err) {
-    console.error('Erreur:', err);
-    setError(err.message || 'Erreur lors du calcul du prix');
-  } finally {
-    setIsCalculating(false);
-  }
-};
-  
-  const onFirstStepSubmit = (data) => {
-    calculatePrice();
   };
   
-  // Fonction pour passer à l'étape suivante après sélection du véhicule
   const onVehicleSelect = (vehicleId, estimate) => {
     setSelectedVehicle(vehicleId);
     setPriceEstimate(estimate);
-    setCurrentStep(3); // Aller à l'étape finale
+    setCurrentStep(3);
   };
   
   const onFinalSubmit = async (data) => {
-  if (!selectedVehicle || !priceEstimate) {
-    setError('Veuillez sélectionner un véhicule');
-    return;
-  }
-  
-  try {
-    const bookingData = {
-      pickupAddress: data.pickupAddress,
-      dropoffAddress: data.dropoffAddress,
-      pickupDate: data.pickupDate,
-      pickupTime: data.pickupTime,
-      passengers: data.passengers,
-      luggage: data.luggage,
-      roundTrip: data.roundTrip,
-      returnDate: data.roundTrip ? data.returnDate : null,
-      returnTime: data.roundTrip ? data.returnTime : null,
-      flightNumber: data.flightNumber || null,
-      trainNumber: data.trainNumber || null,
-      specialRequests: data.specialRequests || '',
-      customerInfo: {
-        name: data.customerName,
-        email: data.customerEmail,
-        phone: data.customerPhone
-      },
-      price: {
-        amount: priceEstimate.exactPrice,
-        currency: 'EUR',
-        // Ajouter les informations du tarif
-        breakdown: priceEstimate.breakdown
-      },
-      vehicleType: selectedVehicle,
-      pickupAddressPlaceId: data.pickupAddressPlaceId,
-      dropoffAddressPlaceId: data.dropoffAddressPlaceId,
-      // Nouvelles données pour le système tarifaire
-      tariffApplied: priceEstimate.selectedRate,
-      routeDetails: priceEstimate.details ? {
-        distance: {
-          value: priceEstimate.details.distanceInKm * 1000,
-          text: priceEstimate.details.formattedDistance,
-        },
-        duration: {
-          value: priceEstimate.details.durationInMinutes * 60,
-          text: priceEstimate.details.formattedDuration,
-        },
-        polyline: priceEstimate.details.polyline,
-      } : null
-    };
-
-    const response = await fetch('/api/bookings', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(bookingData),
-    });
-
-    const result = await response.json();
-    
-    if (response.ok && result.success) {
-      setBookingResult(result.data);
-      setBookingSuccess(true);
-    } else {
-      setError(result.error || "Une erreur est survenue lors de la réservation.");
+    if (!selectedVehicle || !priceEstimate) {
+      setError('Veuillez sélectionner un véhicule');
+      return;
     }
-  } catch (err) {
-    console.error('Erreur lors de la création de la réservation:', err);
-    setError("Une erreur est survenue lors de la réservation. Veuillez réessayer.");
-  }
-};
+    
+    try {
+      const bookingData = {
+        pickupAddress: data.pickupAddress,
+        dropoffAddress: data.dropoffAddress,
+        pickupDate: data.pickupDate,
+        pickupTime: data.pickupTime,
+        passengers: data.passengers,
+        luggage: data.luggage,
+        roundTrip: data.roundTrip,
+        returnDate: data.roundTrip ? data.returnDate : null,
+        returnTime: data.roundTrip ? data.returnTime : null,
+        flightNumber: data.flightNumber || null,
+        trainNumber: data.trainNumber || null,
+        specialRequests: data.specialRequests || '',
+        customerInfo: {
+          name: data.customerName,
+          email: data.customerEmail,
+          phone: data.customerPhone
+        },
+        price: {
+          amount: priceEstimate.exactPrice,
+          currency: 'EUR',
+          breakdown: priceEstimate.breakdown
+        },
+        vehicleType: selectedVehicle,
+        pickupAddressPlaceId: data.pickupAddressPlaceId,
+        dropoffAddressPlaceId: data.dropoffAddressPlaceId,
+        tariffApplied: priceEstimate.selectedRate,
+        routeDetails: priceEstimate.details ? {
+          distance: {
+            value: priceEstimate.details.distanceInKm * 1000,
+            text: priceEstimate.details.formattedDistance,
+          },
+          duration: {
+            value: priceEstimate.details.durationInMinutes * 60,
+            text: priceEstimate.details.formattedDuration,
+          },
+          polyline: priceEstimate.details.polyline,
+        } : null
+      };
+
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bookingData),
+      });
+
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        setBookingResult(result.data);
+        setBookingSuccess(true);
+      } else {
+        setError(result.error || "Une erreur est survenue lors de la réservation.");
+      }
+    } catch (err) {
+      console.error('Erreur lors de la création de la réservation:', err);
+      setError("Une erreur est survenue lors de la réservation. Veuillez réessayer.");
+    }
+  };
   
   const goBack = () => {
     if (currentStep > 1) {
@@ -310,57 +304,9 @@ const BookingForm = () => {
     return <BookingSuccess bookingData={bookingResult} />;
   }
   
-  const QuantityCounter = ({ id, value, onChange, min, max, label, helpText }) => {
-    return (
-      <div>
-        <label htmlFor={`${id}-display`} className="block text-sm font-medium text-gray-700 mb-2">
-          {label} <span className="text-red-500">*</span>
-        </label>
-        <div className="flex items-center border border-gray-300 rounded-md overflow-hidden shadow-sm">
-          <button 
-            type="button" 
-            className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-gray-100 hover:bg-gray-200 active:bg-gray-300 transition-colors text-gray-700"
-            onClick={() => value > min && onChange(value - 1)}
-            aria-label={`Diminuer le nombre de ${label.toLowerCase()}`}
-            aria-controls={`${id}-display`}
-            disabled={value <= min}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path fillRule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-            </svg>
-          </button>
-          <span 
-            id={`${id}-display`} 
-            className="flex-1 text-center py-2 font-medium text-lg" 
-            aria-live="polite" 
-            role="status"
-          >
-            {value}
-          </span>
-          <button 
-            type="button" 
-            className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-gray-100 hover:bg-gray-200 active:bg-gray-300 transition-colors text-gray-700"
-            onClick={() => value < max && onChange(value + 1)}
-            aria-label={`Augmenter le nombre de ${label.toLowerCase()}`}
-            aria-controls={`${id}-display`}
-            disabled={value >= max}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-            </svg>
-          </button>
-        </div>
-        {helpText && (
-          <p id={`${id}-help`} className="mt-1 text-xs text-gray-500">
-            {helpText}
-          </p>
-        )}
-      </div>
-    );
-  };
-  
   return (
     <div className="w-full bg-white rounded-lg shadow-custom overflow-hidden">
+      {/* Stepper */}
       <div className="flex border-b border-gray-200">
         {[
           { step: 1, label: "Détails du trajet" },
@@ -383,6 +329,7 @@ const BookingForm = () => {
         ))}
       </div>
 
+      {/* Error message */}
       {error && (
         <div className="bg-red-50 text-red-600 p-4 border-l-4 border-red-500 m-4 flex items-start">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
@@ -395,397 +342,40 @@ const BookingForm = () => {
       <form>
         {/* Étape 1: Détails du trajet */}
         {currentStep === 1 && (
-          <div className="p-4 sm:p-6 md:p-8">
-            <div className="mb-6">
-              <label htmlFor="pickupAddress" className="block text-sm font-medium text-gray-700 mb-2">
-                Adresse de départ <span className="text-red-500">*</span>
-              </label>
-              <AddressInput 
-                id="pickupAddress"
-                value={formValues.pickupAddress}
-                onChange={value => handleInputChange('pickupAddress', value)}
-                onSelect={(address, placeId) => handleAddressSelect('pickupAddress', address, placeId)}
-                placeholder="Entrez l'adresse de départ"
-              />
-              {errors.pickupAddress && <p className="mt-1 text-sm text-red-600">{errors.pickupAddress.message}</p>}
-            </div>
-            
-            <div className="mb-6">
-              <label htmlFor="dropoffAddress" className="block text-sm font-medium text-gray-700 mb-2">
-                Adresse d'arrivée <span className="text-red-500">*</span>
-              </label>
-              <AddressInput 
-                id="dropoffAddress"
-                value={formValues.dropoffAddress}
-                onChange={value => handleInputChange('dropoffAddress', value)}
-                onSelect={(address, placeId) => handleAddressSelect('dropoffAddress', address, placeId)}
-                placeholder="Entrez l'adresse d'arrivée"
-              />
-              {errors.dropoffAddress && <p className="mt-1 text-sm text-red-600">{errors.dropoffAddress.message}</p>}
-            </div>
-            
-            {isAirport && (
-              <div className="mb-6">
-                <label htmlFor="flightNumber" className="block text-sm font-medium text-gray-700 mb-2">
-                  Numéro de vol
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    id="flightNumber"
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                    {...register('flightNumber')}
-                    placeholder="Ex: AF1234"
-                  />
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                    </svg>
-                  </div>
-                </div>
-                <p className="mt-1 text-xs text-gray-500">Ce numéro nous permettra de suivre votre vol et d'ajuster notre service en cas de retard</p>
-              </div>
-            )}
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
-              <div>
-                <label htmlFor="pickupDate" className="block text-sm font-medium text-gray-700 mb-2">
-                  Date et heure de départ <span className="text-red-500">*</span>
-                </label>
-                <DateTimePicker 
-                  dateId="pickupDate"
-                  timeId="pickupTime"
-                  dateValue={formValues.pickupDate}
-                  timeValue={formValues.pickupTime}
-                  onDateChange={value => handleInputChange('pickupDate', value)}
-                  onTimeChange={value => handleInputChange('pickupTime', value)}
-                />
-                {(errors.pickupDate || errors.pickupTime) && (
-                  <p className="mt-1 text-sm text-red-600">Ce champ est requis</p>
-                )}
-              </div>
-              
-              <div>
-                <div className="flex items-center h-10 mb-2">
-                  <label className="inline-flex items-center cursor-pointer">
-                    <input 
-                      type="checkbox"
-                      className="sr-only peer"
-                      checked={formValues.roundTrip}
-                      onChange={e => handleInputChange('roundTrip', e.target.checked)}
-                      aria-label="Aller-retour"
-                    />
-                    <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-light rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                    <span className="ms-3 text-sm font-medium text-gray-700">Aller-retour</span>
-                  </label>
-                </div>
-                
-                <div className={`transition-all duration-300 overflow-hidden ${formValues.roundTrip ? 'max-h-60 opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
-                  <label htmlFor="returnDate" className="block text-sm font-medium text-gray-700 mb-2">
-                    Date et heure de retour <span className="text-red-500">*</span>
-                  </label>
-                  <DateTimePicker 
-                    dateId="returnDate"
-                    timeId="returnTime"
-                    dateValue={formValues.returnDate}
-                    timeValue={formValues.returnTime}
-                    onDateChange={value => handleInputChange('returnDate', value)}
-                    onTimeChange={value => handleInputChange('returnTime', value)}
-                    minDate={formValues.pickupDate}
-                  />
-                </div>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 md:gap-6 mb-6">
-              <QuantityCounter
-                id="passengers"
-                value={formValues.passengers}
-                onChange={value => handleInputChange('passengers', value)}
-                min={1}
-                max={7}
-                label="Nombre de passagers"
-                helpText="Maximum 7 passagers"
-              />
-              
-              <QuantityCounter
-                id="luggage"
-                value={formValues.luggage}
-                onChange={value => handleInputChange('luggage', value)}
-                min={0}
-                max={7}
-                label="Nombre de bagages"
-                helpText="Maximum 7 bagages"
-              />
-            </div>
-            
-            <div className="mb-6">
-              <label htmlFor="specialRequests" className="block text-sm font-medium text-gray-700 mb-2">
-                Demandes spéciales
-              </label>
-              <div className="relative">
-                <textarea
-                  id="specialRequests"
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                  rows="3"
-                  {...register('specialRequests')}
-                  placeholder="Indiquez-nous toute demande particulière pour votre trajet"
-                ></textarea>
-                <div className="absolute top-3 left-3 text-gray-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-            
-            <button 
-              type="button" 
-              className="w-full btn btn-primary flex items-center justify-center"
-              onClick={handleSubmit(onFirstStepSubmit)}
-              disabled={isCalculating}
-            >
-              {isCalculating ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span className="whitespace-nowrap">Calcul du prix en cours...</span>
-                </>
-              ) : 'Obtenir un devis'}
-            </button>
-          </div>
+          <BookingStepOne
+            formValues={formValues}
+            handleInputChange={handleInputChange}
+            handleAddressSelect={handleAddressSelect}
+            register={register}
+            errors={errors}
+            isCalculating={isCalculating}
+            onSubmit={calculatePrice}
+          />
         )}
         
         {/* Étape 2: Sélection de véhicule */}
         {currentStep === 2 && (
-          <div className="p-6 md:p-8">
-            <h3 className="text-xl font-semibold mb-6 text-center">Choisissez votre véhicule</h3>
-            
-            <div className="mb-6">
-              <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                <h4 className="font-medium mb-2">Résumé du trajet</h4>
-                <div className="text-sm text-gray-600">
-                  <p><strong>De:</strong> {formValues.pickupAddress}</p>
-                  <p><strong>À:</strong> {formValues.dropoffAddress}</p>
-                  <p><strong>Quand:</strong> {new Date(`${formValues.pickupDate}T${formValues.pickupTime}`).toLocaleString('fr-FR')}</p>
-                  <p><strong>Passagers:</strong> {formValues.passengers} | <strong>Bagages:</strong> {formValues.luggage}</p>
-                </div>
-              </div>
-            </div>
-            
-            <VehicleSelector
-              vehicles={availableVehicles}
-              selectedVehicle={selectedVehicle}
-              onSelect={onVehicleSelect}
-              passengers={formValues.passengers}
-              luggage={formValues.luggage}
-            />
-            
-            <div className="flex justify-between mt-6">
-              <button 
-                type="button" 
-                className="btn btn-outline flex items-center justify-center"
-                onClick={goBack}
-                aria-label="Retourner à l'étape précédente"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-                </svg>
-                Retour
-              </button>
-              
-              {!selectedVehicle && (
-                <p className="text-gray-500 flex items-center">Sélectionnez un véhicule pour continuer</p>
-              )}
-            </div>
-          </div>
+          <BookingStepTwo
+            formValues={formValues}
+            availableVehicles={availableVehicles}
+            selectedVehicle={selectedVehicle}
+            onVehicleSelect={onVehicleSelect}
+            onBack={goBack}
+          />
         )}
         
         {/* Étape 3: Informations client et confirmation */}
         {currentStep === 3 && (
-          <div className="p-6 md:p-8">
-            <h3 className="text-xl font-semibold mb-6 text-center">Vos informations</h3>
-            
-            <div className="mb-6">
-              <label htmlFor="customerName" className="block text-sm font-medium text-gray-700 mb-2">
-                Nom complet <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="customerName"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                {...register('customerName', { required: 'Ce champ est requis' })}
-                placeholder="Entrez votre nom complet"
-              />
-              {errors.customerName && <p className="mt-1 text-sm text-red-600">{errors.customerName.message}</p>}
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div>
-                <label htmlFor="customerEmail" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  id="customerEmail"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                  {...register('customerEmail', { 
-                    required: 'Ce champ est requis',
-                    pattern: {
-                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                      message: 'Adresse email invalide'
-                    } 
-                  })}
-                  placeholder="Entrez votre adresse email"
-                />
-                {errors.customerEmail && <p className="mt-1 text-sm text-red-600">{errors.customerEmail.message}</p>}
-              </div>
-              
-              <div>
-                <label htmlFor="customerPhone" className="block text-sm font-medium text-gray-700 mb-2">
-                  Téléphone <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="tel"
-                  id="customerPhone"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                  {...register('customerPhone', { required: 'Ce champ est requis' })}
-                  placeholder="Entrez votre numéro de téléphone"
-                />
-                {errors.customerPhone && <p className="mt-1 text-sm text-red-600">{errors.customerPhone.message}</p>}
-              </div>
-            </div>
-            
-            {/* Résumé de la réservation */}
-            {priceEstimate && selectedVehicle && (
-              <div className="bg-gray-50 rounded-lg p-6 mb-6">
-                <h4 className="font-semibold text-lg mb-4">Résumé de votre réservation</h4>
-
-                <div className="mb-6">
-                  <h5 className="font-medium mb-3">Itinéraire</h5>
-                  <RouteMap 
-                    pickupAddress={formValues.pickupAddress}
-                    dropoffAddress={formValues.dropoffAddress}
-                    pickupPlaceId={formValues.pickupAddressPlaceId}
-                    dropoffPlaceId={formValues.dropoffAddressPlaceId}
-                    polyline={priceEstimate.details?.polyline}
-                  />
-                  <p className="text-xs text-gray-500 mt-2">
-                    Itinéraire approximatif. Le chauffeur pourra prendre un chemin différent selon les conditions de circulation.
-                  </p>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-                  <div>
-                    <span className="text-sm text-gray-500">Départ:</span>
-                    <p className="font-medium">{formValues.pickupAddress}</p>
-                  </div>
-                  
-                  <div>
-                    <span className="text-sm text-gray-500">Arrivée:</span>
-                    <p className="font-medium">{formValues.dropoffAddress}</p>
-                  </div>
-                  
-                  <div>
-                    <span className="text-sm text-gray-500">Date et heure:</span>
-                    <p className="font-medium">
-                      {new Date(`${formValues.pickupDate}T${formValues.pickupTime}`).toLocaleString('fr-FR', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </p>
-                  </div>
-                  
-                  {formValues.roundTrip && (
-                    <div>
-                      <span className="text-sm text-gray-500">Retour:</span>
-                      <p className="font-medium">
-                        {new Date(`${formValues.returnDate}T${formValues.returnTime}`).toLocaleString('fr-FR', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </p>
-                    </div>
-                  )}
-                  
-                  <div>
-                    <span className="text-sm text-gray-500">Véhicule:</span>
-                    <p className="font-medium">
-                      {availableVehicles.find(v => v.id === selectedVehicle)?.name || selectedVehicle}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <span className="text-sm text-gray-500">Passagers:</span>
-                    <p className="font-medium">{formValues.passengers}</p>
-                  </div>
-                  
-                  <div>
-                    <span className="text-sm text-gray-500">Bagages:</span>
-                    <p className="font-medium">{formValues.luggage}</p>
-                  </div>
-                  
-                  {formValues.flightNumber && (
-                    <div>
-                      <span className="text-sm text-gray-500">N° de vol:</span>
-                      <p className="font-medium">{formValues.flightNumber}</p>
-                    </div>
-                  )}
-                  
-                  {formValues.trainNumber && (
-                    <div>
-                      <span className="text-sm text-gray-500">N° de train:</span>
-                      <p className="font-medium">{formValues.trainNumber}</p>
-                    </div>
-                  )}
-                  
-                  <div className="col-span-full mt-2 pt-3 border-t border-gray-200">
-                    <span className="text-sm text-gray-500">Prix total:</span>
-                    <p className="font-semibold text-lg text-primary">
-                      {new Intl.NumberFormat('fr-FR', {
-                        style: 'currency',
-                        currency: 'EUR'
-                      }).format(priceEstimate?.exactPrice || 0)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            <div className="flex flex-col md:flex-row justify-between gap-4">
-              <button 
-                type="button" 
-                className="btn btn-outline flex items-center justify-center"
-                onClick={goBack}
-                aria-label="Retourner à l'étape précédente"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-                </svg>
-                Retour
-              </button>
-              
-              <button 
-                type="button" 
-                className="btn btn-primary flex items-center justify-center"
-                onClick={handleSubmit(onFinalSubmit)}
-                aria-label="Confirmer la réservation"
-              >
-                Confirmer la réservation
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-              </button>
-            </div>
-          </div>
+          <BookingStepThree
+            formValues={formValues}
+            priceEstimate={priceEstimate}
+            selectedVehicle={selectedVehicle}
+            availableVehicles={availableVehicles}
+            register={register}
+            errors={errors}
+            onSubmit={handleSubmit(onFinalSubmit)}
+            onBack={goBack}
+          />
         )}
       </form>
     </div>
