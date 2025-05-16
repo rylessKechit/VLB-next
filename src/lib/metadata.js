@@ -110,13 +110,6 @@ export const homeMetadata = {
           opens: '00:00',
           closes: '23:59',
         },
-        aggregateRating: {
-          '@type': 'AggregateRating',
-          ratingValue: '4.8',
-          reviewCount: '127',
-          bestRating: '5',
-          worstRating: '1',
-        },
         potentialAction: {
           '@type': 'ReserveAction',
           target: {

@@ -150,11 +150,5 @@ export const taxiService = {
         "datePublished": "2024-01-20",
         "reviewBody": "Service de taxi de qualité pour mes déplacements professionnels à Verrières-le-Buisson. Le chauffeur était ponctuel, le véhicule propre et confortable."
       }
-    ],
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "reviewCount": "189",
-      "bestRating": "5"
-    }
+    ]
   };
