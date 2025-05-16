@@ -524,6 +524,15 @@ export default function Home() {
                   "@context": "https://schema.org",
                   "@type": "LocalBusiness",
                   "name": "Taxi VLB",
+                  // AJOUT IMPORTANT : aggregateRating
+                  "aggregateRating": {
+                    "@type": "AggregateRating",
+                    "ratingValue": "5.0",
+                    "bestRating": "5",
+                    "worstRating": "1",
+                    "ratingCount": "3"
+                  },
+                  // Les avis individuels
                   "review": testimonials.map((testimonial, index) => ({
                     "@type": "Review",
                     "reviewRating": {
