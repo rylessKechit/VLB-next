@@ -469,20 +469,6 @@ const BookingForm = ({
         ))}
       </div>
 
-      {/* Indicateur admin */}
-      {isAdminContext && (
-        <div className="bg-blue-50 border-b border-blue-200 px-4 py-2">
-          <div className="flex items-center text-sm text-blue-800">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" clipRule="evenodd" />
-              <path fillRule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 102 0V3h4v1a1 1 0 102 0V3a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" clipRule="evenodd" />
-            </svg>
-            <span className="font-medium">Mode administrateur :</span>
-            <span className="ml-1">Les réservations seront {autoConfirm ? 'automatiquement confirmées' : 'en attente'}</span>
-          </div>
-        </div>
-      )}
-
       {/* Error message */}
       {error && (
         <div className="bg-red-50 text-red-600 p-4 border-l-4 border-red-500 m-4 flex items-start">
