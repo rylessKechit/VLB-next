@@ -72,7 +72,8 @@ export default function RootLayout({ children }) {
   return (
     <html lang="fr" className={inter.className}>
       <head>
-        <script src="https://analytics.ahrefs.com/analytics.js" data-key="5zCjmhhiSanW41q/fkMMQA" async></script>
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="shortcut icon" href="/favicon.ico" />
         {/* Préconnexion aux domaines externes pour accélérer le chargement */}
         <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
