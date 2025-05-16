@@ -44,12 +44,6 @@ const Breadcrumb = () => {
       case 'longue-distance':
         label = 'Voyages Longue Distance';
         break;
-      case 'mentions-legales':
-        label = 'Mentions Légales';
-        break;
-      case 'politique-confidentialite':
-        label = 'Politique de Confidentialité';
-        break;
       default:
         // Première lettre en majuscule pour les autres segments
         label = label.charAt(0).toUpperCase() + label.slice(1);

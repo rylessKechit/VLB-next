@@ -85,16 +85,6 @@ const Footer = () => {
         </div>
         
         <div className="py-6 flex flex-col sm:flex-row justify-between items-center text-sm text-gray-400">
-          <div className="mb-4 sm:mb-0">
-            <Link href="/mentions-legales" className="hover:text-white transition-colors duration-300">
-              Mentions légales
-            </Link>
-            {' | '}
-            <Link href="/politique-confidentialite" className="hover:text-white transition-colors duration-300">
-              Politique de confidentialité
-            </Link>
-          </div>
-          
           <div>
             &copy; {currentYear} Taxi VLB. Tous droits réservés.
           </div>
