@@ -12,7 +12,8 @@ const BookingStepOne = ({
   register,
   errors,
   isCalculating,
-  onSubmit
+  onSubmit,
+  isAdminContext = false
 }) => {
   const [isAirport, setIsAirport] = useState(false);
   const [isTrainStation, setIsTrainStation] = useState(false);
@@ -39,19 +40,65 @@ const BookingStepOne = ({
     onSubmit();
   };
 
+  // Pour l'admin, permettre la saisie manuelle d'adresses
+  const handleManualAddressChange = (field, value) => {
+    handleInputChange(field, value);
+    // Pour l'admin, on peut utiliser l'adresse sans placeId
+    if (isAdminContext) {
+      // Simuler un placeId pour l'admin
+      handleAddressSelect(field, value, `manual_${Date.now()}_${field}`);
+    }
+  };
+
   return (
     <div className="p-4 sm:p-6 md:p-8">
+      {/* Instructions spéciales pour l'admin */}
+      {isAdminContext && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+          <div className="flex">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-600 mr-3 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <div className="text-sm text-amber-800">
+              <p className="font-medium mb-1">Mode administrateur</p>
+              <p>Vous pouvez saisir les adresses directement ou utiliser l'autocomplétion Google Maps.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="mb-6">
         <label htmlFor="pickupAddress" className="block text-sm font-medium text-gray-700 mb-2">
           Adresse de départ <span className="text-red-500">*</span>
         </label>
-        <AddressInput 
-          id="pickupAddress"
-          value={formValues.pickupAddress}
-          onChange={value => handleInputChange('pickupAddress', value)}
-          onSelect={(address, placeId) => handleAddressSelect('pickupAddress', address, placeId)}
-          placeholder="Entrez l'adresse de départ"
-        />
+        {isAdminContext ? (
+          // Pour l'admin, utiliser un input simple avec possibilité d'autocomplétion
+          <div className="flex space-x-2">
+            <input
+              type="text"
+              id="pickupAddress"
+              value={formValues.pickupAddress}
+              onChange={(e) => handleManualAddressChange('pickupAddress', e.target.value)}
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base"
+              placeholder="Entrez l'adresse de départ"
+            />
+            <button
+              type="button"
+              className="px-4 py-3 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+              title="Utiliser l'autocomplétion"
+            >
+              📍
+            </button>
+          </div>
+        ) : (
+          <AddressInput 
+            id="pickupAddress"
+            value={formValues.pickupAddress}
+            onChange={value => handleInputChange('pickupAddress', value)}
+            onSelect={(address, placeId) => handleAddressSelect('pickupAddress', address, placeId)}
+            placeholder="Entrez l'adresse de départ"
+          />
+        )}
         {errors.pickupAddress && <p className="mt-1 text-sm text-red-600">{errors.pickupAddress.message}</p>}
       </div>
       
@@ -59,13 +106,34 @@ const BookingStepOne = ({
         <label htmlFor="dropoffAddress" className="block text-sm font-medium text-gray-700 mb-2">
           Adresse d'arrivée <span className="text-red-500">*</span>
         </label>
-        <AddressInput 
-          id="dropoffAddress"
-          value={formValues.dropoffAddress}
-          onChange={value => handleInputChange('dropoffAddress', value)}
-          onSelect={(address, placeId) => handleAddressSelect('dropoffAddress', address, placeId)}
-          placeholder="Entrez l'adresse d'arrivée"
-        />
+        {isAdminContext ? (
+          // Pour l'admin, utiliser un input simple avec possibilité d'autocomplétion
+          <div className="flex space-x-2">
+            <input
+              type="text"
+              id="dropoffAddress"
+              value={formValues.dropoffAddress}
+              onChange={(e) => handleManualAddressChange('dropoffAddress', e.target.value)}
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-base"
+              placeholder="Entrez l'adresse d'arrivée"
+            />
+            <button
+              type="button"
+              className="px-4 py-3 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+              title="Utiliser l'autocomplétion"
+            >
+              📍
+            </button>
+          </div>
+        ) : (
+          <AddressInput 
+            id="dropoffAddress"
+            value={formValues.dropoffAddress}
+            onChange={value => handleInputChange('dropoffAddress', value)}
+            onSelect={(address, placeId) => handleAddressSelect('dropoffAddress', address, placeId)}
+            placeholder="Entrez l'adresse d'arrivée"
+          />
+        )}
         {errors.dropoffAddress && <p className="mt-1 text-sm text-red-600">{errors.dropoffAddress.message}</p>}
       </div>
       
@@ -126,6 +194,7 @@ const BookingStepOne = ({
             timeValue={formValues.pickupTime}
             onDateChange={value => handleInputChange('pickupDate', value)}
             onTimeChange={value => handleInputChange('pickupTime', value)}
+            minDate={isAdminContext ? null : undefined} // L'admin peut réserver pour aujourd'hui
           />
           {(errors.pickupDate || errors.pickupTime) && (
             <p className="mt-1 text-sm text-red-600">Ce champ est requis</p>

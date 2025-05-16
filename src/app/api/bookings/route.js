@@ -1,4 +1,4 @@
-// src/app/api/bookings/route.js - Version modifiée pour les fourchettes de prix
+// src/app/api/bookings/route.js - Version modifiée pour supporter l'admin
 
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
@@ -104,6 +104,10 @@ export async function POST(request) {
     const data = await request.json();
     console.log('Données reçues dans l\'API:', data);
     
+    // Vérifier si c'est un contexte admin
+    const session = await getServerSession(authOptions);
+    const isAdminContext = data.isAdminContext && session?.user?.role === 'admin';
+    
     // Extraire les données
     const {
       pickupAddress,
@@ -124,7 +128,8 @@ export async function POST(request) {
       pickupAddressPlaceId,
       dropoffAddressPlaceId,
       tariffApplied,
-      routeDetails
+      routeDetails,
+      status: requestedStatus
     } = data;
 
     // Validation des données
@@ -144,8 +149,8 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Informations client incomplètes' }, { status: 400 });
     }
 
-    // Vérifier que les informations du tarif sont présentes
-    if (!tariffApplied || !price || !price.breakdown) {
+    // Vérifier que les informations du tarif sont présentes (sauf pour admin avec estimate simple)
+    if (!isAdminContext && (!tariffApplied || !price || !price.breakdown)) {
       return NextResponse.json({ error: 'Informations tarifaires manquantes' }, { status: 400 });
     }
 
@@ -158,10 +163,18 @@ export async function POST(request) {
       returnDateTime = new Date(`${returnDate}T${returnTime}`);
     }
 
+    // Déterminer le statut initial
+    let initialStatus = 'pending';
+    if (isAdminContext && requestedStatus) {
+      initialStatus = requestedStatus;
+    } else if (isAdminContext) {
+      initialStatus = 'confirmed'; // Les réservations admin sont confirmées par défaut
+    }
+
     // Créer un nouvel objet de réservation pour MongoDB avec les fourchettes de prix
     const newBooking = new Booking({
       bookingId,
-      status: 'confirmed',
+      status: initialStatus,
       pickupAddress,
       dropoffAddress,
       pickupDateTime,
@@ -174,19 +187,23 @@ export async function POST(request) {
       specialRequests,
       price: {
         amount: price.amount, // Prix maximum de la fourchette
-        currency: price.currency,
-        tariffApplied: tariffApplied,
-        tariffName: price.breakdown.selectedTariff || tariffApplied,
-        breakdown: {
-          baseFare: price.breakdown.baseFare,
-          distanceCharge: price.breakdown.distanceCharge,
-          pricePerKm: price.breakdown.pricePerKm,
-          actualDistance: price.breakdown.actualDistance,
-          isNightTime: price.breakdown.isNightTime,
-          isWeekendOrHoliday: price.breakdown.isWeekendOrHoliday,
-          conditions: price.breakdown.conditions,
+        currency: price.currency || 'EUR',
+        tariffApplied: tariffApplied || 'A',
+        tariffName: price.breakdown ? (price.breakdown.selectedTariff || tariffApplied) : 'Tarif administrateur',
+        breakdown: price.breakdown || {
+          baseFare: 2.60,
+          distanceCharge: price.amount - 2.60,
+          pricePerKm: 1.50,
+          actualDistance: 15,
+          isNightTime: false,
+          isWeekendOrHoliday: false,
+          conditions: {
+            timeOfDay: 'jour',
+            dayType: 'semaine',
+            returnType: roundTrip ? 'en charge' : 'à vide'
+          },
         },
-        // NOUVEAU : Ajouter la fourchette de prix
+        // Ajouter la fourchette de prix
         priceRange: price.priceRange || null,
       },
       customerInfo,
@@ -194,6 +211,12 @@ export async function POST(request) {
       pickupAddressPlaceId,
       dropoffAddressPlaceId,
       routeDetails: routeDetails || null,
+      // Ajouter des métadonnées admin si nécessaire
+      ...(isAdminContext && {
+        adminNotes: `Réservation créée par l'administrateur ${session.user.name || session.user.email}`,
+        createdByAdmin: true,
+        createdBy: session.user.id
+      })
     });
 
     // Sauvegarder dans la base de données
@@ -254,14 +277,21 @@ export async function POST(request) {
         const mailOptions = {
           from: `"Taxi VLB" <${process.env.EMAIL_USER}>`,
           to: process.env.CONTACT_EMAIL || 'contact@taxivlb.com',
-          subject: `Nouvelle réservation Taxi VLB [${bookingId}] - Tarif ${tariffApplied}`,
+          subject: `${isAdminContext ? '[ADMIN] ' : ''}Nouvelle réservation Taxi VLB [${bookingId}] - Tarif ${tariffApplied}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee;">
               <div style="text-align: center; margin-bottom: 20px; background-color: #2a5a9e; padding: 20px; border-radius: 10px 10px 0 0;">
                 <img src="https://www.taxi-verrieres-le-buisson.com/images/logo.webp" alt="Taxi VLB" style="max-width: 150px; height: auto;" />
               </div>
               
-              <h1 style="color: #d4af37; text-align: center;">Nouvelle réservation</h1>
+              <h1 style="color: #d4af37; text-align: center;">${isAdminContext ? 'Nouvelle réservation (Admin)' : 'Nouvelle réservation'}</h1>
+              
+              ${isAdminContext ? `
+              <div style="background-color: #e3f2fd; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #2196f3;">
+                <p style="margin: 0; color: #1976d2; font-weight: bold;">⚡ Réservation créée par l'administrateur</p>
+                <p style="margin: 5px 0 0 0; color: #1976d2; font-size: 14px;">Statut: ${initialStatus === 'confirmed' ? 'Confirmée automatiquement' : 'En attente'}</p>
+              </div>
+              ` : ''}
               
               <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
                 <h2 style="color: #2a5a9e; margin-top: 0;">Détails de la course</h2>
@@ -285,9 +315,9 @@ export async function POST(request) {
               <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
                 <h2 style="color: #2a5a9e; margin-top: 0;">Tarification</h2>
                 <p><strong>Tarif appliqué:</strong> ${tariffApplied} - ${tariffName}</p>
-                <p><strong>Conditions:</strong> ${price.breakdown.conditions.timeOfDay}, ${price.breakdown.conditions.dayType}, retour ${price.breakdown.conditions.returnType}</p>
-                <p style="font-size: 18px; margin-top: 10px;"><strong>Prix estimé: ${formatPriceRange(price.priceRange)}</strong></p>
-                <p style="font-size: 14px; color: #666;">Le prix final sera défini avec le client dans cette fourchette</p>
+                ${price.breakdown && price.breakdown.conditions ? `<p><strong>Conditions:</strong> ${price.breakdown.conditions.timeOfDay}, ${price.breakdown.conditions.dayType}, retour ${price.breakdown.conditions.returnType}</p>` : ''}
+                <p style="font-size: 18px; margin-top: 10px;"><strong>Prix estimé: ${price.priceRange ? formatPriceRange(price.priceRange) : price.amount + '€'}</strong></p>
+                <p style="font-size: 14px; color: #666;">${price.priceRange ? 'Le prix final sera défini avec le client dans cette fourchette' : 'Prix fixe administrateur'}</p>
               </div>
               
               <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
@@ -316,11 +346,11 @@ export async function POST(request) {
                 <img src="https://www.taxi-verrieres-le-buisson.com/images/logo.webp" alt="Taxi VLB" style="max-width: 150px; height: auto;" />
               </div>
               
-              <h1 style="color: #d4af37; text-align: center;">Réservation confirmée</h1>
+              <h1 style="color: #d4af37; text-align: center;">Réservation ${initialStatus === 'confirmed' ? 'confirmée' : 'reçue'}</h1>
               
               <p>Bonjour ${customerInfo.name},</p>
               
-              <p>Nous avons bien reçu votre demande de réservation. Votre course est confirmée et notre chauffeur vous contactera prochainement.</p>
+              <p>Nous avons bien reçu votre demande de réservation. ${initialStatus === 'confirmed' ? 'Votre course est confirmée et notre chauffeur vous contactera prochainement.' : 'Nous reviendrons vers vous très rapidement pour confirmer votre réservation.'}</p>
               
               <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
                 <h2 style="color: #2a5a9e; margin-top: 0;">Résumé de votre réservation</h2>
@@ -330,10 +360,11 @@ export async function POST(request) {
                 <p><strong>Date et heure:</strong> ${pickupDateTime.toLocaleDateString('fr-FR')} à ${pickupDateTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
                 <p><strong>Passagers:</strong> ${passengers}</p>
                 <p><strong>Véhicule:</strong> ${vehicleType === 'green' ? 'Tesla Model 3' : vehicleType === 'berline' ? 'Mercedes Classe E' : 'Mercedes Classe V'}</p>
-                <p style="font-size: 18px; margin-top: 10px;"><strong>Prix estimé: ${formatPriceRange(price.priceRange)}</strong></p>
+                <p style="font-size: 18px; margin-top: 10px;"><strong>Prix estimé: ${price.priceRange ? formatPriceRange(price.priceRange) : price.amount + '€'}</strong></p>
                 <p style="font-size: 14px; color: #666;">(Tarif ${tariffApplied} - ${tariffName})</p>
               </div>
               
+              ${price.priceRange ? `
               <div style="background-color: #fffbf0; border: 1px solid #ffd93d; padding: 15px; border-radius: 5px; margin: 20px 0;">
                 <h3 style="color: #805500; margin-top: 0;">💡 À propos du prix</h3>
                 <p style="color: #805500; margin: 0;">
@@ -341,6 +372,7 @@ export async function POST(request) {
                   Le prix final sera convenu avec votre chauffeur et restera dans cette fourchette.
                 </p>
               </div>
+              ` : ''}
               
               <p style="background-color: #fff3cd; padding: 10px; border-left: 4px solid #ffc107; margin: 15px 0;">
                 Notre chauffeur vous contactera environ 15 minutes avant votre prise en charge.
@@ -380,7 +412,7 @@ export async function POST(request) {
     const bookingResult = {
       id: bookingId,
       createdAt: new Date().toISOString(),
-      status: 'confirmed',
+      status: initialStatus,
       pickupAddress,
       dropoffAddress,
       pickupDateTime: pickupDateTime.toISOString(),
@@ -393,10 +425,10 @@ export async function POST(request) {
       specialRequests,
       price: {
         amount: price.amount,
-        currency: price.currency,
-        tariffApplied,
-        tariffName: price.breakdown.selectedTariff || tariffApplied,
-        breakdown: price.breakdown,
+        currency: price.currency || 'EUR',
+        tariffApplied: tariffApplied || 'A',
+        tariffName: newBooking.price.tariffName,
+        breakdown: newBooking.price.breakdown,
         priceRange: price.priceRange, // Inclure la fourchette dans la réponse
       },
       customerInfo: {
@@ -405,13 +437,18 @@ export async function POST(request) {
         phone: customerInfo.phone
       },
       vehicleType,
-      routeDetails
+      routeDetails,
+      // Informations admin si applicable
+      ...(isAdminContext && {
+        createdByAdmin: true,
+        adminNotes: newBooking.adminNotes
+      })
     };
 
     return NextResponse.json({
       success: true,
       data: bookingResult,
-      message: `Votre réservation a été confirmée avec le tarif ${tariffApplied}. Vous recevrez prochainement les coordonnées de votre chauffeur.`
+      message: `Votre réservation a été ${initialStatus === 'confirmed' ? 'confirmée' : 'créée'} avec le tarif ${tariffApplied || 'A'}. ${initialStatus === 'confirmed' ? 'Vous recevrez prochainement les coordonnées de votre chauffeur.' : 'Nous reviendrons vers vous rapidement pour la confirmer.'}`
     });
 
   } catch (error) {

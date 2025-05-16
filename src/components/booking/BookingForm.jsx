@@ -1,4 +1,4 @@
-// src/components/booking/BookingForm.jsx - Version modifiée pour les fourchettes de prix
+// src/components/booking/BookingForm.jsx - Version modifiée pour supporter l'admin
 
 "use client";
 
@@ -9,7 +9,13 @@ import BookingStepOne from './steps/BookingStepOne';
 import BookingStepTwo from './steps/BookingStepTwo';
 import BookingStepThree from './steps/BookingStepThree';
 
-const BookingForm = () => {
+const BookingForm = ({ 
+  isAdminContext = false,
+  showPriceRange = false,
+  autoConfirm = false,
+  onSuccess = null,
+  onError = null 
+}) => {
   // États pour les étapes du formulaire
   const [currentStep, setCurrentStep] = useState(1);
   const [priceEstimate, setPriceEstimate] = useState(null);
@@ -44,7 +50,12 @@ const BookingForm = () => {
   // Initialiser les champs de date et heure
   useEffect(() => {
     const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    if (isAdminContext) {
+      // Pour l'admin, permettre les réservations pour aujourd'hui
+      tomorrow.setDate(tomorrow.getDate() + (new Date().getHours() < 22 ? 0 : 1));
+    } else {
+      tomorrow.setDate(tomorrow.getDate() + 1);
+    }
     const formattedDate = formatDate(tomorrow);
     
     const defaultTime = new Date();
@@ -53,7 +64,7 @@ const BookingForm = () => {
     
     setValue('pickupDate', formattedDate);
     setValue('pickupTime', formattedTime);
-  }, [setValue]);
+  }, [setValue, isAdminContext]);
 
   const formatDate = (date) => {
     const year = date.getFullYear();
@@ -107,7 +118,7 @@ const BookingForm = () => {
       return;
     }
     
-    if (!formValues.pickupAddressPlaceId || !formValues.dropoffAddressPlaceId) {
+    if (!isAdminContext && (!formValues.pickupAddressPlaceId || !formValues.dropoffAddressPlaceId)) {
       setError('Veuillez sélectionner des adresses valides dans les suggestions');
       return;
     }
@@ -116,15 +127,61 @@ const BookingForm = () => {
     setIsCalculating(true);
     
     try {
+      // Pour l'admin, utiliser les adresses directement si pas de placeId
+      const pickupPlaceId = formValues.pickupAddressPlaceId || `custom_${Date.now()}_pickup`;
+      const dropoffPlaceId = formValues.dropoffAddressPlaceId || `custom_${Date.now()}_dropoff`;
+      
       console.log('Envoi de la requête de prix avec:', {
-        pickupPlaceId: formValues.pickupAddressPlaceId,
-        dropoffPlaceId: formValues.dropoffAddressPlaceId,
+        pickupPlaceId,
+        dropoffPlaceId,
         pickupDateTime: `${formValues.pickupDate}T${formValues.pickupTime}`,
         passengers: parseInt(formValues.passengers),
         luggage: parseInt(formValues.luggage),
         roundTrip: formValues.roundTrip,
-        returnDateTime: formValues.roundTrip && formValues.returnDate ? `${formValues.returnDate}T${formValues.returnTime}` : null
+        returnDateTime: formValues.roundTrip && formValues.returnDate ? `${formValues.returnDate}T${formValues.returnTime}` : null,
+        isAdminContext
       });
+
+      // Pour l'admin sans placeId, créer un estimate simple
+      if (isAdminContext && (!formValues.pickupAddressPlaceId || !formValues.dropoffAddressPlaceId)) {
+        const estimate = createSimpleEstimate();
+        setPriceEstimate(estimate);
+        
+        const vehicleOptions = [
+          {
+            id: 'green',
+            name: 'Tesla Model 3',
+            desc: 'Élégance et technologie - 100% électrique',
+            capacity: 'Jusqu\'à 4 passagers',
+            luggage: 'Jusqu\'à 3 bagages',
+            estimate: estimate,
+            priceRange: estimate.priceRanges.standard
+          },
+          {
+            id: 'berline',
+            name: 'Mercedes Classe E',
+            desc: 'Confort et prestige au quotidien',
+            capacity: 'Jusqu\'à 4 passagers',
+            luggage: 'Jusqu\'à 4 bagages',
+            estimate: estimate,
+            priceRange: estimate.priceRanges.standard
+          },
+          {
+            id: 'van',
+            name: 'Mercedes Classe V',
+            desc: 'Espace et luxe pour vos groupes',
+            capacity: 'Jusqu\'à 7 passagers',
+            luggage: 'Grande capacité bagages',
+            estimate: estimate,
+            priceRange: estimate.priceRanges.van
+          }
+        ];
+        
+        setAvailableVehicles(vehicleOptions);
+        setCurrentStep(2);
+        setIsCalculating(false);
+        return;
+      }
 
       const response = await fetch('/api/price/estimate', {
         method: 'POST',
@@ -132,13 +189,14 @@ const BookingForm = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          pickupPlaceId: formValues.pickupAddressPlaceId,
-          dropoffPlaceId: formValues.dropoffAddressPlaceId,
+          pickupPlaceId,
+          dropoffPlaceId,
           pickupDateTime: `${formValues.pickupDate}T${formValues.pickupTime}`,
           passengers: parseInt(formValues.passengers),
           luggage: parseInt(formValues.luggage),
           roundTrip: formValues.roundTrip,
-          returnDateTime: formValues.roundTrip && formValues.returnDate ? `${formValues.returnDate}T${formValues.returnTime}` : null
+          returnDateTime: formValues.roundTrip && formValues.returnDate ? `${formValues.returnDate}T${formValues.returnTime}` : null,
+          isAdminContext
         })
       });
       
@@ -223,6 +281,58 @@ const BookingForm = () => {
     }
   };
   
+  // Créer un estimate simple pour l'admin
+  const createSimpleEstimate = () => {
+    // Prix de base selon les options
+    let basePrice = 45;
+    if (formValues.roundTrip) basePrice *= 2;
+    if (formValues.luggage > 2) basePrice += formValues.luggage * 5;
+    
+    return {
+      basePrice,
+      approachFee: 10,
+      totalPrice: basePrice + 10,
+      priceRanges: {
+        standard: {
+          min: basePrice + 10,
+          max: basePrice + 20
+        },
+        van: {
+          min: basePrice + 25,
+          max: basePrice + 35
+        }
+      },
+      currency: 'EUR',
+      selectedRate: 'A',
+      rateName: 'Tarif administrateur',
+      breakdown: {
+        baseFare: 2.60,
+        distanceCharge: basePrice - 2.60,
+        pricePerKm: 1.50,
+        actualDistance: 15,
+        minimumCourse: 20,
+        approachFee: 10,
+        isNightTime: false,
+        isWeekendOrHoliday: false,
+        roundTrip: formValues.roundTrip,
+        selectedTariff: 'A',
+        conditions: {
+          timeOfDay: 'jour',
+          dayType: 'semaine',
+          returnType: formValues.roundTrip ? 'en charge' : 'à vide'
+        }
+      },
+      details: {
+        distanceInKm: 15,
+        durationInMinutes: 25,
+        formattedDistance: '15 km (estimation)',
+        formattedDuration: '25 min (estimation)',
+        polyline: null,
+        isEstimated: true
+      }
+    };
+  };
+  
   const onVehicleSelect = (vehicleId, estimate) => {
     setSelectedVehicle(vehicleId);
     setPriceEstimate(estimate);
@@ -284,7 +394,10 @@ const BookingForm = () => {
             text: priceEstimate.details.formattedDuration,
           },
           polyline: priceEstimate.details.polyline,
-        } : null
+        } : null,
+        // Configuration admin
+        isAdminContext,
+        status: autoConfirm ? 'confirmed' : 'pending'
       };
 
       const response = await fetch('/api/bookings', {
@@ -300,12 +413,24 @@ const BookingForm = () => {
       if (response.ok && result.success) {
         setBookingResult(result.data);
         setBookingSuccess(true);
+        
+        // Appeler le callback de succès si fourni
+        if (onSuccess) {
+          onSuccess(result.data);
+        }
       } else {
         setError(result.error || "Une erreur est survenue lors de la réservation.");
+        if (onError) {
+          onError(result.error);
+        }
       }
     } catch (err) {
       console.error('Erreur lors de la création de la réservation:', err);
-      setError("Une erreur est survenue lors de la réservation. Veuillez réessayer.");
+      const errorMessage = "Une erreur est survenue lors de la réservation. Veuillez réessayer.";
+      setError(errorMessage);
+      if (onError) {
+        onError(errorMessage);
+      }
     }
   };
   
@@ -321,7 +446,7 @@ const BookingForm = () => {
   
   return (
     <div className="w-full bg-white rounded-lg shadow-custom overflow-hidden">
-      {/* Stepper */}
+      {/* Stepper avec indication admin */}
       <div className="flex border-b border-gray-200">
         {[
           { step: 1, label: "Détails du trajet" },
@@ -344,6 +469,20 @@ const BookingForm = () => {
         ))}
       </div>
 
+      {/* Indicateur admin */}
+      {isAdminContext && (
+        <div className="bg-blue-50 border-b border-blue-200 px-4 py-2">
+          <div className="flex items-center text-sm text-blue-800">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" clipRule="evenodd" />
+              <path fillRule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 102 0V3h4v1a1 1 0 102 0V3a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" clipRule="evenodd" />
+            </svg>
+            <span className="font-medium">Mode administrateur :</span>
+            <span className="ml-1">Les réservations seront {autoConfirm ? 'automatiquement confirmées' : 'en attente'}</span>
+          </div>
+        </div>
+      )}
+
       {/* Error message */}
       {error && (
         <div className="bg-red-50 text-red-600 p-4 border-l-4 border-red-500 m-4 flex items-start">
@@ -365,6 +504,7 @@ const BookingForm = () => {
             errors={errors}
             isCalculating={isCalculating}
             onSubmit={calculatePrice}
+            isAdminContext={isAdminContext}
           />
         )}
         
@@ -376,6 +516,7 @@ const BookingForm = () => {
             selectedVehicle={selectedVehicle}
             onVehicleSelect={onVehicleSelect}
             onBack={goBack}
+            showPriceRange={showPriceRange}
           />
         )}
         
@@ -390,6 +531,8 @@ const BookingForm = () => {
             errors={errors}
             onSubmit={handleSubmit(onFinalSubmit)}
             onBack={goBack}
+            showPriceRange={showPriceRange}
+            isAdminContext={isAdminContext}
           />
         )}
       </form>
