@@ -339,7 +339,7 @@ const VehicleSelector = ({ vehicles, selectedVehicle, onSelect, passengers, lugg
                   <div className="mt-6 pt-4 border-t border-gray-200">
                     <button
                       type="button"
-                      className="w-full py-3 px-6 bg-primary text-white font-medium rounded-md hover:bg-primary-dark transition-colors duration-300"
+                      className="w-full py-3 px-6 bg-primary text-white font-medium rounded-md hover:bg-primary-dark hover:text-white transition-colors duration-300"
                       onClick={(e) => {
                         e.stopPropagation();
                         onSelect(vehicle.id, vehicle.estimate);

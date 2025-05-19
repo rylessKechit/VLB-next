@@ -44,7 +44,7 @@ const MobileCallButton = () => {
           <div className="space-y-3">
             <Link 
               href="tel:+33665113928" 
-              className="bg-primary hover:bg-primary-dark text-white py-3 px-4 rounded-md font-medium transition-colors duration-300 w-full flex items-center justify-center"
+              className="bg-primary hover:bg-primary-dark hover:text-white text-white py-3 px-4 rounded-md font-medium transition-colors duration-300 w-full flex items-center justify-center"
               aria-label="Appeler maintenant pour réserver un taxi"
             >
               <FontAwesomeIcon icon={faPhone} className="mr-2" />
@@ -64,7 +64,7 @@ const MobileCallButton = () => {
       ) : (
         <button 
           onClick={() => setIsExpanded(true)}
-          className="w-14 h-14 bg-primary hover:bg-primary-dark text-white rounded-full shadow-lg flex items-center justify-center transition-colors duration-300"
+          className="w-14 h-14 bg-primary hover:bg-primary-dark hover:text-white text-white rounded-full shadow-lg flex items-center justify-center transition-colors duration-300"
           aria-label="Afficher les options de contact pour réserver un taxi"
           aria-expanded={isExpanded}
         >

@@ -122,7 +122,7 @@ export default function FAQPage() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link 
                   href="/contact" 
-                  className="bg-primary text-white py-3 px-6 rounded-md font-medium hover:bg-primary-dark transition-colors duration-300 text-center"
+                  className="bg-primary text-white py-3 px-6 rounded-md font-medium hover:bg-primary-dark hover:text-white transition-colors duration-300 text-center"
                 >
                   Contactez-nous
                 </Link>

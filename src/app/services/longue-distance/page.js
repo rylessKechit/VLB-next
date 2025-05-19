@@ -2,7 +2,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRoute, faClock, faTag, faInfoCircle, faQuoteLeft, faCheck, faRoad, faCouch, faPlug, faMapMarkedAlt } from '@fortawesome/free-solid-svg-icons';
-import BookingForm from '@/components/booking/BookingForm';
 import RouteMap from '@/components/booking/RouteMap';
 
 export default function LongDistancePage() {
@@ -23,7 +22,7 @@ export default function LongDistancePage() {
            style={{ backgroundImage: "url('/images/long-distance-highway.webp')", backgroundSize: "cover", backgroundPosition: "center" }}>
         <div className="absolute inset-0 bg-black bg-opacity-60"></div>
         <div className="relative z-10 px-4 max-w-5xl mx-auto">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 animate-slide-in-left">TAXI LONGUE DISTANCE</h1>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 animate-slide-in-left text-primary">TAXI LONGUE DISTANCE</h1>
           <div className="flex items-center justify-center my-3">
             <div className="w-12 h-px bg-white opacity-50"></div>
             <div className="mx-4"><FontAwesomeIcon icon={faRoute} /></div>
@@ -152,7 +151,7 @@ export default function LongDistancePage() {
                       </div>
                     </div>
                     <div className="text-center">
-                      <Link href="/#booking" className="inline-block bg-primary text-white py-2 px-4 rounded-md hover:bg-primary-dark transition-colors duration-300">
+                      <Link href="/#booking" className="inline-block bg-primary text-white py-2 px-4 rounded-md hover:bg-primary-dark hover:text-white transition-colors duration-300">
                       Demander un devis
                       </Link>
                     </div>
@@ -260,20 +259,6 @@ export default function LongDistancePage() {
         </div>
       </div>
       
-      {/* Booking Section */}
-      <div id="booking" className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-4 text-center uppercase">RÉSERVEZ VOTRE TRAJET LONGUE DISTANCE</h2>
-          <p className="text-lg text-center text-gray-600 mb-12">
-            Réservation simple et rapide pour votre prochain voyage depuis Verrières-le-Buisson
-          </p>
-          
-          <div className="max-w-4xl mx-auto">
-            <BookingForm />
-          </div>
-        </div>
-      </div>
-      
       {/* FAQ Section */}
       <div className="py-16 bg-white">
         <div className="container mx-auto px-4">
@@ -326,7 +311,7 @@ export default function LongDistancePage() {
             Contactez-nous pour obtenir un devis personnalisé pour votre itinéraire depuis Verrières-le-Buisson
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link href="/contact" className="bg-primary hover:bg-primary-dark text-white py-3 px-6 rounded-md font-medium transition-colors duration-300">
+            <Link href="/contact" className="bg-primary hover:bg-primary-dark hover:text-white text-white py-3 px-6 rounded-md font-medium transition-colors duration-300">
               Demander un devis
             </Link>
             <Link href="tel:+33665113928" className="bg-transparent border-2 border-white hover:bg-white hover:text-dark text-white py-3 px-6 rounded-md font-medium transition-colors duration-300 flex items-center justify-center">

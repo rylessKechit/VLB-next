@@ -133,7 +133,7 @@ export default function FlottePage() {
            style={{ backgroundImage: "url('/images/fleet-hero.webp')", backgroundSize: "cover", backgroundPosition: "center" }}>
         <div className="absolute inset-0 bg-black bg-opacity-60"></div>
         <div className="relative z-10 px-4 max-w-5xl mx-auto">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 animate-slide-in-left">NOTRE FLOTTE PREMIUM</h1>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 animate-slide-in-left text-primary">NOTRE FLOTTE PREMIUM</h1>
           <div className="flex items-center justify-center my-3">
             <div className="w-12 h-px bg-white opacity-50"></div>
             <div className="mx-4"><FontAwesomeIcon icon={faCar} /></div>
@@ -235,7 +235,7 @@ export default function FlottePage() {
                     {/* CTA */}
                     <Link 
                       href="/#booking" 
-                      className="inline-flex items-center bg-primary text-white px-6 py-3 rounded-md font-medium hover:bg-primary-dark transition-colors duration-300"
+                      className="inline-flex items-center bg-primary text-white px-6 py-3 rounded-md font-medium hover:bg-primary-dark hover:text-white transition-colors duration-300"
                     >
                       Réserver ce véhicule
                       <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
@@ -335,7 +335,7 @@ export default function FlottePage() {
             Contactez-nous pour plus d'informations ou réservez directement le véhicule de votre choix
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link href="/#booking" className="bg-primary hover:bg-primary-dark text-white py-3 px-6 rounded-md font-medium transition-colors duration-300">
+            <Link href="/#booking" className="bg-primary hover:bg-primary-dark hover:text-white text-white py-3 px-6 rounded-md font-medium transition-colors duration-300">
               Réserver maintenant
             </Link>
             <Link href="/contact" className="bg-transparent border-2 border-white hover:bg-white hover:text-dark text-white py-3 px-6 rounded-md font-medium transition-colors duration-300">

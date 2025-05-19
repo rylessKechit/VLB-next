@@ -230,7 +230,7 @@ export default function ContactPage() {
                   
                   <button 
                     type="submit" 
-                    className="w-full py-3 px-4 bg-primary text-white rounded-md font-medium hover:bg-primary-dark transition-colors duration-300 flex items-center justify-center"
+                    className="w-full py-3 px-4 bg-primary text-white rounded-md font-medium hover:bg-primary-dark hover:text-white transition-colors duration-300 flex items-center justify-center"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (
@@ -268,49 +268,6 @@ export default function ContactPage() {
             </svg>
             Réserver un taxi par WhatsApp
           </a>
-        </div>
-      </div>
-      
-      {/* Common routes section */}
-      <div className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold mb-8 text-center uppercase">NOS ITINÉRAIRES FRÉQUENTS</h2>
-          
-          <div className="max-w-5xl mx-auto">
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-              <h3 className="text-xl font-semibold mb-4">Exemple de trajet en taxi</h3>
-              <RouteMap 
-                pickupAddress="Verrières-le-Buisson, France" 
-                dropoffAddress="Aéroport Charles de Gaulle, France"
-              />
-              <p className="text-center text-sm text-gray-500 mt-4">
-                Itinéraire approximatif pour un trajet en taxi de Verrières-le-Buisson vers l'aéroport Charles de Gaulle
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-              <div className="bg-white p-5 rounded-lg shadow-sm">
-                <h4 className="font-semibold mb-2">Verrières-le-Buisson → Orly</h4>
-                <p className="text-sm text-gray-600 mb-1">Distance: ~15 km</p>
-                <p className="text-sm text-gray-600 mb-1">Durée: ~25 min</p>
-                <p className="text-sm text-gray-600">Prix estimé: 35-45€</p>
-              </div>
-              
-              <div className="bg-white p-5 rounded-lg shadow-sm">
-                <h4 className="font-semibold mb-2">Verrières-le-Buisson → CDG</h4>
-                <p className="text-sm text-gray-600 mb-1">Distance: ~45 km</p>
-                <p className="text-sm text-gray-600 mb-1">Durée: ~50 min</p>
-                <p className="text-sm text-gray-600">Prix estimé: 70-85€</p>
-              </div>
-              
-              <div className="bg-white p-5 rounded-lg shadow-sm">
-                <h4 className="font-semibold mb-2">Verrières-le-Buisson → Paris</h4>
-                <p className="text-sm text-gray-600 mb-1">Distance: ~18 km</p>
-                <p className="text-sm text-gray-600 mb-1">Durée: ~30 min</p>
-                <p className="text-sm text-gray-600">Prix estimé: 45-55€</p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

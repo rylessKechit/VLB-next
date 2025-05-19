@@ -73,7 +73,7 @@ const Header = () => {
             </Link>
             
             <Link href="/#booking" 
-              className="flex items-center px-4 py-2 rounded-md bg-primary text-white transition-all duration-300 hover:bg-primary-dark hover:-translate-y-1" 
+              className="flex items-center px-4 py-2 rounded-md bg-primary text-white transition-all duration-300 hover:bg-primary-dark hover:text-white hover:-translate-y-1" 
               title="Réservation en ligne"
             >
               <FontAwesomeIcon icon={faCalendarAlt} className="mr-2" />

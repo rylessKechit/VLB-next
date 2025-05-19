@@ -124,6 +124,17 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'taxi-verrieres-le-buisson.com',
+          },
+        ],
+        destination: 'https://www.taxi-verrieres-le-buisson.com/:path*',
+        permanent: true,
+      },
+      {
         source: '/home',
         destination: '/',
         permanent: true,

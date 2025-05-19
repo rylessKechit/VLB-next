@@ -276,7 +276,7 @@ export default function Home() {
               <p className="text-gray-600 mb-6">Découvrez tous les détails de nos véhicules</p>
               <Link 
                 href="/flotte" 
-                className="inline-flex items-center bg-primary text-white py-3 px-6 rounded-md font-medium hover:bg-primary-dark transition-colors duration-300"
+                className="inline-flex items-center bg-primary text-white py-3 px-6 rounded-md font-medium hover:bg-primary-dark hover:text-white transition-colors duration-300"
                 aria-label="Découvrir toute notre flotte de véhicules"
               >
                 Découvrir toute notre flotte

@@ -45,7 +45,7 @@ export default function AboutPage() {
            style={{ backgroundImage: "url('/images/about-hero.webp')", backgroundSize: "cover", backgroundPosition: "center" }}>
         <div className="absolute inset-0 bg-black bg-opacity-60"></div>
         <div className="relative z-10 px-4 max-w-5xl mx-auto">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 animate-slide-in-left">À PROPOS DE TAXI VLB</h1>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 animate-slide-in-left text-primary">À PROPOS DE TAXI VLB</h1>
           <div className="flex items-center justify-center my-3">
             <div className="w-12 h-px bg-white opacity-50"></div>
             <div className="mx-4"><FontAwesomeIcon icon={faTaxi} /></div>
@@ -247,7 +247,7 @@ export default function AboutPage() {
                   <p className="text-gray-700 mb-4">
                     Tous nos taxis sont régulièrement entretenus pour assurer votre confort et votre sécurité lors de vos trajets à Verrières-le-Buisson et en Essonne.
                   </p>
-                  <Link href="/#booking" className="inline-block bg-primary text-white py-2 px-6 rounded-md hover:bg-primary-dark transition-colors duration-300">
+                  <Link href="/#booking" className="inline-block bg-primary text-white py-2 px-6 rounded-md hover:bg-primary-dark hover:text-white transition-colors duration-300">
                     Réserver votre taxi maintenant
                   </Link>
                 </div>
@@ -265,7 +265,7 @@ export default function AboutPage() {
             Contactez-nous pour votre prochain trajet en Essonne
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link href="/contact" className="bg-primary hover:bg-primary-dark text-white py-3 px-6 rounded-md font-medium transition-colors duration-300">
+            <Link href="/contact" className="bg-primary hover:bg-primary-dark hover:text-white text-white py-3 px-6 rounded-md font-medium transition-colors duration-300">
               Contactez-nous
             </Link>
             <Link href="/#booking" className="bg-transparent border-2 border-white hover:bg-white hover:text-dark text-white py-3 px-6 rounded-md font-medium transition-colors duration-300 flex items-center justify-center">

@@ -67,7 +67,7 @@ export default function HeroSection() {
         {/* Un seul bouton principal optimisé pour mobile */}
         <div className={`${animationsEnabled ? 'animate-fade-in' : ''}`}>
           <Link href="#booking" 
-            className="inline-block w-full sm:w-auto min-w-[280px] sm:min-w-[320px] py-4 px-8 bg-primary text-white text-lg sm:text-xl font-semibold rounded-lg hover:bg-primary-dark transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-xl"
+            className="inline-block w-full sm:w-auto min-w-[280px] sm:min-w-[320px] py-4 px-8 bg-primary text-white text-lg sm:text-xl font-semibold rounded-lg hover:bg-primary-dark hover:text-white transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-xl"
             aria-label="Réserver un taxi à Verrières-le-Buisson"
           >
             Réserver maintenant

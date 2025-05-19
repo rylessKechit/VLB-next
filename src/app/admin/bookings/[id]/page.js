@@ -225,7 +225,7 @@ export default function BookingDetailPage() {
         <p>{error}</p>
         <Link 
           href="/admin/bookings" 
-          className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors duration-300"
+          className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark hover:text-white transition-colors duration-300"
         >
           Retour aux réservations
         </Link>
@@ -241,7 +241,7 @@ export default function BookingDetailPage() {
         <p>La réservation que vous recherchez n'existe pas ou a été supprimée.</p>
         <Link 
           href="/admin/bookings" 
-          className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors duration-300"
+          className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark hover:text-white transition-colors duration-300"
         >
           Retour aux réservations
         </Link>

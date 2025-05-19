@@ -184,7 +184,7 @@ export default function PlanningPage() {
         <div className="grid grid-cols-2 gap-3">
           <Link 
             href="/admin/bookings/new" 
-            className="flex items-center justify-center bg-primary text-white px-4 py-3 rounded-lg hover:bg-primary-dark transition-colors text-sm font-medium"
+            className="flex items-center justify-center bg-primary text-white px-4 py-3 rounded-lg hover:bg-primary-dark hover:text-white transition-colors text-sm font-medium"
           >
             <FontAwesomeIcon icon={faPlus} className="mr-2" />
             Nouvelle réservation
