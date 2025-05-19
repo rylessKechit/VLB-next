@@ -397,7 +397,7 @@ const BookingForm = ({
         } : null,
         // Configuration admin
         isAdminContext,
-        status: autoConfirm ? 'confirmed' : 'pending'
+        status: 'confirmed'
       };
 
       const response = await fetch('/api/bookings', {

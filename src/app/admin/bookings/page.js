@@ -322,7 +322,6 @@ export default function BookingsPage() {
                   defaultValue={statusFilter}
                 >
                   <option value="">Tous les statuts</option>
-                  <option value="pending">En attente</option>
                   <option value="confirmed">Confirmé</option>
                   <option value="in_progress">En cours</option>
                   <option value="completed">Terminé</option>
@@ -461,16 +460,6 @@ export default function BookingsPage() {
                     
                     {/* Actions */}
                     <div className="flex flex-wrap gap-2 pt-2">
-                      {booking.status === 'pending' && (
-                        <button 
-                          onClick={() => handleStatusChange(booking._id || booking.bookingId, 'confirmed')}
-                          className="flex items-center bg-green-50 text-green-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-green-100 transition-colors"
-                        >
-                          <FontAwesomeIcon icon={faCheckCircle} className="mr-1" />
-                          Confirmer
-                        </button>
-                      )}
-                      
                       {booking.status === 'confirmed' && (
                         <button 
                           onClick={() => handleStatusChange(booking._id || booking.bookingId, 'in_progress')}
@@ -491,7 +480,7 @@ export default function BookingsPage() {
                         </button>
                       )}
                       
-                      {(booking.status === 'pending' || booking.status === 'confirmed') && (
+                      {(booking.status === 'confirmed') && (
                         <button 
                           onClick={() => handleStatusChange(booking._id || booking.bookingId, 'cancelled')}
                           className="flex items-center bg-red-50 text-red-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors"

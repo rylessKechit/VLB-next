@@ -12,101 +12,133 @@ import {
   faCheckCircle,
   faChartLine,
   faEye,
-  faEdit,
   faSpinner,
   faClock,
   faUser,
-  faMapMarkerAlt
+  faMapMarkerAlt,
+  faPlus,
+  faCar,
+  faTimesCircle
 } from '@fortawesome/free-solid-svg-icons';
-import DashboardStats from '@/components/admin/DashboardStats';
-import UpcomingBookings from '@/components/admin/UpcomingBookings';
-import BookingChart from '@/components/admin/BookingChart';
+
+// Importer le nouveau composant de filtre
+import RevenueTimeFilter from '@/components/admin/RevenueTimeFilter';
+
+const DashboardStats = ({ title, value, icon, color, link }) => {
+  const content = (
+    <div className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-all duration-300">
+      <div className="flex items-center">
+        <div className={`w-10 h-10 rounded-full ${color} flex items-center justify-center text-white mr-3 flex-shrink-0`}>
+          <FontAwesomeIcon icon={icon} className="h-4 w-4 sm:h-5 sm:w-5" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-xs sm:text-sm font-medium text-gray-600 truncate">{title}</h3>
+          <p className="text-lg sm:text-xl font-semibold text-gray-900">{value}</p>
+        </div>
+      </div>
+    </div>
+  );
+  
+  return link ? <Link href={link} className="block">{content}</Link> : content;
+};
 
 export default function Dashboard() {
   const { data: session } = useSession();
   const [stats, setStats] = useState({
     totalBookings: 0,
-    pendingBookings: 0,
     confirmedBookings: 0,
     cancelledBookings: 0,
     todayBookings: 0,
-    totalUsers: 0,
-    totalRevenue: 0
+    totalRevenue: 0,
+    completedRevenue: 0,
+    timeFilterDetails: {
+      filter: 'all',
+      label: 'Toutes périodes',
+      dateRange: 'Toutes les dates'
+    }
   });
   const [upcomingBookings, setUpcomingBookings] = useState([]);
-  const [bookingData, setBookingData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [chartPeriod, setChartPeriod] = useState('thisWeek');
+  const [timeFilter, setTimeFilter] = useState('all');
   
-  // Récupérer les données du dashboard
+  // Utiliser le filtre temporel pour récupérer les statistiques
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    async function fetchDashboardData() {
       try {
         setLoading(true);
         
-        // Récupérer les statistiques
-        const statsResponse = await fetch('/api/dashboard/stats');
+        // Récupération des données avec le filtre temporel
+        const response = await fetch(`/api/dashboard/stats?timeFilter=${timeFilter}`);
+        if (!response.ok) {
+          throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+        const data = await response.json();
         
-        if (!statsResponse.ok) {
-          throw new Error('Erreur lors de la récupération des statistiques');
+        if (data.success) {
+          setStats(data.data);
+        } else {
+          throw new Error(data.error || "Échec de récupération des données");
         }
         
-        const statsData = await statsResponse.json();
-        setStats(statsData.data);
-        
-        // Récupérer les réservations à venir
-        const today = new Date();
-        const startOfDay = new Date(today.setHours(0, 0, 0, 0)).toISOString();
-        const endOfWeek = new Date(today);
-        endOfWeek.setDate(today.getDate() + 7);
-        endOfWeek.setHours(23, 59, 59, 999);
-        
-        const bookingsResponse = await fetch(`/api/bookings?startDate=${startOfDay}&endDate=${endOfWeek.toISOString()}&limit=5`);
-        
+        // Récupération des prochaines réservations
+        const bookingsResponse = await fetch('/api/bookings/upcoming?limit=5');
         if (!bookingsResponse.ok) {
-          throw new Error('Erreur lors de la récupération des réservations');
+          throw new Error(`Erreur HTTP: ${bookingsResponse.status}`);
         }
-        
         const bookingsData = await bookingsResponse.json();
-        setUpcomingBookings(bookingsData.data);
         
-        // Récupérer les données du graphique
-        const chartResponse = await fetch(`/api/dashboard/chart-data?period=${chartPeriod}`);
-        
-        if (!chartResponse.ok) {
-          throw new Error('Erreur lors de la récupération des données du graphique');
+        if (bookingsData.success) {
+          setUpcomingBookings(bookingsData.data || []);
+        } else {
+          throw new Error(bookingsData.error || "Échec de récupération des réservations");
         }
-        
-        const chartData = await chartResponse.json();
-        setBookingData(chartData.data);
         
         setLoading(false);
-      } catch (error) {
-        console.error('Erreur:', error);
-        setError(error.message);
+      } catch (err) {
+        console.error("Erreur lors du chargement des données:", err);
+        setError("Impossible de charger les données du tableau de bord: " + err.message);
         setLoading(false);
       }
-    };
+    }
     
     fetchDashboardData();
-  }, [chartPeriod]);
-  
-  // Données pour les statistiques responsive
+  }, [timeFilter]); // Ajouter timeFilter comme dépendance pour recharger les données lors du changement
+
+  // Gérer le changement de filtre temporel
+  const handleTimeFilterChange = (filter) => {
+    setTimeFilter(filter);
+  };
+
+  // Format date/heure
+  const formatDateTime = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Format prix
+  const formatPrice = (amount) => {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(amount);
+  };
+
+  // Données pour les stats
   const statsItems = [
     {
-      title: 'Total',
+      title: 'Total Réservations',
       value: stats.totalBookings,
       icon: faCalendarCheck,
-      color: 'bg-blue-500',
+      color: 'bg-primary',
       link: '/admin/bookings'
-    },
-    {
-      title: 'En attente',
-      value: stats.pendingBookings,
-      icon: faExclamationTriangle,
-      color: 'bg-yellow-500',
-      link: '/admin/bookings?status=pending'
     },
     {
       title: 'Confirmées',
@@ -118,23 +150,25 @@ export default function Dashboard() {
     {
       title: "Aujourd'hui",
       value: stats.todayBookings,
-      icon: faCalendarCheck,
-      color: 'bg-purple-500',
-      link: '/admin/bookings'
+      icon: faClock,
+      color: 'bg-secondary',
+      link: '/admin/planning'
+    },
+    {
+      title: 'Annulées',
+      value: stats.cancelledBookings,
+      icon: faTimesCircle,
+      color: 'bg-red-500',
+      link: '/admin/bookings?status=cancelled'
     }
   ];
   
-  // Gestion du changement de période du graphique
-  const handleChartPeriodChange = (newPeriod) => {
-    setChartPeriod(newPeriod);
-  };
-  
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-6">
       {/* Header avec date */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Tableau de bord</h2>
-        <span className="text-sm text-gray-500 mt-2 sm:mt-0">
+        <h1 className="text-xl font-bold text-gray-800">Tableau de bord</h1>
+        <span className="text-sm text-gray-500 mt-1 sm:mt-0">
           {new Date().toLocaleDateString('fr-FR', { 
             weekday: 'long', 
             year: 'numeric', 
@@ -144,8 +178,8 @@ export default function Dashboard() {
         </span>
       </div>
       
-      {/* Statistiques responsive */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+      {/* Statistiques en grille responsive */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {statsItems.map((item, index) => (
           <DashboardStats 
             key={index}
@@ -158,177 +192,154 @@ export default function Dashboard() {
         ))}
       </div>
       
-      {/* Contenu principal responsive */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-        {/* Graphique responsive */}
-        <div className="lg:col-span-2 bg-white rounded-lg shadow p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2 sm:mb-0">
-              Activité des réservations
-            </h3>
-            <select 
-              className="w-full sm:w-auto rounded-md border-gray-300 text-sm focus:ring-primary focus:border-primary"
-              value={chartPeriod}
-              onChange={(e) => handleChartPeriodChange(e.target.value)}
-            >
-              <option value="day">Aujourd'hui</option>
-              <option value="week">Cette semaine</option>
-              <option value="month">Ce mois</option>
-              <option value="year">Cette année</option>
-            </select>
-          </div>
-          
-          {loading ? (
-            <div className="flex items-center justify-center h-48 sm:h-64">
-              <FontAwesomeIcon icon={faSpinner} spin className="text-primary text-2xl" />
-            </div>
-          ) : error ? (
-            <div className="flex items-center justify-center h-48 sm:h-64 text-red-500 text-sm">
-              <FontAwesomeIcon icon={faExclamationTriangle} className="mr-2" />
-              {error}
-            </div>
-          ) : (
-            <div className="h-48 sm:h-64">
-              <BookingChart data={bookingData} />
-            </div>
-          )}
-        </div>
-        
-        {/* Réservations à venir responsive */}
-        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+      {/* Contenu principal */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Prochains transferts */}
+        <div className="lg:col-span-2 bg-white rounded-lg shadow-custom p-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Prochaines réservations</h3>
-            <Link 
-              href="/admin/bookings" 
-              className="text-sm text-primary hover:text-primary-dark"
-            >
-              Tout voir
+            <h2 className="text-lg font-semibold text-gray-800">Prochains transferts</h2>
+            <Link href="/admin/bookings" className="text-primary hover:underline text-sm">
+              Voir tout
             </Link>
           </div>
           
           {loading ? (
-            <div className="flex items-center justify-center h-32">
-              <FontAwesomeIcon icon={faSpinner} spin className="text-primary text-xl" />
+            <div className="flex items-center justify-center h-64">
+              <FontAwesomeIcon icon={faSpinner} className="h-8 w-8 text-primary animate-spin" />
             </div>
           ) : error ? (
-            <div className="flex items-center justify-center h-32 text-red-500 text-sm">
-              <FontAwesomeIcon icon={faExclamationTriangle} className="mr-2" />
-              Erreur de chargement
+            <div className="flex items-center justify-center h-64 text-red-500">
+              <FontAwesomeIcon icon={faExclamationTriangle} className="h-6 w-6 mr-2" />
+              <p>{error}</p>
             </div>
           ) : upcomingBookings.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-32 text-gray-500">
-              <FontAwesomeIcon icon={faCalendarCheck} className="h-8 w-8 mb-2" />
-              <p className="text-sm">Aucune réservation à venir</p>
+            <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+              <FontAwesomeIcon icon={faCalendarCheck} className="h-12 w-12 mb-4" />
+              <p>Aucune réservation à venir</p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {upcomingBookings.map((booking) => (
-                <div key={booking._id || booking.bookingId} 
-                     className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow duration-300">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
+            <div className="space-y-4">
+              {upcomingBookings.map((booking, index) => (
+                <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-custom transition-all duration-200">
+                  <div className="flex items-start justify-between">
+                    <div>
                       <div className="flex items-center mb-1">
-                        <span className="text-xs font-medium text-gray-900">
-                          {booking.bookingId}
-                        </span>
-                        <span className={`ml-2 px-2 py-1 text-xs rounded-full ${
+                        <span className="font-mono text-sm text-gray-500">{booking.bookingId || booking._id}</span>
+                        <span className={`ml-2 text-xs px-2 py-0.5 rounded-full font-medium ${
                           booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                          booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          booking.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                          booking.status === 'completed' ? 'bg-indigo-100 text-indigo-800' :
+                          booking.status === 'cancelled' ? 'bg-red-100 text-red-800' :
                           'bg-gray-100 text-gray-800'
                         }`}>
-                          {booking.status === 'confirmed' ? 'Confirmée' :
-                           booking.status === 'pending' ? 'En attente' : booking.status}
+                          {booking.status === 'confirmed' ? 'Confirmé' :
+                          booking.status === 'in_progress' ? 'En cours' :
+                          booking.status === 'completed' ? 'Terminé' :
+                          booking.status === 'cancelled' ? 'Annulé' :
+                          booking.status}
                         </span>
                       </div>
-                      <h4 className="font-medium text-sm mb-1">{booking.customerInfo?.name}</h4>
+                      <h3 className="font-medium">
+                        {booking.customerInfo?.name || 'Client non spécifié'}
+                      </h3>
                     </div>
                     <Link 
-                      href={`/admin/bookings/${booking._id || booking.bookingId}`}
-                      className="text-primary hover:text-primary-dark p-1"
+                      href={`/admin/bookings/${booking.bookingId || booking._id}`} 
+                      className="text-primary hover:text-primary-dark"
                     >
-                      <FontAwesomeIcon icon={faEye} className="h-4 w-4" />
+                      <FontAwesomeIcon icon={faEye} className="h-5 w-5" />
                     </Link>
                   </div>
                   
-                  <div className="mt-2 space-y-1">
-                    <div className="text-xs text-gray-600 flex items-center">
-                      <FontAwesomeIcon icon={faClock} className="mr-1" />
-                      {new Date(booking.pickupDateTime).toLocaleDateString('fr-FR')} à{' '}
-                      {new Date(booking.pickupDateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                  <div className="mt-3 space-y-1 text-sm">
+                    <div className="flex items-center text-gray-600">
+                      <FontAwesomeIcon icon={faClock} className="h-4 w-4 text-primary mr-2" />
+                      {formatDateTime(booking.pickupDateTime)}
                     </div>
-                    <div className="text-xs text-gray-600 flex items-start">
-                      <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1 mt-0.5 flex-shrink-0" />
-                      <span className="truncate">{booking.pickupAddress}</span>
-                    </div>
-                    {booking.dropoffAddress && (
-                      <div className="text-xs text-gray-600 flex items-start">
-                        <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1 mt-0.5 flex-shrink-0" />
-                        <span className="truncate">{booking.dropoffAddress}</span>
+                    <div className="flex items-start">
+                      <FontAwesomeIcon icon={faMapMarkerAlt} className="h-4 w-4 text-primary mr-2 mt-1" />
+                      <div className="flex-1">
+                        <p className="text-gray-800">{booking.pickupAddress}</p>
+                        <p className="text-gray-500">{booking.dropoffAddress}</p>
                       </div>
-                    )}
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                      <FontAwesomeIcon icon={faUser} className="h-4 w-4 text-primary mr-2" />
+                      <a 
+                        href={`tel:${booking.customerInfo?.phone || ''}`} 
+                        className="text-primary hover:underline"
+                      >
+                        {booking.customerInfo?.phone || 'Téléphone non spécifié'}
+                      </a>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
           )}
         </div>
-      </div>
-      
-      {/* Section admin avec revenus - cachée sur mobile si pas nécessaire */}
-      {session?.user?.role === 'admin' && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-800 mb-2 sm:mb-0">Revenus</h3>
-              <select 
-                className="w-full sm:w-auto rounded-md border-gray-300 text-sm focus:ring-primary focus:border-primary"
-                defaultValue="thisMonth"
-              >
-                <option value="today">Aujourd'hui</option>
-                <option value="thisWeek">Cette semaine</option>
-                <option value="thisMonth">Ce mois</option>
-                <option value="lastMonth">Mois dernier</option>
-              </select>
+        
+        {/* Revenue et stats */}
+        <div>
+          {/* Ajouter le filtre temporel */}
+          <RevenueTimeFilter 
+            activeFilter={timeFilter} 
+            onFilterChange={handleTimeFilterChange} 
+          />
+          
+          <div className="bg-primary bg-opacity-5 rounded-lg p-6 text-center mb-4 border border-primary border-opacity-20">
+            <div className="mb-2">
+              <FontAwesomeIcon icon={faChartLine} className="h-8 w-8 text-primary" />
             </div>
-            
-            <div className="bg-green-50 rounded-lg p-4 sm:p-6 text-center">
-              <div className="flex items-center justify-center mb-2">
-                <FontAwesomeIcon icon={faChartLine} className="h-6 w-6 sm:h-8 sm:w-8 text-green-500 mr-2" />
-                <h4 className="text-base sm:text-lg font-semibold">Revenu total</h4>
-              </div>
-              <p className="text-2xl sm:text-3xl font-bold text-green-600">
-                {new Intl.NumberFormat('fr-FR', {
-                  style: 'currency',
-                  currency: 'EUR'
-                }).format(stats.totalRevenue)}
-              </p>
+            <div className="space-y-1 mb-3">
+              <p className="text-sm text-gray-600">Revenus des courses terminées</p>
+              {stats.timeFilterDetails && (
+                <p className="text-xs font-medium text-gray-500">
+                  {stats.timeFilterDetails.label} ({stats.timeFilterDetails.dateRange})
+                </p>
+              )}
             </div>
+            <p className="text-3xl font-bold text-primary">
+              {formatPrice(stats.completedRevenue || 0)}
+            </p>
           </div>
           
-          {/* Statistiques supplémentaires pour admin */}
-          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Vue d'ensemble</h3>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Réservations ce mois</span>
-                <span className="font-semibold">{stats.totalBookings}</span>
+          <div className="bg-white rounded-lg shadow-custom p-4">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Performance</h2>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm">Taux de conversion</span>
+                  <span className="text-sm font-medium">78%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="bg-green-500 h-2 rounded-full" style={{ width: '78%' }}></div>
+                </div>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Taux de confirmation</span>
-                <span className="font-semibold text-green-600">
-                  {stats.totalBookings > 0 
-                    ? Math.round((stats.confirmedBookings / stats.totalBookings) * 100) 
-                    : 0}%
-                </span>
+              
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm">Satisfaction client</span>
+                  <span className="text-sm font-medium">94%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="bg-primary h-2 rounded-full" style={{ width: '94%' }}></div>
+                </div>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Utilisateurs actifs</span>
-                <span className="font-semibold">{stats.totalUsers}</span>
+              
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm">Taux d'occupation</span>
+                  <span className="text-sm font-medium">65%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="bg-secondary h-2 rounded-full" style={{ width: '65%' }}></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

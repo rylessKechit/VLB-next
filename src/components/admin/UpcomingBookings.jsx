@@ -23,8 +23,6 @@ const UpcomingBookings = ({ bookings }) => {
     switch (status) {
       case 'confirmed':
         return { color: 'text-green-500', icon: faCheckCircle, label: 'Confirmée' };
-      case 'pending':
-        return { color: 'text-yellow-500', icon: faExclamationCircle, label: 'En attente' };
       case 'cancelled':
         return { color: 'text-red-500', icon: faTimesCircle, label: 'Annulée' };
       case 'completed':

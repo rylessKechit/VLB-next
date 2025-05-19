@@ -164,7 +164,7 @@ export async function POST(request) {
     }
 
     // Déterminer le statut initial
-    let initialStatus = 'pending';
+    let initialStatus = 'confirmed';
     if (isAdminContext && requestedStatus) {
       initialStatus = requestedStatus;
     } else if (isAdminContext) {

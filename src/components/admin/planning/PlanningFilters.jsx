@@ -37,7 +37,6 @@ const PlanningFilters = ({ showFilters, setShowFilters, statusFilter, setStatusF
               className="w-full py-2 px-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent text-base"
             >
               <option value="">Tous les statuts</option>
-              <option value="pending">En attente</option>
               <option value="confirmed">Confirmé</option>
               <option value="in_progress">En cours</option>
               <option value="completed">Terminé</option>

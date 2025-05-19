@@ -128,7 +128,6 @@ const PlanningWeekAccordion = ({ bookings, currentDate, groupBookingsByDay }) =>
                           <span 
                             key={status}
                             className={`text-xs px-2 py-1 rounded-full font-medium ${
-                              status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                               status === 'confirmed' ? 'bg-green-100 text-green-800' :
                               status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
                               status === 'completed' ? 'bg-indigo-100 text-indigo-800' :
@@ -136,7 +135,6 @@ const PlanningWeekAccordion = ({ bookings, currentDate, groupBookingsByDay }) =>
                             }`}
                           >
                             {count} {
-                              status === 'pending' ? 'en attente' :
                               status === 'confirmed' ? 'confirmée' + (count > 1 ? 's' : '') :
                               status === 'in_progress' ? 'en cours' :
                               status === 'completed' ? 'terminée' + (count > 1 ? 's' : '') :

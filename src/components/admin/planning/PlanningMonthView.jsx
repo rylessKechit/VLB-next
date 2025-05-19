@@ -37,8 +37,6 @@ const PlanningMonthView = ({ bookings, currentDate, groupBookingsByDay, getBooki
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'pending':
-        return 'bg-yellow-100 border-yellow-400 text-yellow-800';
       case 'confirmed':
         return 'bg-green-100 border-green-400 text-green-800';
       case 'in_progress':
