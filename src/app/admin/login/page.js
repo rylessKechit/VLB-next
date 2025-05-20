@@ -35,15 +35,11 @@ export default function AdminLogin() {
     setError('');
     
     try {
-      console.log('Tentative de connexion avec:', credentials.email);
-      
       const result = await signIn('credentials', {
         email: credentials.email,
         password: credentials.password,
         redirect: false,
       });
-      
-      console.log('Résultat de connexion:', result);
       
       if (result.error) {
         console.error('Erreur de connexion:', result.error);

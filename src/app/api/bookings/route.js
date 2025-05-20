@@ -12,8 +12,6 @@ export async function GET(request) {
   try {
     await dbConnect();
     
-    console.log("Requête reçue pour obtenir toutes les réservations");
-    
     // Vérifiez si l'utilisateur est authentifié (pour l'admin dashboard)
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -102,7 +100,6 @@ export async function POST(request) {
     
     // Récupérer les données de la requête
     const data = await request.json();
-    console.log('Données reçues dans l\'API:', data);
     
     // Vérifier si c'est un contexte admin
     const session = await getServerSession(authOptions);
@@ -221,12 +218,9 @@ export async function POST(request) {
 
     // Sauvegarder dans la base de données
     await newBooking.save();
-    console.log('Réservation enregistrée avec l\'ID:', bookingId);
 
     // Fonction d'envoi d'email avec la fourchette de prix
     const sendEmails = async () => {
-      console.log('=== DÉBUT ENVOI EMAILS ===');
-      
       try {
         const transporter = nodemailer.createTransport({
           service: 'gmail',
@@ -239,9 +233,7 @@ export async function POST(request) {
           socketTimeout: 10000,
         });
 
-        console.log('Test de connexion SMTP...');
         await transporter.verify();
-        console.log('✅ Connexion SMTP vérifiée');
 
         // Fonction pour formater la fourchette de prix
         const formatPriceRange = (priceRange) => {
@@ -331,9 +323,7 @@ export async function POST(request) {
           `,
         };
 
-        console.log('Envoi email propriétaire vers:', mailOptions.to);
         const info1 = await transporter.sendMail(mailOptions);
-        console.log('✅ Email propriétaire envoyé:', info1.messageId);
 
         // Email client avec la fourchette de prix
         const customerMailOptions = {
@@ -387,11 +377,7 @@ export async function POST(request) {
           `,
         };
 
-        console.log('Envoi email client vers:', customerInfo.email);
         const info2 = await transporter.sendMail(customerMailOptions);
-        console.log('✅ Email client envoyé:', info2.messageId);
-
-        console.log('=== EMAILS ENVOYÉS AVEC SUCCÈS ===');
 
       } catch (emailError) {
         console.error('=== ERREUR EMAIL DÉTAILLÉE ===');
@@ -403,7 +389,6 @@ export async function POST(request) {
     // Appeler l'envoi d'emails
     try {
       await sendEmails();
-      console.log('Emails traités avec succès');
     } catch (emailError) {
       console.error('Erreur finale lors de l\'envoi des emails:', emailError);
     }

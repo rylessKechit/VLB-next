@@ -15,7 +15,6 @@ if (!cached) {
 
 async function dbConnect() {
   if (cached.conn) {
-    console.log('🔄 Utilisation de la connexion existante');
     return cached.conn;
   }
 
@@ -28,10 +27,8 @@ async function dbConnect() {
       family: 4
     };
 
-    console.log('🔄 Tentative de connexion à MongoDB...');
     cached.promise = mongoose.connect(MONGODB_URI, opts)
       .then((mongoose) => {
-        console.log("✅ MongoDB connecté avec succès");
         return mongoose;
       })
       .catch(err => {

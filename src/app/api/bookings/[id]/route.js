@@ -165,7 +165,6 @@ export async function PUT(request, { params }) {
         };
         
         await transporter.sendMail(mailOptions);
-        console.log(`Email de mise à jour de statut envoyé à ${booking.customerInfo.email}`);
       } catch (emailError) {
         console.error('Erreur lors de l\'envoi de l\'email de mise à jour:', emailError);
         // Continuer même en cas d'erreur d'envoi d'email

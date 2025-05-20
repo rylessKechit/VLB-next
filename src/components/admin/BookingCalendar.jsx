@@ -226,8 +226,6 @@ const BookingCalendar = () => {
         // Construire l'URL avec les paramètres de requête
         const url = `/api/bookings?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&limit=100`;
         
-        console.log("Requête URL pour le calendrier:", url);
-        
         const response = await fetch(url);
         
         if (!response.ok) {
@@ -237,7 +235,6 @@ const BookingCalendar = () => {
         }
         
         const data = await response.json();
-        console.log("Données reçues:", data);
         
         if (!data.success) {
           throw new Error(data.error || "Erreur inconnue");

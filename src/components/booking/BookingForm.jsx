@@ -130,17 +130,6 @@ const BookingForm = ({
       // Pour l'admin, utiliser les adresses directement si pas de placeId
       const pickupPlaceId = formValues.pickupAddressPlaceId || `custom_${Date.now()}_pickup`;
       const dropoffPlaceId = formValues.dropoffAddressPlaceId || `custom_${Date.now()}_dropoff`;
-      
-      console.log('Envoi de la requête de prix avec:', {
-        pickupPlaceId,
-        dropoffPlaceId,
-        pickupDateTime: `${formValues.pickupDate}T${formValues.pickupTime}`,
-        passengers: parseInt(formValues.passengers),
-        luggage: parseInt(formValues.luggage),
-        roundTrip: formValues.roundTrip,
-        returnDateTime: formValues.roundTrip && formValues.returnDate ? `${formValues.returnDate}T${formValues.returnTime}` : null,
-        isAdminContext
-      });
 
       // Pour l'admin sans placeId, créer un estimate simple
       if (isAdminContext && (!formValues.pickupAddressPlaceId || !formValues.dropoffAddressPlaceId)) {
@@ -202,7 +191,6 @@ const BookingForm = ({
       
       if (response.ok) {
         const data = await response.json();
-        console.log('Réponse de l\'API price/estimate:', data);
         
         if (data.success && data.data && data.data.estimate) {
           const estimate = data.data.estimate;
@@ -211,9 +199,6 @@ const BookingForm = ({
           if (!estimate.priceRanges || typeof estimate.basePrice === 'undefined') {
             throw new Error('Données de prix incomplètes dans la réponse de l\'API');
           }
-          
-          console.log('Estimate reçu:', estimate);
-          console.log('Price ranges:', estimate.priceRanges);
           
           // Créer les options de véhicules avec les fourchettes de prix
           const vehicleOptions = [
@@ -246,8 +231,6 @@ const BookingForm = ({
             }
           ];
           
-          console.log('VehicleOptions créées avec fourchettes:', vehicleOptions);
-          
           // Filtrer les véhicules selon le nombre de passagers
           const validVehicles = vehicleOptions.filter(vehicle => {
             if (vehicle.id === 'van' && formValues.passengers <= 7) {
@@ -258,9 +241,6 @@ const BookingForm = ({
             }
             return false;
           });
-          
-          console.log('Valid vehicles:', validVehicles);
-          console.log('Passage à l\'étape 2');
           
           setAvailableVehicles(validVehicles);
           setCurrentStep(2);

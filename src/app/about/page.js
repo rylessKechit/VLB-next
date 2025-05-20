@@ -65,7 +65,7 @@ export default function AboutPage() {
               <h2 className="text-3xl font-bold mb-6 text-center uppercase">NOTRE HISTOIRE</h2>
               
               <div className="flex flex-col md:flex-row gap-10 items-center">
-                <div className="w-full md:w-1/2">
+                <div className="w-full">
                   <p className="text-gray-700 mb-4">
                     Fondée en 2009, Taxi VLB est née d'une volonté de proposer un service 
                     de taxi fiable et professionnel à Verrières-le-Buisson et ses environs dans l'Essonne (91).
@@ -84,16 +84,6 @@ export default function AboutPage() {
                     Aujourd'hui, Taxi VLB continue de grandir en maintenant son engagement envers 
                     un service de taxi de qualité, la ponctualité et la satisfaction client à Verrières-le-Buisson et dans toute l'Île-de-France.
                   </p>
-                </div>
-                
-                <div className="w-full md:w-1/2">
-                  <Image 
-                    src="/images/about-founder.webp" 
-                    alt="Notre équipe de taxi à Verrières-le-Buisson" 
-                    width={600}
-                    height={400}
-                    className="rounded-lg shadow-custom object-cover w-full h-auto"
-                  />
                 </div>
               </div>
               

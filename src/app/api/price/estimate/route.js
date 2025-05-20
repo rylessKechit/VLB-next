@@ -23,8 +23,6 @@ export async function POST(request) {
       );
     }
 
-    console.log('Calcul du prix pour:', { pickupPlaceId, dropoffPlaceId, roundTrip });
-
     // Obtenir la distance et le temps de trajet réels via l'API Google Maps
     const distanceResult = await getDistanceMatrix(pickupPlaceId, dropoffPlaceId);
     
@@ -75,8 +73,6 @@ export async function POST(request) {
     const { distanceInMeters, durationInSeconds, distanceText, durationText } = distanceResult;
     const distanceInKm = distanceInMeters / 1000;
     const durationInMinutes = Math.round(durationInSeconds / 60);
-
-    console.log(`Distance calculée: ${distanceInKm}km, Durée: ${durationInMinutes}min`);
 
     // Calculer le prix de base selon le nouveau système tarifaire
     const priceCalculation = calculatePrice(distanceInKm, pickupDateTime, roundTrip);
@@ -143,23 +139,28 @@ export async function POST(request) {
   }
 }
 
-// NOUVELLE FONCTION : Calculer les fourchettes de prix avec course minimum et frais d'approche
 function calculatePriceRanges(basePrice, approachFee) {
-  // Course minimum de 20€ (avant frais d'approche)
-  const minimumCourse = 20;
-  const effectiveBasePrice = Math.max(basePrice, minimumCourse);
+  // Course minimum de 20€ (y compris frais d'approche)
+  const minimumTotal = 20;
+  
+  // Déterminer si le prix de base + frais d'approche est inférieur au minimum
+  const priceWithApproach = basePrice + approachFee;
+  const isMinimumApplied = priceWithApproach < minimumTotal;
+  
+  // Si le minimum s'applique, ajuster le prix de base pour que le total soit égal au minimum
+  const effectiveBasePrice = isMinimumApplied ? minimumTotal - approachFee : basePrice;
   
   // Pour les véhicules standard (Tesla et Mercedes Classe E)
-  // Fourchette : prix effectif + frais d'approche → prix effectif + frais d'approche 10€
+  // Fourchette : prix effectif → prix effectif + 5€
   const standardMin = effectiveBasePrice + approachFee;
   const standardMax = effectiveBasePrice + approachFee + 5;
   
   // Pour le VAN (Mercedes Classe V)
-  // Course minimum VAN = 25€ (au lieu de 20€ pour les standards)
-  const minimumCourseVan = 25;
-  const effectiveBasePriceVan = Math.max(basePrice, minimumCourseVan);
-  const vanMin = effectiveBasePriceVan + approachFee + 10;
-  const vanMax = effectiveBasePriceVan + approachFee + 15;
+  // Supplément VAN = 10€
+  const vanSupplementMin = 10;
+  const vanSupplementMax = 15;
+  const vanMin = effectiveBasePrice + approachFee + vanSupplementMin;
+  const vanMax = effectiveBasePrice + approachFee + vanSupplementMax;
   
   return {
     standard: {
@@ -214,7 +215,7 @@ function determineRate(pickupDateTime, roundTrip) {
   }
 }
 
-// Calculer le prix total (modifié avec course minimum et frais d'approche)
+// Calculer le prix total (modifié avec course minimum tout compris)
 function calculatePrice(distanceInKm, pickupDateTime, roundTrip) {
   const selectedRate = determineRate(pickupDateTime, roundTrip);
   const rateConfig = TAXI_RATES.rates[selectedRate];
@@ -229,17 +230,22 @@ function calculatePrice(distanceInKm, pickupDateTime, roundTrip) {
     basePrice *= 2;
   }
   
-  // Appliquer la course minimum de 20€
-  const minimumCourse = 20;
-  basePrice = Math.max(basePrice, minimumCourse);
-  
   // Ajouter les frais d'approche
   const approachFee = getApproachFee(pickupDateTime);
+  
+  // Vérifier si le prix total est supérieur au minimum
+  const minimumTotal = 20; // 20€ minimum AVEC frais d'approche
   const totalPrice = basePrice + approachFee;
   
+  // Si le prix total est inférieur au minimum, ajuster le prix de base
+  let adjustedBasePrice = basePrice;
+  if (totalPrice < minimumTotal) {
+    adjustedBasePrice = minimumTotal - approachFee;
+  }
+  
   // Arrondir à 2 décimales
-  const roundedBasePrice = Math.round(basePrice * 100) / 100;
-  const roundedTotal = Math.round(totalPrice * 100) / 100;
+  const roundedBasePrice = Math.round(adjustedBasePrice * 100) / 100;
+  const roundedTotal = Math.max(minimumTotal, Math.round(totalPrice * 100) / 100);
   
   const pickupDate = new Date(pickupDateTime);
   const hour = pickupDate.getHours();
@@ -248,16 +254,17 @@ function calculatePrice(distanceInKm, pickupDateTime, roundTrip) {
   const isWeekendOrHoliday = dayOfWeek === 0;
   
   return {
-    basePrice: roundedBasePrice,  // Prix sans frais d'approche
+    basePrice: roundedBasePrice,  // Prix sans frais d'approche (ajusté si nécessaire)
     approachFee: approachFee,     // Frais d'approche
-    total: roundedTotal,          // Prix total
+    total: roundedTotal,          // Prix total (jamais inférieur à 20€)
     selectedRate,
     breakdown: {
       baseFare,
       distanceCharge: roundTrip ? distanceCharge * 2 : distanceCharge,
       pricePerKm: rateConfig.pricePerKm,
       actualDistance: distanceInKm,
-      minimumCourse: minimumCourse,
+      minimumCourse: totalPrice < minimumTotal ? minimumTotal : null, // Indique si le minimum a été appliqué
+      minimumTotal: minimumTotal, // Le montant minimum avec frais d'approche
       approachFee: approachFee,
       isNightTime,
       isWeekendOrHoliday,
@@ -295,8 +302,6 @@ async function getDistanceMatrix(originPlaceId, destinationPlaceId) {
     
     const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=place_id:${encodeURIComponent(originPlaceId)}&destinations=place_id:${encodeURIComponent(destinationPlaceId)}&mode=driving&language=fr&key=${apiKey}`;
     
-    console.log('Appel API Distance Matrix...');
-    
     const response = await axios.get(url, {
       timeout: 10000,
       headers: {
@@ -305,7 +310,6 @@ async function getDistanceMatrix(originPlaceId, destinationPlaceId) {
     });
     
     const data = response.data;
-    console.log('Réponse Distance Matrix Status:', data.status);
     
     if (data.status === 'OK' && data.rows[0].elements[0].status === 'OK') {
       const element = data.rows[0].elements[0];

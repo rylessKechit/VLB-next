@@ -132,8 +132,6 @@ export default function BookingDetailPage() {
       // Utiliser l'ID de la réservation déjà chargée
       const bookingId = booking.bookingId || booking._id;
       
-      console.log(`Tentative de mise à jour du statut pour la réservation: ${bookingId} vers: ${newStatus}`);
-      
       const response = await fetch(`/api/bookings/${encodeURIComponent(bookingId)}`, {
         method: 'PUT',
         headers: {
@@ -149,7 +147,6 @@ export default function BookingDetailPage() {
       }
       
       const data = await response.json();
-      console.log("Réponse de l'API après mise à jour:", data);
       
       if (!data.success) {
         throw new Error(data.error || "Erreur inconnue lors de la mise à jour");
