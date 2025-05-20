@@ -192,75 +192,10 @@ export default function AboutPage() {
         </div>
       </div>
       
-      {/* Fleet Section */}
-      <div className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-4 text-center uppercase">NOTRE FLOTTE DE TAXIS</h2>
-          <p className="text-lg text-center text-gray-600 mb-12">
-            Des véhicules adaptés à tous vos besoins de transport à Verrières-le-Buisson
-          </p>
-          
-          <div className="max-w-5xl mx-auto">
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="flex flex-col md:flex-row">
-                <div className="w-full md:w-1/2">
-                  <Image 
-                    src="/images/mercedes-v-class.webp" 
-                    alt="Notre flotte de taxis à Verrières-le-Buisson" 
-                    width={600}
-                    height={400}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="w-full md:w-1/2 p-6 md:p-8">
-                  <h3 className="text-2xl font-semibold mb-4">Véhicules de qualité</h3>
-                  <p className="text-gray-700 mb-4">
-                    Notre flotte de taxis à Verrières-le-Buisson est sélectionnée avec soin pour vous offrir confort et sécurité.
-                    Nous proposons plusieurs modèles selon vos besoins :
-                  </p>
-                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-                    <li className="flex items-center">
-                      <FontAwesomeIcon icon={faCheck} className="text-primary mr-2" />
-                      <span>Berlines confortables</span>
-                    </li>
-                    <li className="flex items-center">
-                      <FontAwesomeIcon icon={faCheck} className="text-primary mr-2" />
-                      <span>Véhicules familiaux</span>
-                    </li>
-                    <li className="flex items-center">
-                      <FontAwesomeIcon icon={faCheck} className="text-primary mr-2" />
-                      <span>Options éco-responsables</span>
-                    </li>
-                    <li className="flex items-center">
-                      <FontAwesomeIcon icon={faCheck} className="text-primary mr-2" />
-                      <span>Grand espace bagages</span>
-                    </li>
-                    <li className="flex items-center">
-                      <FontAwesomeIcon icon={faCheck} className="text-primary mr-2" />
-                      <span>WiFi à bord</span>
-                    </li>
-                    <li className="flex items-center">
-                      <FontAwesomeIcon icon={faCheck} className="text-primary mr-2" />
-                      <span>Climatisation efficace</span>
-                    </li>
-                  </ul>
-                  <p className="text-gray-700 mb-4">
-                    Tous nos taxis sont régulièrement entretenus pour assurer votre confort et votre sécurité lors de vos trajets à Verrières-le-Buisson et en Essonne.
-                  </p>
-                  <Link href="/#booking" className="inline-block bg-primary text-white py-2 px-6 rounded-md hover:bg-primary-dark hover:text-white transition-colors duration-300">
-                    Réserver votre taxi maintenant
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
       {/* CTA Banner */}
       <div className="py-12 bg-dark text-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-2xl font-bold mb-4">Besoin d'un taxi fiable à Verrières-le-Buisson ?</h2>
+          <h2 className="text-2xl font-bold mb-4 text-primary">Besoin d'un taxi fiable à Verrières-le-Buisson ?</h2>
           <p className="text-lg mb-8 max-w-3xl mx-auto">
             Contactez-nous pour votre prochain trajet en Essonne
           </p>

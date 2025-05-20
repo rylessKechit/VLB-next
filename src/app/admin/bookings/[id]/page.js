@@ -129,7 +129,12 @@ export default function BookingDetailPage() {
         }
       }
       
-      const response = await fetch(`/api/bookings/${encodeURIComponent(id)}`, {
+      // Utiliser l'ID de la réservation déjà chargée
+      const bookingId = booking.bookingId || booking._id;
+      
+      console.log(`Tentative de mise à jour du statut pour la réservation: ${bookingId} vers: ${newStatus}`);
+      
+      const response = await fetch(`/api/bookings/${encodeURIComponent(bookingId)}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -138,10 +143,17 @@ export default function BookingDetailPage() {
       });
       
       if (!response.ok) {
-        throw new Error('Erreur lors de la mise à jour du statut');
+        const errorData = await response.json();
+        console.error("Erreur de réponse API:", response.status, errorData);
+        throw new Error(`Erreur lors de la mise à jour du statut: ${errorData.error || response.statusText}`);
       }
       
       const data = await response.json();
+      console.log("Réponse de l'API après mise à jour:", data);
+      
+      if (!data.success) {
+        throw new Error(data.error || "Erreur inconnue lors de la mise à jour");
+      }
       
       // Mettre à jour l'état local avec les nouvelles données
       setBooking(data.data);
@@ -170,10 +182,10 @@ export default function BookingDetailPage() {
       
       setActionLoading(false);
     } catch (error) {
-      console.error('Erreur:', error);
+      console.error('Erreur complète:', error);
       setActionLoading(false);
       // Afficher un message d'erreur à l'utilisateur
-      alert('Erreur lors de la mise à jour du statut. Veuillez réessayer.');
+      alert(`Erreur lors de la mise à jour du statut: ${error.message}`);
     }
   };
   

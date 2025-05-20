@@ -74,11 +74,12 @@ export async function PUT(request, { params }) {
     const booking = await Booking.findOne({
       $or: [
         { bookingId: id },
-        { _id: id }
+        { _id: mongoose.Types.ObjectId.isValid(id) ? id : null }
       ]
     });
-    
+
     if (!booking) {
+      console.error(`Réservation non trouvée pour l'ID: ${id}`);
       return NextResponse.json({ error: 'Réservation non trouvée' }, { status: 404 });
     }
     

@@ -330,7 +330,7 @@ export default function FlottePage() {
       {/* CTA Section */}
       <div className="py-12 bg-dark text-white">
         <div className="container mx-auto px-4 text-center">
-          <h3 className="text-2xl font-bold mb-4">Prêt à découvrir nos véhicules ?</h3>
+          <h3 className="text-2xl font-bold mb-4 text-primary">Prêt à découvrir nos véhicules ?</h3>
           <p className="text-lg mb-8 max-w-3xl mx-auto">
             Contactez-nous pour plus d'informations ou réservez directement le véhicule de votre choix
           </p>

@@ -164,23 +164,12 @@ export default function AirportTransferPage() {
       {/* Destinations Section */}
       <div className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-4 text-center uppercase">AÉROPORTS ET GARES DESSERVIS</h2>
+          <h2 className="text-3xl font-bold mb-4 text-center uppercase">TRANSFERTS AEROPORT DEPUIS VERRIÈRES-LE-BUISSON</h2>
           <p className="text-lg text-center text-gray-600 mb-12">
             Nous assurons les transferts en taxi depuis Verrières-le-Buisson vers tous les points d'accès importants
           </p>
           
           <div className="max-w-5xl mx-auto">
-            <div className="flex flex-col md:flex-row border-b border-gray-300 mb-8">
-              <button className="px-6 py-3 text-center font-medium border-b-2 border-primary text-primary">
-                <FontAwesomeIcon icon={faPlane} className="mr-2" />
-                Aéroports
-              </button>
-              <button className="px-6 py-3 text-center font-medium text-gray-500 hover:text-gray-700 transition-colors duration-300">
-                <FontAwesomeIcon icon={faTrain} className="mr-2" />
-                Gares
-              </button>
-            </div>
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {airports.map((airport, index) => (
                 <div key={index} className="bg-white rounded-lg shadow-md p-6 transition-all duration-300 hover:shadow-lg">
@@ -345,7 +334,7 @@ export default function AirportTransferPage() {
       {/* CTA Banner */}
       <div className="py-12 bg-dark text-white">
         <div className="container mx-auto px-4 text-center">
-          <h3 className="text-2xl font-bold mb-4">Besoin d'informations supplémentaires sur nos transferts ?</h3>
+          <h3 className="text-2xl font-bold mb-4 text-primary">Besoin d'informations supplémentaires sur nos transferts ?</h3>
           <p className="text-lg mb-8 max-w-3xl mx-auto">
             Notre équipe est à votre disposition pour répondre à vos questions sur nos services de taxi à Verrières-le-Buisson
           </p>

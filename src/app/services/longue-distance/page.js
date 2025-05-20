@@ -93,35 +93,8 @@ export default function LongDistancePage() {
         </div>
       </div>
       
-      {/* Map visualization */}
-      <div className="py-12 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold mb-6 text-center uppercase">EXEMPLES DE TRAJETS LONGUE DISTANCE</h2>
-          <p className="text-center text-gray-600 mb-8">Visualisez quelques itinéraires depuis Verrières-le-Buisson</p>
-          
-          <div className="max-w-5xl mx-auto mb-12">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-xl font-semibold mb-4">Verrières-le-Buisson → Paris → Lyon</h3>
-              <RouteMap 
-                pickupAddress="Verrières-le-Buisson, France" 
-                dropoffAddress="Lyon, France"
-              />
-              <div className="mt-4 flex justify-between items-center">
-                <div>
-                  <p className="text-sm text-gray-600"><strong>Distance:</strong> ~465 km</p>
-                  <p className="text-sm text-gray-600"><strong>Durée:</strong> ~4h30</p>
-                </div>
-                <div>
-                  <p className="text-lg font-bold text-primary">650€ - 750€ <span className="text-sm font-normal text-gray-500">tarif fixe</span></p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
       {/* Destinations Section */}
-      <div className="py-16 bg-white">
+      <section id="destinations" className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold mb-4 text-center uppercase">DESTINATIONS POPULAIRES</h2>
           <p className="text-lg text-center text-gray-600 mb-12">
@@ -129,11 +102,14 @@ export default function LongDistancePage() {
           </p>
           
           <div className="max-w-5xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {destinations.map((destination, index) => (
-                <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg">
+                <div 
+                  key={index}
+                  className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg"
+                >
                   <div className="bg-primary text-white p-4">
-                    <h3 className="text-xl font-semibold">{destination.name}</h3>
+                    <h3 className="text-xl font-semibold text-white">{destination.name}</h3>
                   </div>
                   <div className="p-6">
                     <div className="space-y-3 mb-4">
@@ -152,7 +128,7 @@ export default function LongDistancePage() {
                     </div>
                     <div className="text-center">
                       <Link href="/#booking" className="inline-block bg-primary text-white py-2 px-4 rounded-md hover:bg-primary-dark hover:text-white transition-colors duration-300">
-                      Demander un devis
+                        Demander un devis
                       </Link>
                     </div>
                   </div>
@@ -169,7 +145,7 @@ export default function LongDistancePage() {
             </div>
           </div>
         </div>
-      </div>
+      </section>
       
       {/* Testimonial Section */}
       <div className="py-16 bg-gray-50">
@@ -306,7 +282,7 @@ export default function LongDistancePage() {
       {/* CTA Banner */}
       <div className="py-12 bg-dark text-white">
         <div className="container mx-auto px-4 text-center">
-          <h3 className="text-2xl font-bold mb-4">Besoin d'un trajet vers une autre destination ?</h3>
+          <h3 className="text-2xl font-bold mb-4 text-primary">Besoin d'un trajet vers une autre destination ?</h3>
           <p className="text-lg mb-8 max-w-3xl mx-auto">
             Contactez-nous pour obtenir un devis personnalisé pour votre itinéraire depuis Verrières-le-Buisson
           </p>

@@ -32,7 +32,7 @@ const Footer = () => {
           
           <div className="flex flex-wrap md:gap-12">
             <div className="w-1/2 sm:w-auto mb-6">
-              <h4 className="text-lg font-semibold mb-4">Nos services</h4>
+              <h4 className="text-lg font-semibold mb-4 text-primary">Nos services</h4>
               <ul className="space-y-2">
                 <li>
                   <Link href="/services/aeroport-gare" className="text-gray-300 hover:text-white transition-colors duration-300">
@@ -53,7 +53,7 @@ const Footer = () => {
             </div>
             
             <div className="w-1/2 sm:w-auto mb-6">
-              <h4 className="text-lg font-semibold mb-4">Contact</h4>
+              <h4 className="text-lg font-semibold mb-4 text-primary">Contact</h4>
               <ul className="space-y-3">
                 <li>
                   <Link href="https://maps.app.goo.gl/xyz" className="flex items-center text-gray-300 hover:text-white transition-colors duration-300">

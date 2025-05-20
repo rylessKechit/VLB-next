@@ -64,13 +64,13 @@ const Header = () => {
 
         <div className="flex items-center">
           <div className="hidden md:flex items-center mr-6">
-            <Link href="/contact" 
+            <a href="tel:+33665113928" 
               className="flex items-center px-4 py-2 mr-3 rounded-md transition-all duration-300 text-white hover:text-primary" 
               title="Appelez-nous"
             >
               <FontAwesomeIcon icon={faPhone} className="mr-2" />
               <span className="hidden lg:inline">Réservation téléphonique</span>
-            </Link>
+            </a>
             
             <Link href="/#booking" 
               className="flex items-center px-4 py-2 rounded-md bg-primary text-white transition-all duration-300 hover:bg-primary-dark hover:text-white hover:-translate-y-1" 
