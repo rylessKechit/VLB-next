@@ -49,17 +49,11 @@ const BookingForm = ({
   
   // Initialiser les champs de date et heure
   useEffect(() => {
-    const tomorrow = new Date();
-    if (isAdminContext) {
-      // Pour l'admin, permettre les réservations pour aujourd'hui
-      tomorrow.setDate(tomorrow.getDate() + (new Date().getHours() < 22 ? 0 : 1));
-    } else {
-      tomorrow.setDate(tomorrow.getDate() + 1);
-    }
-    const formattedDate = formatDate(tomorrow);
+    const today = new Date(); // Utilisez aujourd'hui plutôt que demain
+    const formattedDate = formatDate(today);
     
     const defaultTime = new Date();
-    defaultTime.setHours(defaultTime.getHours() + 2);
+    defaultTime.setHours(defaultTime.getHours() + 1); // Ajouter 1h à l'heure actuelle
     const formattedTime = formatTime(defaultTime);
     
     setValue('pickupDate', formattedDate);
@@ -80,27 +74,63 @@ const BookingForm = ({
   };
   
   const handleInputChange = (name, value) => {
-    setValue(name, value);
+  setValue(name, value);
+  
+  // Si l'utilisateur désactive l'option aller-retour, effacer les valeurs de retour
+  if (name === 'roundTrip' && value === false) {
+    setValue('returnDate', '');
+    setValue('returnTime', '');
+  }
+  
+  // Si l'utilisateur active l'option aller-retour, définir les valeurs par défaut pour le retour
+  if (name === 'roundTrip' && value === true) {
+    // IMPORTANT: Même date que l'aller
+    setValue('returnDate', formValues.pickupDate);
     
-    if (name === 'roundTrip' && value === false) {
-      setValue('returnDate', '');
-      setValue('returnTime', '');
-    }
-    
-    if (name === 'roundTrip' && value === true && !formValues.returnDate) {
-      const returnDate = new Date(formValues.pickupDate);
-      returnDate.setDate(returnDate.getDate() + 3);
+    // Calcul de l'heure de retour (heure de départ + 1h)
+    if (formValues.pickupTime) {
+      const [hours, minutes] = formValues.pickupTime.split(':').map(Number);
+      let returnHours = hours + 1;
       
-      setValue('returnDate', formatDate(returnDate));
-      setValue('returnTime', formValues.pickupTime);
+      // Si on dépasse minuit, ajuster l'heure
+      if (returnHours >= 24) {
+        returnHours = returnHours - 24;
+      }
+      
+      // Formater l'heure de retour
+      const returnTime = `${String(returnHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+      setValue('returnTime', returnTime);
     }
+  }
+  
+  // Si les valeurs qui affectent le prix changent, réinitialiser l'estimation
+  if (['pickupAddress', 'dropoffAddress', 'pickupDate', 'pickupTime', 'passengers', 'luggage', 'roundTrip'].includes(name)) {
+    setPriceEstimate(null);
+    setAvailableVehicles([]);
+    setSelectedVehicle(null);
+  }
+};
+
+useEffect(() => {
+  // Si l'option aller-retour est activée et que la date/heure de départ change
+  if (formValues.roundTrip && (formValues.pickupDate || formValues.pickupTime)) {
+    // Mettre à jour la date de retour pour qu'elle soit la même que la date de départ
+    setValue('returnDate', formValues.pickupDate);
     
-    if (['pickupAddress', 'dropoffAddress', 'pickupDate', 'pickupTime', 'passengers', 'luggage', 'roundTrip'].includes(name)) {
-      setPriceEstimate(null);
-      setAvailableVehicles([]);
-      setSelectedVehicle(null);
+    // Mettre à jour l'heure de retour pour qu'elle soit l'heure de départ + 1h
+    if (formValues.pickupTime) {
+      const [hours, minutes] = formValues.pickupTime.split(':').map(Number);
+      let returnHours = hours + 1;
+      
+      if (returnHours >= 24) {
+        returnHours = returnHours - 24;
+      }
+      
+      const returnTime = `${String(returnHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+      setValue('returnTime', returnTime);
     }
-  };
+  }
+}, [formValues.pickupDate, formValues.pickupTime, formValues.roundTrip, setValue]);
   
   const handleAddressSelect = (name, address, placeId) => {
     setValue(name, address);
@@ -130,6 +160,17 @@ const BookingForm = ({
       // Pour l'admin, utiliser les adresses directement si pas de placeId
       const pickupPlaceId = formValues.pickupAddressPlaceId || `custom_${Date.now()}_pickup`;
       const dropoffPlaceId = formValues.dropoffAddressPlaceId || `custom_${Date.now()}_dropoff`;
+      
+      console.log('Envoi de la requête de prix avec:', {
+        pickupPlaceId,
+        dropoffPlaceId,
+        pickupDateTime: `${formValues.pickupDate}T${formValues.pickupTime}`,
+        passengers: parseInt(formValues.passengers),
+        luggage: parseInt(formValues.luggage),
+        roundTrip: formValues.roundTrip,
+        returnDateTime: formValues.roundTrip && formValues.returnDate ? `${formValues.returnDate}T${formValues.returnTime}` : null,
+        isAdminContext
+      });
 
       // Pour l'admin sans placeId, créer un estimate simple
       if (isAdminContext && (!formValues.pickupAddressPlaceId || !formValues.dropoffAddressPlaceId)) {
@@ -191,6 +232,7 @@ const BookingForm = ({
       
       if (response.ok) {
         const data = await response.json();
+        console.log('Réponse de l\'API price/estimate:', data);
         
         if (data.success && data.data && data.data.estimate) {
           const estimate = data.data.estimate;
@@ -199,6 +241,9 @@ const BookingForm = ({
           if (!estimate.priceRanges || typeof estimate.basePrice === 'undefined') {
             throw new Error('Données de prix incomplètes dans la réponse de l\'API');
           }
+          
+          console.log('Estimate reçu:', estimate);
+          console.log('Price ranges:', estimate.priceRanges);
           
           // Créer les options de véhicules avec les fourchettes de prix
           const vehicleOptions = [
@@ -231,6 +276,8 @@ const BookingForm = ({
             }
           ];
           
+          console.log('VehicleOptions créées avec fourchettes:', vehicleOptions);
+          
           // Filtrer les véhicules selon le nombre de passagers
           const validVehicles = vehicleOptions.filter(vehicle => {
             if (vehicle.id === 'van' && formValues.passengers <= 7) {
@@ -241,6 +288,9 @@ const BookingForm = ({
             }
             return false;
           });
+          
+          console.log('Valid vehicles:', validVehicles);
+          console.log('Passage à l\'étape 2');
           
           setAvailableVehicles(validVehicles);
           setCurrentStep(2);

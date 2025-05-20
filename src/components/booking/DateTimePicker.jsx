@@ -76,9 +76,6 @@ const DateTimePicker = ({
             aria-describedby={`${dateId}-description`}
           />
         </div>
-        <div id={`${dateId}-description`} className="mt-1 text-xs text-gray-500">
-          Format : année-mois-jour
-        </div>
       </div>
       
       <div className="relative flex-1">
@@ -101,9 +98,6 @@ const DateTimePicker = ({
             required
             aria-describedby={`${timeId}-description`}
           />
-        </div>
-        <div id={`${timeId}-description`} className="mt-1 text-xs text-gray-500">
-          Format : heures:minutes (24h)
         </div>
       </div>
     </div>

@@ -208,9 +208,8 @@ const BookingStepOne = ({
           value={formValues.luggage}
           onChange={value => handleInputChange('luggage', value)}
           min={0}
-          max={7}
+          max={99}
           label="Nombre de bagages"
-          helpText="Maximum 7 bagages"
         />
       </div>
       
