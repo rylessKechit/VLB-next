@@ -97,7 +97,7 @@ export default function FlottePage() {
       name: 'Mercedes Classe V',
       desc: 'L\'espace et le luxe',
       longDesc: 'Notre Mercedes Classe V est parfaite pour les groupes et les familles. Avec son espace généreux et ses équipements haut de gamme, elle transforme chaque trajet en expérience mémorable.',
-      image: '/images/mercedes-class-v.webp',
+      image: '/images/mercedes-v-class.webp',
       category: 'Van Premium',
       capacity: 'Espace pour toute la famille',
       luggage: 'Très grande capacité',

@@ -234,7 +234,7 @@ export default function Home() {
               <article className="bg-white rounded-lg shadow-custom overflow-hidden hover:shadow-custom-dark transition-all duration-300">
                 <div className="relative h-48">
                   <Image 
-                    src="/images/mercedes-class-v.webp" 
+                    src="/images/mercedes-v-class.webp" 
                     alt="Mercedes Classe V - Van premium VLB Verrières-le-Buisson" 
                     fill
                     className="object-cover"
