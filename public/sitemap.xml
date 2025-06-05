@@ -92,4 +92,21 @@
         <changefreq>monthly</changefreq>
         <mobile:mobile/>
     </url>
+
+    <!-- Pages légales -->
+    <url>
+        <loc>https://www.taxi-verrieres-le-buisson.com/politique-confidentialite</loc>
+        <lastmod>2025-06-05T10:00:00+00:00</lastmod>
+        <priority>0.6</priority>
+        <changefreq>monthly</changefreq>
+        <mobile:mobile/>
+    </url>
+
+    <url>
+        <loc>https://www.taxi-verrieres-le-buisson.com/mentions-legales</loc>
+        <lastmod>2025-06-05T10:00:00+00:00</lastmod>
+        <priority>0.6</priority>
+        <changefreq>monthly</changefreq>
+        <mobile:mobile/>
+    </url>
 </urlset>

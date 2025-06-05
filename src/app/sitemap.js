@@ -44,5 +44,17 @@ export default function sitemap() {
       changeFrequency: 'monthly',
       priority: 0.7,
     },
+    {
+      url: `${baseUrl}/politique-confidentialite`,
+      lastModified: new Date('2025-06-05'),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/mentions-legales`,
+      lastModified: new Date('2025-06-05'),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
   ];
 }
