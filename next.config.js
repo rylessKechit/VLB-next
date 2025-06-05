@@ -16,6 +16,10 @@ const nextConfig = {
     minimumCacheTTL: 60,
     // Optimisation automatique des images
     unoptimized: false,
+    // Empêcher l'indexation des images optimisées
+    loader: 'default',
+    path: '/_next/image',
+    domains: [],
   },
   
   // Optimisations compilateur
@@ -87,6 +91,29 @@ const nextConfig = {
           {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin'
+          },
+        ],
+      },
+      // Empêcher l'indexation des ressources Next.js
+      {
+        source: '/_next/static/(.*)',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow'
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/_next/image',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow'
           },
         ],
       },

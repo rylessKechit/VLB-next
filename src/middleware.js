@@ -5,6 +5,15 @@ import { getToken } from 'next-auth/jwt';
 export async function middleware(request) {
   const pathname = request.nextUrl.pathname;
   
+  // Bloquer l'indexation des ressources Next.js
+  if (pathname.startsWith('/_next/static/') || 
+      pathname.startsWith('/_next/image') ||
+      pathname.startsWith('/api/')) {
+    const response = NextResponse.next();
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    return response;
+  }
+  
   // Vérifier si la page est une page d'administration
   if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
     const token = await getToken({ 
@@ -34,13 +43,21 @@ export async function middleware(request) {
   return NextResponse.next();
 }
 
-// Ne pas appliquer le middleware à ces chemins
+// Configuration du middleware
 export const config = {
   matcher: [
     /*
-     * Match toutes les routes commençant par /admin
-     * Exclure les routes api, _next et les fichiers statiques (images, etc.)
+     * Match toutes les routes sauf :
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
      */
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    // Inclure spécifiquement les routes admin
     '/admin/:path*',
+    // Inclure les routes de ressources pour ajouter les headers no-index
+    '/_next/static/:path*',
+    '/_next/image/:path*'
   ],
 };

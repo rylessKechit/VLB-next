@@ -1,13 +1,17 @@
-# robots.txt for www.taxivlb.com
-# Mise à jour: 2025-04-20
+# robots.txt for www.taxi-verrieres-le-buisson.com
+# Mise à jour: 2025-06-05
 
 User-agent: *
 Allow: /
 
-# Empêcher l'indexation des dossiers administratifs
+# Empêcher l'indexation des dossiers administratifs et techniques
 Disallow: /admin/
 Disallow: /.next/
 Disallow: /_next/
+Disallow: /api/
+Disallow: /_next/static/
+Disallow: /_next/image
+Disallow: /static/
 
 # Sitemap
 Sitemap: https://www.taxi-verrieres-le-buisson.com/sitemap.xml
@@ -15,12 +19,17 @@ Sitemap: https://www.taxi-verrieres-le-buisson.com/sitemap.xml
 # Instructions spécifiques pour Google
 User-agent: Googlebot
 Allow: /
+Disallow: /_next/
+Disallow: /static/
+
 User-agent: Googlebot-Image
-Allow: /
+Allow: /images/
+Disallow: /_next/static/
 
 # Instructions spécifiques pour Bing
 User-agent: Bingbot
 Allow: /
+Disallow: /_next/
 
 # Taux d'exploration
 Crawl-delay: 10
