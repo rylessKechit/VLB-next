@@ -119,6 +119,43 @@ const nextConfig = {
       },
     ];
   },
+
+  // Redirections pour améliorer le SEO
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'taxi-verrieres-le-buisson.com',
+          },
+        ],
+        destination: 'https://www.taxi-verrieres-le-buisson.com/:path*',
+        permanent: true,
+      },
+      {
+        source: '/home',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/index',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/services',
+        destination: '/#services',
+        permanent: true,
+      },
+      {
+        source: '/nos-services',
+        destination: '/#services',
+        permanent: true,
+      },
+    ];
+  },
   
   // Redirections pour améliorer le SEO
   async redirects() {
@@ -163,6 +200,15 @@ const nextConfig = {
   
   // Réduire la taille des pages
   transpilePackages: ['@fortawesome/fontawesome-svg-core', '@fortawesome/free-solid-svg-icons'],
+
+  async rewrites() {
+    return [
+      {
+        source: '/robots.txt',
+        destination: '/api/robots'
+      }
+    ];
+  },
   
   // Préchargement des pages
   async rewrites() {
