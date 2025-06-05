@@ -120,9 +120,10 @@ const nextConfig = {
     ];
   },
 
-  // Redirections pour améliorer le SEO
+  // REDIRECTIONS CONSOLIDÉES (UNE SEULE FONCTION)
   async redirects() {
     return [
+      // Redirection www
       {
         source: '/:path*',
         has: [
@@ -134,6 +135,7 @@ const nextConfig = {
         destination: 'https://www.taxi-verrieres-le-buisson.com/:path*',
         permanent: true,
       },
+      // Redirections pages
       {
         source: '/home',
         destination: '/',
@@ -157,31 +159,20 @@ const nextConfig = {
     ];
   },
   
-  // Redirections pour améliorer le SEO
-  async redirects() {
-    return [
-      {
-        source: '/:path*',
-        has: [
-          {
-            type: 'host',
-            value: 'taxi-verrieres-le-buisson.com',
-          },
-        ],
-        destination: 'https://www.taxi-verrieres-le-buisson.com/:path*',
-        permanent: true,
-      },
-      {
-        source: '/home',
-        destination: '/',
-        permanent: true,
-      },
-      {
-        source: '/index',
-        destination: '/',
-        permanent: true,
-      },
-    ];
+  // REWRITES CONSOLIDÉS (UNE SEULE FONCTION)
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: '/robots.txt',
+          destination: '/api/robots'
+        },
+        {
+          source: '/api/:path*',
+          destination: '/api/:path*'
+        }
+      ]
+    };
   },
   
   // PWA et Service Worker
@@ -200,27 +191,6 @@ const nextConfig = {
   
   // Réduire la taille des pages
   transpilePackages: ['@fortawesome/fontawesome-svg-core', '@fortawesome/free-solid-svg-icons'],
-
-  async rewrites() {
-    return [
-      {
-        source: '/robots.txt',
-        destination: '/api/robots'
-      }
-    ];
-  },
-  
-  // Préchargement des pages
-  async rewrites() {
-    return {
-      beforeFiles: [
-        {
-          source: '/api/:path*',
-          destination: '/api/:path*'
-        }
-      ]
-    };
-  },
 };
 
 module.exports = nextConfig;
