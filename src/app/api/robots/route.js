@@ -31,9 +31,6 @@ Allow: /images/twitter-card.jpg
 # Sitemap
 Sitemap: https://www.taxi-verrieres-le-buisson.com/sitemap.xml
 
-# Crawl-delay pour éviter la surcharge du serveur
-Crawl-delay: 1`;
-
   return new NextResponse(robotsTxt, {
     status: 200,
     headers: {

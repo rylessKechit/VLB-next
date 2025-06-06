@@ -30,6 +30,3 @@ Disallow: /_next/static/
 User-agent: Bingbot
 Allow: /
 Disallow: /_next/
-
-# Taux d'exploration
-Crawl-delay: 10
