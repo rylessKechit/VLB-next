@@ -29,7 +29,7 @@ Allow: /images/og-image.jpg
 Allow: /images/twitter-card.jpg
 
 # Sitemap
-Sitemap: https://www.taxi-verrieres-le-buisson.com/sitemap.xml
+Sitemap: https://www.taxi-verrieres-le-buisson.com/sitemap.xml;
 
   return new NextResponse(robotsTxt, {
     status: 200,
