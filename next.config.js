@@ -2,7 +2,6 @@
 const nextConfig = {
   reactStrictMode: true,
   
-  // Optimisation des images
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
@@ -14,15 +13,12 @@ const nextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60,
-    // Optimisation automatique des images
     unoptimized: false,
-    // Empêcher l'indexation des images optimisées
     loader: 'default',
     path: '/_next/image',
     domains: [],
   },
   
-  // Optimisations compilateur
   experimental: {
     optimizeCss: true,
     optimizeServerReact: true,
@@ -33,17 +29,12 @@ const nextConfig = {
     ],
   },
   
-  // Compression
   compress: true,
   
-  // Optimisation des bundles
   webpack: (config, { dev, isServer }) => {
-    // Optimisation en production
     if (!dev && !isServer) {
-      // Désactiver le source map en production pour réduire la taille
       config.devtool = false;
       
-      // Optimiser les modules
       config.optimization = {
         ...config.optimization,
         splitChunks: {
@@ -70,10 +61,11 @@ const nextConfig = {
     return config;
   },
   
-  // Headers pour améliorer les performances
+  // ✅ HEADERS CORRIGÉS - Supprimer X-Robots-Tag des pages principales
   async headers() {
     return [
       {
+        // Headers généraux SANS X-Robots-Tag
         source: '/(.*)',
         headers: [
           {
@@ -94,7 +86,7 @@ const nextConfig = {
           },
         ],
       },
-      // Empêcher l'indexation des ressources Next.js
+      // ✅ SEULEMENT les ressources techniques sont bloquées
       {
         source: '/_next/static/(.*)',
         headers: [
@@ -109,7 +101,7 @@ const nextConfig = {
         ],
       },
       {
-        source: '/_next/image',
+        source: '/_next/image/(.*)',
         headers: [
           {
             key: 'X-Robots-Tag',
@@ -117,6 +109,25 @@ const nextConfig = {
           },
         ],
       },
+      {
+        source: '/api/(.*)',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow'
+          },
+        ],
+      },
+      {
+        source: '/admin/(.*)',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow'
+          },
+        ],
+      },
+      // Assets avec cache mais SANS blocage d'indexation
       {
         source: '/fonts/(.*)',
         headers: [
@@ -147,10 +158,8 @@ const nextConfig = {
     ];
   },
 
-  // REDIRECTIONS CONSOLIDÉES (UNE SEULE FONCTION)
   async redirects() {
     return [
-      // Redirection www
       {
         source: '/:path*',
         has: [
@@ -162,7 +171,6 @@ const nextConfig = {
         destination: 'https://www.taxi-verrieres-le-buisson.com/:path*',
         permanent: true,
       },
-      // Redirections pages
       {
         source: '/home',
         destination: '/',
@@ -186,14 +194,15 @@ const nextConfig = {
     ];
   },
   
-  // REWRITES CONSOLIDÉS (UNE SEULE FONCTION)
+  // ✅ REWRITE CORRIGÉ - Supprimer le robots.txt des rewrites
   async rewrites() {
     return {
       beforeFiles: [
-        {
-          source: '/robots.txt',
-          destination: '/api/robots'
-        },
+        // ❌ SUPPRIMER CETTE LIGNE qui causait le problème
+        // {
+        //   source: '/robots.txt',
+        //   destination: '/api/robots'
+        // },
         {
           source: '/api/:path*',
           destination: '/api/:path*'
@@ -202,21 +211,8 @@ const nextConfig = {
     };
   },
   
-  // PWA et Service Worker
-  pwa: {
-    dest: 'public',
-    register: true,
-    skipWaiting: true,
-    disable: process.env.NODE_ENV === 'development',
-  },
-  
-  // Optimiser les polices
   optimizeFonts: true,
-  
-  // GZIP/Brotli compression
   output: 'standalone',
-  
-  // Réduire la taille des pages
   transpilePackages: ['@fortawesome/fontawesome-svg-core', '@fortawesome/free-solid-svg-icons'],
 };
 

@@ -1,32 +1,19 @@
-# robots.txt for www.taxi-verrieres-le-buisson.com
-# Mise à jour: 2025-06-05
-
+# src/app/robots.txt ou public/robots.txt
 User-agent: *
 Allow: /
 
-# Empêcher l'indexation des dossiers administratifs et techniques
-Disallow: /admin/
-Disallow: /.next/
+# Permettre l'indexation de toutes les pages principales
+Allow: /
+Allow: /about
+Allow: /contact
+Allow: /services/
+Allow: /flotte
+Allow: /faq
+
+# Bloquer seulement les ressources techniques
 Disallow: /_next/
 Disallow: /api/
-Disallow: /_next/static/
-Disallow: /_next/image
-Disallow: /static/
+Disallow: /admin/
 
 # Sitemap
 Sitemap: https://www.taxi-verrieres-le-buisson.com/sitemap.xml
-
-# Instructions spécifiques pour Google
-User-agent: Googlebot
-Allow: /
-Disallow: /_next/
-Disallow: /static/
-
-User-agent: Googlebot-Image
-Allow: /images/
-Disallow: /_next/static/
-
-# Instructions spécifiques pour Bing
-User-agent: Bingbot
-Allow: /
-Disallow: /_next/

@@ -1,58 +1,47 @@
+// src/app/sitemap.js
 export default function sitemap() {
   const baseUrl = 'https://www.taxi-verrieres-le-buisson.com';
   
   return [
     {
       url: baseUrl,
-      lastModified: new Date('2025-06-05'),
+      lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 1,
     },
     {
-      url: `${baseUrl}/services/aeroport-gare`,
-      lastModified: new Date('2025-06-05'),
-      changeFrequency: 'monthly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/services/longue-distance`,
-      lastModified: new Date('2025-06-05'),
-      changeFrequency: 'monthly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/flotte`,
-      lastModified: new Date('2025-06-05'),
-      changeFrequency: 'monthly',
-      priority: 0.9,
-    },
-    {
       url: `${baseUrl}/about`,
-      lastModified: new Date('2025-06-05'),
+      lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
       url: `${baseUrl}/contact`,
-      lastModified: new Date('2025-06-05'),
+      lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.9,
+      priority: 0.8,
     },
     {
-      url: `${baseUrl}/faq`,
-      lastModified: new Date('2025-06-05'),
+      url: `${baseUrl}/flotte`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/services/aeroport-gare`,
+      lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.7,
     },
     {
-      url: `${baseUrl}/politique-confidentialite`,
-      lastModified: new Date('2025-06-05'),
+      url: `${baseUrl}/services/longue-distance`,
+      lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.6,
+      priority: 0.7,
     },
     {
-      url: `${baseUrl}/mentions-legales`,
-      lastModified: new Date('2025-06-05'),
+      url: `${baseUrl}/faq`,
+      lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.6,
     },
