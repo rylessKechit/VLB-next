@@ -1,4 +1,3 @@
-# src/app/robots.txt ou public/robots.txt
 User-agent: *
 Allow: /
 
@@ -9,6 +8,7 @@ Allow: /contact
 Allow: /services/
 Allow: /flotte
 Allow: /faq
+Allow: /manifest.json
 
 # Bloquer seulement les ressources techniques
 Disallow: /_next/

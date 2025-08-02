@@ -1,24 +1,13 @@
-// src/middleware.js - Version corrigée
+// src/middleware.js - Version MINIMALE
 import { NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
 export async function middleware(request) {
   const pathname = request.nextUrl.pathname;
   
-  // ✅ CORRECTION MAJEURE : Ne bloquer l'indexation QUE pour les ressources techniques
-  if (pathname.startsWith('/_next/static/') || 
-      pathname.startsWith('/_next/image') ||
-      pathname.startsWith('/api/') ||
-      pathname.startsWith('/admin/')) {
-    const response = NextResponse.next();
-    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
-    return response;
-  }
+  // ✅ PLUS AUCUN HEADER X-Robots-Tag - Laisser faire Next.js
   
-  // ✅ PERMETTRE l'indexation de toutes les autres pages
-  // Supprimer complètement le X-Robots-Tag pour les pages publiques
-  
-  // Vérifier si la page est une page d'administration
+  // Seulement vérifier l'authentification admin
   if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
     const token = await getToken({ 
       req: request, 
@@ -39,13 +28,13 @@ export async function middleware(request) {
     }
   }
 
-  // ✅ Pages publiques : AUCUN header X-Robots-Tag
+  // ✅ Laisser passer TOUT le reste sans modification
   return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    // Matcher plus précis pour éviter les problèmes
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    // Matcher UNIQUEMENT pour l'admin
+    '/admin/:path*',
   ],
 };

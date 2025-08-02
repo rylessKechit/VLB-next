@@ -61,11 +61,11 @@ const nextConfig = {
     return config;
   },
   
-  // ✅ HEADERS CORRIGÉS - Supprimer X-Robots-Tag des pages principales
+  // ✅ HEADERS COMPLÈTEMENT SUPPRIMÉS - Aucun X-Robots-Tag nulle part
   async headers() {
     return [
       {
-        // Headers généraux SANS X-Robots-Tag
+        // Headers généraux pour la sécurité SEULEMENT
         source: '/(.*)',
         headers: [
           {
@@ -86,48 +86,7 @@ const nextConfig = {
           },
         ],
       },
-      // ✅ SEULEMENT les ressources techniques sont bloquées
-      {
-        source: '/_next/static/(.*)',
-        headers: [
-          {
-            key: 'X-Robots-Tag',
-            value: 'noindex, nofollow'
-          },
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      {
-        source: '/_next/image/(.*)',
-        headers: [
-          {
-            key: 'X-Robots-Tag',
-            value: 'noindex, nofollow'
-          },
-        ],
-      },
-      {
-        source: '/api/(.*)',
-        headers: [
-          {
-            key: 'X-Robots-Tag',
-            value: 'noindex, nofollow'
-          },
-        ],
-      },
-      {
-        source: '/admin/(.*)',
-        headers: [
-          {
-            key: 'X-Robots-Tag',
-            value: 'noindex, nofollow'
-          },
-        ],
-      },
-      // Assets avec cache mais SANS blocage d'indexation
+      // Cache pour les assets statiques SANS X-Robots-Tag
       {
         source: '/fonts/(.*)',
         headers: [
@@ -186,30 +145,15 @@ const nextConfig = {
         destination: '/#services',
         permanent: true,
       },
-      {
-        source: '/nos-services',
-        destination: '/#services',
-        permanent: true,
-      },
     ];
   },
   
-  // ✅ REWRITE CORRIGÉ - Supprimer le robots.txt des rewrites
-  async rewrites() {
-    return {
-      beforeFiles: [
-        // ❌ SUPPRIMER CETTE LIGNE qui causait le problème
-        // {
-        //   source: '/robots.txt',
-        //   destination: '/api/robots'
-        // },
-        {
-          source: '/api/:path*',
-          destination: '/api/:path*'
-        }
-      ]
-    };
-  },
+  // ✅ REWRITES COMPLÈTEMENT SUPPRIMÉS
+  // async rewrites() {
+  //   return {
+  //     beforeFiles: []
+  //   };
+  // },
   
   optimizeFonts: true,
   output: 'standalone',
