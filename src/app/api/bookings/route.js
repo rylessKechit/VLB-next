@@ -268,7 +268,7 @@ export async function POST(request) {
         // Email pour le propriétaire avec les fourchettes
         const mailOptions = {
           from: `"Taxi VLB" <${process.env.EMAIL_USER}>`,
-          to: process.env.CONTACT_EMAIL || 'contact@taxivlb.com',
+          to: 'taxi.verrierelebuisson@gmail.com',
           subject: `${isAdminContext ? '[ADMIN] ' : ''}Nouvelle réservation Taxi VLB [${bookingId}] - Tarif ${tariffApplied}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee;">
