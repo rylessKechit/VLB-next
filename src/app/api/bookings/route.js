@@ -153,11 +153,15 @@ export async function POST(request) {
 
     // Générer un ID de réservation
     const bookingId = 'BK' + Math.floor(Math.random() * 10000);
-    const pickupDateTime = new Date(`${pickupDate}T${pickupTime}`);
+    const [year, month, day] = pickupDate.split('-').map(Number);
+    const [hours, minutes] = pickupTime.split(':').map(Number);
+    const pickupDateTime = new Date(year, month - 1, day, hours, minutes);
     let returnDateTime = null;
     
     if (roundTrip && returnDate && returnTime) {
-      returnDateTime = new Date(`${returnDate}T${returnTime}`);
+      const [rYear, rMonth, rDay] = returnDate.split('-').map(Number);
+      const [rHours, rMinutes] = returnTime.split(':').map(Number);
+      returnDateTime = new Date(rYear, rMonth - 1, rDay, rHours, rMinutes);
     }
 
     // Déterminer le statut initial
@@ -298,10 +302,10 @@ export async function POST(request) {
                 <p><strong>Départ:</strong> ${pickupAddress}</p>
                 <p><strong>Destination:</strong> ${dropoffAddress}</p>
                 <p><strong>Date:</strong> ${pickupDateTime.toLocaleDateString('fr-FR')}</p>
-                <p><strong>Heure:</strong> ${pickupDateTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
+                <p><strong>Heure:</strong> ${pickupDateTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })}</p>
                 <p><strong>Passagers:</strong> ${passengers}</p>
                 <p><strong>Bagages:</strong> ${luggage}</p>
-                ${roundTrip ? `<p><strong>Retour:</strong> ${returnDateTime.toLocaleDateString('fr-FR')} à ${returnDateTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>` : ''}
+                ${roundTrip ? `<p><strong>Retour:</strong> ${returnDateTime.toLocaleDateString('fr-FR')} à ${returnDateTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })}</p>` : ''}
               </div>
               
               <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
@@ -347,7 +351,7 @@ export async function POST(request) {
                 <p><strong>Référence:</strong> ${bookingId}</p>
                 <p><strong>Départ:</strong> ${pickupAddress}</p>
                 <p><strong>Destination:</strong> ${dropoffAddress}</p>
-                <p><strong>Date et heure:</strong> ${pickupDateTime.toLocaleDateString('fr-FR')} à ${pickupDateTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
+                <p><strong>Date et heure:</strong> ${pickupDateTime.toLocaleDateString('fr-FR')} à ${pickupDateTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })}</p>
                 <p><strong>Passagers:</strong> ${passengers}</p>
                 <p><strong>Véhicule:</strong> ${vehicleType === 'green' ? 'Tesla Model 3' : vehicleType === 'berline' ? 'Mercedes Classe E' : 'Mercedes Classe V'}</p>
                 <p style="font-size: 18px; margin-top: 10px;"><strong>Prix estimé: ${price.priceRange ? formatPriceRange(price.priceRange) : price.amount + '€'}</strong></p>
