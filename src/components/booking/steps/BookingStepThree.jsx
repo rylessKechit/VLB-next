@@ -1,4 +1,4 @@
-// src/components/booking/steps/BookingStepThree.jsx - Version avec fourchettes de prix
+// src/components/booking/steps/BookingStepThree.jsx - Version corrigée pour le timezone
 
 "use client";
 
@@ -31,6 +31,24 @@ const BookingStepThree = ({
     }).format(maxPrice);
     
     return `${min} - ${max}`;
+  };
+
+  // FONCTION CORRIGÉE pour éviter le décalage timezone
+  const formatDateTimeLocal = (dateString, timeString) => {
+    if (!dateString || !timeString) return 'Non spécifié';
+    
+    // Traiter comme heure locale sans conversion de fuseau horaire
+    const [year, month, day] = dateString.split('-');
+    const [hours, minutes] = timeString.split(':');
+    
+    const localDate = new Date(year, month - 1, day, hours, minutes);
+    return localDate.toLocaleString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   // Obtenir la fourchette de prix pour le véhicule sélectionné
@@ -124,14 +142,7 @@ const BookingStepThree = ({
             <div>
               <span className="text-sm text-gray-500">Date et heure:</span>
               <p className="font-medium">
-                {new Date(`${formValues.pickupDate}T${formValues.pickupTime}`).toLocaleString('fr-FR', {
-                  day: '2-digit',
-                  month: '2-digit',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  timeZone: 'Europe/Paris'
-                })}
+                {formatDateTimeLocal(formValues.pickupDate, formValues.pickupTime)}
               </p>
             </div>
             
@@ -139,13 +150,7 @@ const BookingStepThree = ({
               <div>
                 <span className="text-sm text-gray-500">Retour:</span>
                 <p className="font-medium">
-                  {new Date(`${formValues.returnDate}T${formValues.returnTime}`).toLocaleString('fr-FR', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
+                  {formatDateTimeLocal(formValues.returnDate, formValues.returnTime)}
                 </p>
               </div>
             )}

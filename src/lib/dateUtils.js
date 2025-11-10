@@ -9,6 +9,25 @@ export const formatTime = (date) => {
   return new Date(date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 };
 
+// NOUVELLE FONCTION AJOUTÉE - Pour corriger le problème de timezone
+export const formatDateTimeLocal = (dateTimeString) => {
+  if (!dateTimeString) return 'Non spécifié';
+  
+  // Traiter comme heure locale sans conversion de fuseau horaire
+  const [datePart, timePart] = dateTimeString.split('T');
+  const [year, month, day] = datePart.split('-');
+  const [hours, minutes] = timePart.split(':');
+  
+  const localDate = new Date(year, month - 1, day, hours, minutes);
+  return localDate.toLocaleString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
 export const formatViewTitle = (view, currentDate) => {
   const options = { month: 'long', year: 'numeric' };
   
