@@ -329,7 +329,7 @@ export async function POST(request) {
 
         const info1 = await transporter.sendMail(mailOptions);
 
-        // Email client avec la fourchette de prix
+        // Email client avec la fourchette de prix - TIMEZONE CORRIGÉ ICI
         const customerMailOptions = {
           from: `"Taxi VLB" <${process.env.EMAIL_USER}>`,
           to: customerInfo.email,

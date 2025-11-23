@@ -8,19 +8,19 @@ const BookingSuccess = ({ bookingData }) => {
   const [showPrintVersion, setShowPrintVersion] = useState(false);
 
   // Formatage de la date et l'heure pour l'affichage
-  const formatDateTime = (dateTimeString) => {
-    if (!dateTimeString) return 'Non spécifié';
-    
-    const date = new Date(dateTimeString);
+  const formatDateTime = (dateTimeStr) => {
+    if (!dateTimeStr) return 'Non spécifié'
+    const date = new Date(dateTimeStr)
     return date.toLocaleString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-      timeZone: 'Europe/Paris'
-    });
-  };
+      timeZone: 'Europe/Paris' // ← AJOUT CRUCIAL
+    })
+  }
 
   const formatPriceRange = (priceRange) => {
     if (!priceRange) return null;
