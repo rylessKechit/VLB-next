@@ -157,7 +157,7 @@ export async function POST(request) {
     const [hours, minutes] = pickupTime.split(':').map(Number);
     const pickupDateTime = new Date(year, month - 1, day, hours, minutes);
     let returnDateTime = null;
-    
+
     if (roundTrip && returnDate && returnTime) {
       const [rYear, rMonth, rDay] = returnDate.split('-').map(Number);
       const [rHours, rMinutes] = returnTime.split(':').map(Number);
